@@ -63,3 +63,9 @@ O guia pede para fugir do visual genérico de IA. Apliquei os quatro eixos dele,
 - **Tema tirado do contexto (canteiro de obra):** grade de planta baixa no topo verde, que some nas bordas; faixa de segurança laranja e transparente marcando hora extra (cartão, saldo na lista e excedente da barra); régua de fita métrica sob a barra da jornada, com um traço por hora. Uma cor dominante (verde profundo) e um acento afiado (laranja, só onde significa hora extra).
 - **Movimento orquestrado:** em vez de efeitos espalhados, uma entrada única por tela, com os blocos aparecendo em sequência (60ms entre cada). Desliga com "reduzir movimento".
 - **Fundo com profundidade:** luz no canto mais a grade, sem gradiente chamativo. No Sol forte, grade, brilho e sombras desligam.
+
+## 12. Tamanho ajustável e navegação compacta
+- **Tamanho da interface:** Compacto (15px), Padrão (17px) e Grande (19px). Tudo cresce ou encolhe junto (texto, espaços e botões), porque o app inteiro é medido a partir da fonte base. O Sol forte soma um nível em cada opção. A escolha vale antes da tela aparecer, sem "piscar".
+- **Barra inferior com 4 botões:** Hoje, Registros, Ganhos e **Mais**. O "Mais" agrupa Produção, Metas e Conta, além dos ajustes rápidos de tamanho e aparência.
+- **Abas no topo:** Registros reúne Ponto e Produção em abas; Ganhos tem Resumo, Previsão e Contracheque.
+- **Hoje mais denso:** o botão de ponto vem logo abaixo das etapas, para aparecer sem rolar a tela. "Trabalhado", "Saída prevista" e "Ganho hoje" ficam num cartão só, em 3 colunas quando cabem e um item por linha quando o texto está grande.

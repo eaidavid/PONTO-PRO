@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 };
 
 /** Aplica o tema salvo antes de pintar a tela (sem "piscar"). */
-const scriptTema = `try{var t=localStorage.getItem("pp-tema");if(t==="claro"||t==="escuro"||t==="sol")document.documentElement.dataset.tema=t}catch(e){}`;
+const scriptTema = `try{var d=document.documentElement,t=localStorage.getItem("pp-tema"),z=localStorage.getItem("pp-tamanho");if(t==="claro"||t==="escuro"||t==="sol")d.dataset.tema=t;if(z==="compacto"||z==="grande")d.dataset.tamanho=z}catch(e){}`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

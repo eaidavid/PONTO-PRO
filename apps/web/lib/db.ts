@@ -9,8 +9,11 @@ import Dexie, { type Table } from "dexie";
 
 export type Tema = "auto" | "claro" | "escuro" | "sol";
 
+export type Tamanho = "compacto" | "padrao" | "grande";
+
 export interface Preferencias {
   tema: Tema;
+  tamanho: Tamanho;
   som: boolean;
 }
 

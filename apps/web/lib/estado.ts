@@ -37,6 +37,16 @@ function temaDoAparelho(): Preferencias["tema"] {
   return "auto";
 }
 
+function tamanhoDoAparelho(): Preferencias["tamanho"] {
+  try {
+    const z = localStorage.getItem("pp-tamanho");
+    if (z === "compacto" || z === "grande") return z;
+  } catch {
+    /* sem armazenamento */
+  }
+  return "padrao";
+}
+
 /** Todo o estado do app, ao vivo a partir do banco local. undefined enquanto carrega. */
 export function useEstado(): Estado | undefined {
   return useLiveQuery(async () => {
@@ -56,7 +66,7 @@ export function useEstado(): Estado | undefined {
     return {
       perfil,
       pessoal: (cfg.pessoal as DadosPessoais | undefined) ?? {},
-      preferencias: { tema: temaDoAparelho(), som: false, ...((cfg.preferencias as Preferencias | undefined) ?? {}) },
+      preferencias: { tema: temaDoAparelho(), tamanho: tamanhoDoAparelho(), som: false, ...((cfg.preferencias as Preferencias | undefined) ?? {}) },
       preferenciasSalvas: !!cfg.preferencias,
       registros,
       itens,

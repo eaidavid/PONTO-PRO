@@ -8,6 +8,19 @@ import { useEstado } from "../lib/estado";
 function AplicarTema() {
   const estado = useEstado();
   const tema = estado?.preferenciasSalvas ? estado.preferencias.tema : undefined;
+  const tamanho = estado?.preferenciasSalvas ? estado.preferencias.tamanho : undefined;
+  useEffect(() => {
+    if (!tamanho) return;
+    const raiz = document.documentElement;
+    if (tamanho === "padrao") delete raiz.dataset.tamanho;
+    else raiz.dataset.tamanho = tamanho;
+    try {
+      if (tamanho === "padrao") localStorage.removeItem("pp-tamanho");
+      else localStorage.setItem("pp-tamanho", tamanho);
+    } catch {
+      /* modo privado */
+    }
+  }, [tamanho]);
   useEffect(() => {
     if (!tema) return;
     const raiz = document.documentElement;

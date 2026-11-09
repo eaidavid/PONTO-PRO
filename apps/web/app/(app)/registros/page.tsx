@@ -29,7 +29,8 @@ import {
 import { ChevronLeft, ChevronRight, Clock, Eraser, Save, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { apagarRegistro, restaurarRegistro, salvarRegistro } from "../../../lib/acoes";
-import { useAgora, useEstado } from "../../../lib/estado";
+import { abaExtraDoPerfil, useAgora, useEstado } from "../../../lib/estado";
+import { AbasRegistro } from "../abas-registro";
 import { Carregando } from "../../carregando";
 
 const ETAPAS: { id: Etapa; rotulo: string }[] = [
@@ -102,6 +103,7 @@ export default function Registros() {
   return (
     <main className="flex flex-col gap-4 px-4">
       <CabecalhoTela titulo="Registros" subtitulo="Toque num dia para ajustar os horários." />
+      {abaExtraDoPerfil(perfil) === "producao" && <AbasRegistro ativa="ponto" />}
 
       <nav aria-label="Período" className="cartao flex items-center justify-between gap-2 p-2">
         <button

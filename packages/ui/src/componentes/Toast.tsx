@@ -38,7 +38,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <Contexto.Provider value={{ mostrar }}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 print:hidden">
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 print:hidden">
         {atual && <Toast key={atual.id} {...atual} onFechar={() => setAtual(null)} />}
       </div>
     </Contexto.Provider>

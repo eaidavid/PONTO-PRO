@@ -69,3 +69,16 @@ test("ganhos explicados e contracheque em PDF", async ({ page }) => {
   await page.pdf({ path: "../../docs/prints/contracheque-estimado.pdf", format: "A4", printBackground: true });
   await page.emulateMedia({ media: "screen" });
 });
+
+test("menu Mais: tamanho compacto e atalhos", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.getByRole("button", { name: "Mais" }).click();
+  const menu = page.getByRole("dialog", { name: "Mais" });
+  await menu.getByRole("radio", { name: /Compacto/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-tamanho", "compacto");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-tamanho", "compacto");
+  await page.getByRole("button", { name: "Mais" }).click();
+  await page.getByRole("dialog", { name: "Mais" }).getByRole("link", { name: /Metas/ }).click();
+  await expect(page.getByRole("heading", { name: "Metas" })).toBeVisible();
+});

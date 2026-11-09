@@ -21,9 +21,9 @@ import {
   Banner,
   BarraProgresso,
   BotaoPonto,
+  cx,
   BotaoPrincipal,
   BottomSheet,
-  CartaoValor,
   EtapasDoDia,
   LinkPorQue,
   ListaExtrato,
@@ -117,7 +117,7 @@ export default function Hoje() {
 
   return (
     <main>
-      <section className="fundo-marca flex flex-col gap-1 px-5 pt-[max(20px,env(safe-area-inset-top))] pb-14">
+      <section className="fundo-marca flex flex-col gap-1 px-5 pt-[max(16px,env(safe-area-inset-top))] pb-12">
         <div className="flex items-center gap-3 pt-2">
           <span aria-hidden className="flex size-11 items-center justify-center rounded-full bg-white/14 text-20 font-bold">
             {(nome ?? "V")[0]!.toUpperCase()}
@@ -127,7 +127,7 @@ export default function Hoje() {
             <p className="truncate text-15 text-sobre-marca-2">{pessoal.empresa?.trim() || pessoal.cargo?.trim() || MODELOS[perfil.area].nome}</p>
           </div>
         </div>
-        <p className="display pt-6 text-relogio" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
+        <p className="display pt-4 text-relogio" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <p className="text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>
           <StatusSync estado="local" sobreMarca />
@@ -163,16 +163,32 @@ export default function Hoje() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <CartaoValor rotulo="Trabalhado" valor={formatarDuracao(dia.trabalhadoMin)} icone={Clock} />
-          <CartaoValor rotulo={marcacoes.saida ? "Saída" : "Saída prevista"} valor={saidaPrevista ?? "—"} icone={LogOut} />
-        </div>
-
-        <CartaoValor rotulo="Ganho hoje" valor={<ValorDinheiro centavos={r.bruto} tamanho="g" />} tom="primaria" icone={Wallet}>
-          <LinkPorQue onClick={() => setPorQue(true)} />
-        </CartaoValor>
-
         <BotaoPonto etapa={etapa} hora={agora.hora} offline={!online} carregando={salvando} erro={erro} som={preferencias.som} onBater={bater} />
+
+        <section aria-label="Resumo de hoje" className="cartao @container flex flex-col gap-1 px-4 pt-3 pb-1">
+          <dl className="grid grid-cols-1 divide-y divide-borda @[19rem]:grid-cols-3 @[19rem]:divide-x @[19rem]:divide-y-0">
+            {[
+              { rotulo: "Trabalhado", icone: Clock, valor: <span className="display text-24">{formatarDuracao(dia.trabalhadoMin)}</span> },
+              { rotulo: marcacoes.saida ? "Saída" : "Saída prevista", icone: LogOut, valor: <span className="display text-24">{saidaPrevista ?? "—"}</span> },
+              { rotulo: "Ganho hoje", icone: Wallet, valor: <ValorDinheiro centavos={r.bruto} className="text-primaria" /> },
+            ].map((x, i) => (
+              <div
+                key={x.rotulo}
+                className={cx(
+                  "flex items-center justify-between gap-2 py-2.5 @[19rem]:flex-col @[19rem]:items-start @[19rem]:justify-start @[19rem]:gap-1.5 @[19rem]:py-1",
+                  i === 0 ? "@[19rem]:pr-3" : "@[19rem]:px-3",
+                )}
+              >
+                <dt className="flex items-center gap-1.5 text-13 font-bold leading-tight text-texto-2">
+                  <x.icone aria-hidden className="size-4 shrink-0" />
+                  {x.rotulo}
+                </dt>
+                <dd className="leading-none">{x.valor}</dd>
+              </div>
+            ))}
+          </dl>
+          <LinkPorQue onClick={() => setPorQue(true)} className="text-15" />
+        </section>
 
         {usaProducao && (
           <Link

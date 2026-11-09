@@ -57,3 +57,23 @@ test.describe("prints", () => {
     }
   }
 });
+
+test.describe("prints compacto", () => {
+  test.skip(!process.env.PRINTS, "rode com PRINTS=1 para gerar as imagens");
+  test("claro 390px compacto", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.addInitScript(() => localStorage.setItem("pp-tamanho", "compacto"));
+    await preparar(page, "claro");
+    const pasta = "../../docs/prints/produto";
+    await fazerOnboarding(page);
+    await semearHistorico(page);
+    for (const tela of ["hoje", "registros", "producao"]) {
+      await page.goto(`/${tela}`);
+      await page.waitForLoadState("networkidle");
+      await page.screenshot({ path: `${pasta}/compacto-${tela}-390.png` });
+    }
+    await page.getByRole("button", { name: "Mais" }).click();
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: `${pasta}/compacto-menu-mais-390.png` });
+  });
+});

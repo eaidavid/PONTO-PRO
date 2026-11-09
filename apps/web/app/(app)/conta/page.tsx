@@ -29,18 +29,14 @@ import {
   Briefcase,
   CalendarClock,
   CalendarDays,
-  Contrast,
   Download,
   FileText,
-  Monitor,
-  Moon,
   Percent,
   Plus,
   RefreshCw,
   Save,
   Scale,
   ShieldCheck,
-  Sun,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -48,7 +44,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { apagarTudo, exportarDados, novoId, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
-import type { DadosPessoais, Tema } from "../../../lib/db";
+import type { DadosPessoais } from "../../../lib/db";
 import { useEstado } from "../../../lib/estado";
 import {
   almocoAtual,
@@ -64,6 +60,7 @@ import {
   valorPrincipal,
 } from "../../../lib/perfil";
 import { Carregando } from "../../carregando";
+import { PreferenciasVisuais } from "../preferencias-visuais";
 
 type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | null;
 
@@ -109,12 +106,6 @@ export default function Conta() {
   const mudar = (caminhos: string[], f: (x: PerfilTrabalho) => void) => setRascunho(editar(p, caminhos, f));
   const vp = valorPrincipal(perfil.pagamento);
   const sem = minutosDaSemana(p.escala);
-  const temas: { id: Tema; rotulo: string; icone: typeof Sun }[] = [
-    { id: "auto", rotulo: "Automático", icone: Monitor },
-    { id: "claro", rotulo: "Claro", icone: Sun },
-    { id: "escuro", rotulo: "Escuro", icone: Moon },
-    { id: "sol", rotulo: "Sol forte", icone: Contrast },
-  ];
   const valorOk = !vp || (lerReais(valorTxt) ?? 0) > 0;
 
   return (
@@ -170,15 +161,9 @@ export default function Conta() {
       </Grupo>
 
       <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-15 font-bold text-texto-2">Aparência</h2>
+        <h2 className="px-1 text-15 font-bold text-texto-2">Tamanho e aparência</h2>
         <div className="cartao flex flex-col gap-2 p-4">
-          <div role="group" aria-label="Aparência" className="grid grid-cols-2 gap-2">
-            {temas.map((t) => (
-              <Chip key={t.id} icone={t.icone} selecionado={preferencias.tema === t.id} onClick={() => salvarPreferencias({ ...preferencias, tema: t.id })}>
-                {t.rotulo}
-              </Chip>
-            ))}
-          </div>
+          <PreferenciasVisuais preferencias={preferencias} />
           <Interruptor rotulo="Som ao bater o ponto" descricao="Um bipe curto, além da vibração." valor={preferencias.som} onChange={(som) => salvarPreferencias({ ...preferencias, som })} />
         </div>
       </section>

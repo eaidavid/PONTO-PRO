@@ -30,6 +30,7 @@ import { Hammer, Save, Search, Tags, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
+import { AbasRegistro } from "../abas-registro";
 import { Carregando } from "../../carregando";
 
 export default function Producao() {
@@ -87,7 +88,7 @@ export default function Producao() {
   return (
     <main className="flex flex-col gap-4 px-4">
       <CabecalhoTela
-        titulo="Produção"
+        titulo="Registros"
         subtitulo={`Período ${rotuloPeriodo(periodo)}`}
         acao={
           <button type="button" onClick={() => setPrecos(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-15 font-bold text-primaria-forte active:bg-primaria-suave">
@@ -95,6 +96,8 @@ export default function Producao() {
           </button>
         }
       />
+
+      <AbasRegistro ativa="producao" />
 
       <section aria-label="Total do período" className="fundo-marca flex flex-col gap-1 rounded-[24px] p-5">
         <span className="text-15 font-bold text-sobre-marca-2">Produção no período</span>

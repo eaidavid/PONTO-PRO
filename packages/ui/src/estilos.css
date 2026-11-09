@@ -145,6 +145,12 @@
   --escala-fonte: 125%; /* 20px */
 }
 
+/* Tamanho da interface (texto, espaços e botões juntos). Sol forte soma um nível. */
+:root[data-tamanho="compacto"] { --escala-fonte: 93.75%; }
+:root[data-tamanho="grande"] { --escala-fonte: 118.75%; }
+:root[data-tema="sol"][data-tamanho="compacto"] { --escala-fonte: 112.5%; }
+:root[data-tema="sol"][data-tamanho="grande"] { --escala-fonte: 137.5%; }
+
 @theme inline {
   /* Texto: Atkinson Hyperlegible Next (feita para baixa visão). Números grandes e títulos: Bricolage Grotesque. */
   --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;

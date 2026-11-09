@@ -96,6 +96,7 @@ export async function apagarTudo() {
   await db.delete();
   try {
     localStorage.removeItem("pp-tema");
+    localStorage.removeItem("pp-tamanho");
   } catch {
     /* sem armazenamento */
   }
