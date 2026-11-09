@@ -66,6 +66,7 @@ import {
   pagamentoPara,
   valorPrincipal,
 } from "../../lib/perfil";
+import { MARCA } from "../../lib/marca";
 import { Carregando } from "../carregando";
 
 const AREAS: { id: Area; icone: LucideIcon; descricao: string }[] = [
@@ -184,7 +185,7 @@ export default function Comecar() {
                 <ChevronLeft aria-hidden className="size-6" /> Voltar
               </button>
             ) : (
-              <span className="text-17 font-bold text-primaria-forte">Ponto Pro</span>
+              <span className="text-17 font-bold text-primaria-forte">{MARCA.nome}</span>
             )}
             {p && (
               <button type="button" onClick={() => setPasso(5)} className="min-h-12 rounded-full px-3 text-17 font-bold text-texto-2 active:bg-superficie-2">
@@ -405,7 +406,7 @@ export default function Comecar() {
                 onClick={() => setPasso(3)}
               />
             </div>
-            <p className="text-13 text-texto-2">O Ponto Pro é controle pessoal, não é ponto eletrônico oficial. Seus dados ficam guardados neste celular.</p>
+            <p className="text-13 text-texto-2">O {MARCA.nome} é controle pessoal, não é ponto eletrônico oficial. Seus dados ficam guardados neste celular.</p>
             {erro && <Banner tom="erro" texto={erro} />}
           </>
         )}

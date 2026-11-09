@@ -41,6 +41,7 @@ import { Suspense, useMemo, useState } from "react";
 import { salvarConferencia } from "../../../lib/acoes";
 import type { ConferenciaSalva } from "../../../lib/db";
 import { type Estado, useAgora, useEstado, useHistoricoLongo } from "../../../lib/estado";
+import { MARCA } from "../../../lib/marca";
 import { Carregando } from "../../carregando";
 
 type Aba = "resumo" | "contracheque" | "periodos";
@@ -120,7 +121,7 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
       `Descontos: −${formatarReais(cc.totalDescontos)}`,
       `*Líquido: ${formatarReais(cc.liquido)}*`,
       "",
-      `_${cc.rodape} · Ponto Pro_`,
+      `_${cc.rodape} · ${MARCA.nome}_`,
     ];
     window.open(`https://wa.me/?text=${encodeURIComponent(linhas.join("\n"))}`, "_blank", "noopener");
   }

@@ -12,7 +12,7 @@ import {
   simularMeta,
   valorProducao,
 } from "@ponto-pro/core";
-import { Banner, CabecalhoTela, Chip, Contador } from "@ponto-pro/ui";
+import { Banner, BottomSheet, CabecalhoTela, Chip, Contador, TituloSecao } from "@ponto-pro/ui";
 import { CalendarDays, Clock, Hammer, Moon, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAgora, useEstado } from "../../../lib/estado";
@@ -30,6 +30,7 @@ export default function Metas() {
   const agora = useAgora();
   const [alvo, setAlvo] = useState<number | null>(null);
   const [itemId, setItemId] = useState<string | null>(null);
+  const [trocar, setTrocar] = useState(false);
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
@@ -70,48 +71,55 @@ export default function Metas() {
       </section>
 
       <section aria-live="polite" className="fundo-marca rounded-[24px] p-5">
-        <p className="display text-32 leading-tight">{r.frase}</p>
+        <p className="display text-24 leading-snug">{r.frase}</p>
       </section>
 
       {r.observacao && <Banner tom="info" texto={r.observacao} />}
 
-      {usaProducao && favoritos.length > 0 && r.faltaLiquido > 0 && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-17 font-bold">Com qual serviço?</h2>
-          <div role="group" aria-label="Serviço para a meta" className="flex flex-wrap gap-2">
-            {favoritos.map((i) => (
-              <Chip key={i.id} selecionado={item?.id === i.id} onClick={() => setItemId(i.id)}>
-                {i.nome}
-              </Chip>
-            ))}
-          </div>
-        </section>
-      )}
-
       {r.opcoes.length > 0 && (
         <section aria-labelledby="opcoes" className="flex flex-col gap-2 pb-2">
-          <h2 id="opcoes" className="display text-24">Jeitos de chegar lá</h2>
-          <ul className="flex flex-col gap-3">
+          <TituloSecao id="opcoes">Jeitos de chegar lá</TituloSecao>
+          <ul className="cartao divide-y divide-borda overflow-hidden">
             {r.opcoes.map((o) => {
               const Icone = ICONES[o.tipo];
               return (
-                <li key={o.tipo} className="cartao flex items-center gap-4 p-4">
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-extra-suave text-extra-texto">
-                    <Icone aria-hidden className="size-6" />
-                  </span>
+                <li key={o.tipo} className="flex min-h-16 items-center gap-3 px-4 py-3">
+                  <Icone aria-hidden className="size-5 shrink-0 text-extra-texto" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-20 font-bold first-letter:uppercase">{o.texto}</span>
+                    <span className="block text-17 font-bold first-letter:uppercase">{o.texto}</span>
                     <span className="numeros block text-15 text-texto-2">
                       cada {o.tipo === "producao" && item ? rotuloUnidade(item.unidade) : o.tipo === "horas-extras" ? "hora" : o.tipo === "sabados" ? "sábado" : "folga"} rende {formatarReais(o.valorCada)}
                     </span>
                   </span>
+                  {o.tipo === "producao" && favoritos.length > 1 && (
+                    <button type="button" onClick={() => setTrocar(true)} className="min-h-12 shrink-0 rounded-full px-3 text-15 font-bold text-primaria-forte underline underline-offset-4">
+                      Trocar serviço
+                    </button>
+                  )}
                 </li>
               );
             })}
           </ul>
-          <p className="text-13 text-texto-2">Valores antes dos descontos. A conta já considera os descontos que você cadastrou.</p>
+          <p className="px-1 text-13 text-texto-2">Valores antes dos descontos. A conta já considera os descontos que você cadastrou.</p>
         </section>
       )}
+
+      <BottomSheet aberto={trocar} onFechar={() => setTrocar(false)} titulo="Com qual serviço?">
+        <div className="flex flex-wrap gap-2 pb-4">
+          {favoritos.map((i) => (
+            <Chip
+              key={i.id}
+              selecionado={item?.id === i.id}
+              onClick={() => {
+                setItemId(i.id);
+                setTrocar(false);
+              }}
+            >
+              {i.nome}
+            </Chip>
+          ))}
+        </div>
+      </BottomSheet>
     </main>
   );
 }

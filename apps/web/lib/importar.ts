@@ -8,6 +8,7 @@ import {
   PerfilTrabalho,
 } from "@ponto-pro/core";
 import { agoraIso } from "./acoes";
+import { FORMATO_BACKUP, MARCA } from "./marca";
 import { db } from "./db";
 
 /*
@@ -27,9 +28,9 @@ export async function importarDados(texto: string): Promise<ResultadoImportacao>
   try {
     dados = JSON.parse(texto);
   } catch {
-    throw new Error("O arquivo não é um backup do Ponto Pro.");
+    throw new Error(`O arquivo não é um backup do ${MARCA.nome}.`);
   }
-  if (dados.app !== "Ponto Pro") throw new Error("O arquivo não é um backup do Ponto Pro.");
+  if (dados.app !== FORMATO_BACKUP) throw new Error(`O arquivo não é um backup do ${MARCA.nome}.`);
   const cfgPerfil = dados.config?.find((c) => c.chave === "perfil");
   const perfil = PerfilTrabalho.safeParse(cfgPerfil?.valor);
   if (!perfil.success) throw new Error("O backup não tem um perfil de trabalho válido.");

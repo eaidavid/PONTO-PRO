@@ -3,13 +3,14 @@ import "@fontsource-variable/bricolage-grotesque/index.css";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { MARCA } from "../lib/marca";
 import { Provedores } from "./provedores";
 
 export const metadata: Metadata = {
-  title: { default: "Ponto Pro", template: "%s · Ponto Pro" },
-  description: "Bata o ponto, veja quanto vai receber e quanto falta.",
-  applicationName: "Ponto Pro",
-  appleWebApp: { capable: true, title: "Ponto Pro", statusBarStyle: "black-translucent" },
+  title: { default: MARCA.nome, template: `%s · ${MARCA.nome}` },
+  description: MARCA.descricao,
+  applicationName: MARCA.nome,
+  appleWebApp: { capable: true, title: MARCA.nome, statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
 };
 

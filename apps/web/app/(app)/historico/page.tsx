@@ -35,26 +35,22 @@ import {
   Chip,
   EstadoVazio,
   LinhaRegistro,
-  ResumoNumeros,
   TituloSecao,
   useToast,
   ValorDinheiro,
 } from "@ponto-pro/ui";
 import {
-  CalendarRange,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
-  Clock,
   Download,
   Hammer,
   PackagePlus,
   Search,
   SearchX,
+  SlidersHorizontal,
   Trash2,
-  TrendingDown,
-  TrendingUp,
   TriangleAlert,
   Wand2,
   X,
@@ -86,6 +82,7 @@ function Historico() {
   const params = useSearchParams();
   const { mostrar } = useToast();
   const [periodos, setPeriodos] = useState(false);
+  const [filtros, setFiltros] = useState(false);
 
   // estado da tela fica na URL: Voltar e links mantêm o que a pessoa filtrou
   const aba = (params.get("aba") as Aba) || "ponto";
@@ -239,27 +236,43 @@ function Historico() {
         </button>
       </nav>
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Filtros">
-        {aba === "ponto"
-          ? FILTROS_DIA.map((f) => (
-              <Chip key={f.id} className="shrink-0" selecionado={filtro === f.id} onClick={() => definir({ f: f.id === "todos" ? null : f.id })}>
-                {f.rotulo}
-              </Chip>
-            ))
-          : [null, ...categoriasDe(lancs.map((l) => porItem.get(l.itemId)).filter((i) => !!i) as typeof itens)].map((c) => (
-              <Chip key={c ?? "todas"} className="shrink-0" selecionado={(area ?? null) === c} onClick={() => definir({ cat: c })}>
-                {c ?? "Todas"}
-              </Chip>
+      {(() => {
+        const nomesFiltro = new Map(FILTROS_DIA.map((f) => [f.id, f.rotulo]));
+        const ativos: { rotulo: string; limpar: () => void }[] = [];
+        if (aba === "ponto" && filtro !== "todos") ativos.push({ rotulo: nomesFiltro.get(filtro) ?? filtro, limpar: () => definir({ f: null }) });
+        if (aba === "producao" && area) ativos.push({ rotulo: area, limpar: () => definir({ cat: null }) });
+        if (obraId) ativos.push({ rotulo: nomeObra.get(obraId) ?? "Obra", limpar: () => definir({ obra: null }) });
+        return (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFiltros(true)}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2"
+            >
+              <SlidersHorizontal aria-hidden className="size-4" /> Filtrar
+              {ativos.length > 0 && <span className="rounded-full bg-primaria px-2 text-13 text-sobre-primaria">{ativos.length}</span>}
+            </button>
+            {ativos.map((a) => (
+              <button
+                key={a.rotulo}
+                type="button"
+                onClick={a.limpar}
+                aria-label={`Tirar o filtro ${a.rotulo}`}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primaria-suave px-4 text-15 font-bold text-primaria-forte"
+              >
+                {a.rotulo} <X aria-hidden className="size-4" />
+              </button>
             ))}
-      </div>
+          </div>
+        );
+      })()}
 
-      {obrasAtivas.length > 0 && (
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Obra">
-          <Chip className="shrink-0" selecionado={!obraId} onClick={() => definir({ obra: null })}>Todas as obras</Chip>
-          {obrasAtivas.map((o) => (
-            <Chip key={o.id} className="shrink-0" selecionado={obraId === o.id} onClick={() => definir({ obra: o.id })}>{o.nome}</Chip>
-          ))}
-        </div>
+      {aba === "ponto" && (
+        <p className="numeros px-1 text-15 text-texto-2">
+          <b className="text-texto">{formatarDuracao(r.horas.trabalhadoMin)}</b> trabalhadas
+          {r.horas.extraMin > 0 && <> · <b className="text-extra-texto">+{formatarDuracao(r.horas.extraMin)}</b> extra</>}
+          {r.horas.deficitMin > 0 && <> · <b className="text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</b> de falta</>}
+        </p>
       )}
 
       {aba === "ponto" ? (
@@ -287,15 +300,6 @@ function Historico() {
                 )}
               </section>
             ))}
-
-          <ResumoNumeros
-            rotulo="Resumo do período"
-            itens={[
-              { rotulo: "Trabalhado", icone: Clock, valor: <span className="display text-24">{formatarDuracao(r.horas.trabalhadoMin)}</span> },
-              { rotulo: "Hora extra", icone: TrendingUp, valor: <span className="display text-24">{r.horas.extraMin ? `+${formatarDuracao(r.horas.extraMin)}` : "0h"}</span>, tom: r.horas.extraMin ? "extra" : "normal" },
-              { rotulo: "Faltas e atrasos", icone: TrendingDown, valor: <span className="display text-24">{r.horas.deficitMin ? `−${formatarDuracao(r.horas.deficitMin)}` : "0h"}</span>, tom: r.horas.deficitMin ? "erro" : "normal" },
-            ]}
-          />
 
           {semanas.length === 0 ? (
             <EstadoVazio icone={SearchX} frase="Nada encontrado com esse filtro" acao={{ rotulo: "Limpar filtros", onClick: () => { setTexto(""); definir({ f: null, q: null, obra: null }); } }} />
@@ -329,6 +333,7 @@ function Historico() {
                           hoje={d.data === agora.data}
                           emAndamento={d.emAndamento}
                           fimDeSemana={[0, 6].includes(diaDaSemana(d.data))}
+                          folgaDaEscala={!d.registrado && !d.escala.trabalha}
                           nota={reg?.observacao}
                           obra={reg?.obraId ? nomeObra.get(reg.obraId) : undefined}
                           onClick={() => definir({ editar: d.data })}
@@ -343,14 +348,9 @@ function Historico() {
         </>
       ) : (
         <>
-          <ResumoNumeros
-            rotulo="Produção do período"
-            itens={[
-              { rotulo: "Total", icone: Hammer, valor: <ValorDinheiro centavos={totalProducao} />, tom: "primaria" },
-              { rotulo: "Lançamentos", icone: PackagePlus, valor: <span className="display text-24">{lancsFiltrados.length}</span> },
-              { rotulo: "Áreas", icone: CalendarRange, valor: <span className="display text-24">{totaisPorArea(itens, lancsFiltrados).length}</span> },
-            ]}
-          />
+          <p className="numeros px-1 text-15 text-texto-2">
+            <b className="text-texto">{formatarReais(totalProducao)}</b> em {lancsFiltrados.length} {lancsFiltrados.length === 1 ? "lançamento" : "lançamentos"}
+          </p>
           <Link
             href="/producao"
             className="sombra-botao inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria"
@@ -401,6 +401,43 @@ function Historico() {
           )}
         </>
       )}
+
+      <BottomSheet
+        aberto={filtros}
+        onFechar={() => setFiltros(false)}
+        titulo="Filtrar"
+        rodape={<BotaoPrincipal tamanho="g" onClick={() => setFiltros(false)}>Ver resultados</BotaoPrincipal>}
+      >
+        <div className="flex flex-col gap-5 pb-2">
+          <div className="flex flex-col gap-2">
+            <TituloSecao>{aba === "ponto" ? "Mostrar" : "Categoria"}</TituloSecao>
+            <div className="flex flex-wrap gap-2">
+              {aba === "ponto"
+                ? FILTROS_DIA.map((f) => (
+                    <Chip key={f.id} selecionado={filtro === f.id} onClick={() => definir({ f: f.id === "todos" ? null : f.id })}>
+                      {f.rotulo}
+                    </Chip>
+                  ))
+                : [null, ...categoriasDe(lancs.map((l) => porItem.get(l.itemId)).filter((i) => !!i) as typeof itens)].map((c) => (
+                    <Chip key={c ?? "todas"} selecionado={(area ?? null) === c} onClick={() => definir({ cat: c })}>
+                      {c ?? "Todas"}
+                    </Chip>
+                  ))}
+            </div>
+          </div>
+          {obrasAtivas.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <TituloSecao>Obra</TituloSecao>
+              <div className="flex flex-wrap gap-2">
+                <Chip selecionado={!obraId} onClick={() => definir({ obra: null })}>Todas</Chip>
+                {obrasAtivas.map((o) => (
+                  <Chip key={o.id} selecionado={obraId === o.id} onClick={() => definir({ obra: o.id })}>{o.nome}</Chip>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </BottomSheet>
 
       <EditorDia
         data={editar}

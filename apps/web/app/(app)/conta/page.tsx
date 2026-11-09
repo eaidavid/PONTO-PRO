@@ -62,6 +62,7 @@ import {
   pagamentoPara,
   valorPrincipal,
 } from "../../../lib/perfil";
+import { MARCA } from "../../../lib/marca";
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
 
@@ -236,7 +237,7 @@ export default function Conta() {
 
       <p className="flex gap-2 px-1 text-13 text-texto-2">
         <FileText aria-hidden className="size-4 shrink-0" />
-        O Ponto Pro é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
+        O {MARCA.nome} é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
       </p>
 
       {/* ---------- painéis ---------- */}

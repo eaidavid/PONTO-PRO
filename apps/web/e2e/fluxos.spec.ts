@@ -153,11 +153,14 @@ test("histórico: filtros e busca ficam no endereço; lista de períodos", async
   await fazerOnboarding(page);
   await semearHistorico(page);
   await page.goto("/historico");
-  await page.getByRole("button", { name: "Faltas", exact: true }).click();
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  const filtrar = page.getByRole("dialog", { name: "Filtrar" });
+  await filtrar.getByRole("button", { name: "Faltas", exact: true }).click();
+  await filtrar.getByRole("button", { name: "Ver resultados" }).click();
   await expect(page).toHaveURL(/f=faltas/);
   await expect(page.getByRole("button", { name: /^qua 28/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /^qui 29/ })).toHaveCount(0);
-  await page.getByRole("button", { name: "Todos", exact: true }).click();
+  await page.getByRole("button", { name: "Tirar o filtro Faltas" }).click();
   await page.getByRole("searchbox").fill("04/11");
   await expect(page).toHaveURL(/q=04%2F11/);
   await expect(page.getByRole("button", { name: /^qua 04/ })).toBeVisible();
@@ -198,8 +201,11 @@ test("obras: criar, escolher na Hoje e filtrar o histórico", async ({ page }) =
   await page.getByRole("button", { name: /^Obra/ }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Casa da Ana" }).click();
   await page.getByRole("button", { name: "Bater entrada às 09:41" }).click();
+  await expect(page.getByText("Entrada às 09:41")).toBeVisible(); // espera gravar antes de sair da tela
   await page.goto("/historico");
-  await page.getByRole("button", { name: "Casa da Ana", exact: true }).click();
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  await page.getByRole("dialog", { name: "Filtrar" }).getByRole("button", { name: "Casa da Ana", exact: true }).click();
+  await page.getByRole("button", { name: "Ver resultados" }).click();
   await expect(page.getByRole("button", { name: /hoje 09/ })).toBeVisible();
 });
 

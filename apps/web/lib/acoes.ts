@@ -1,4 +1,5 @@
 import type { DiaRegistro, Etapa, Feriado, ItemProducao, LancamentoProducao, Marcacoes, Obra, PerfilTrabalho } from "@ponto-pro/core";
+import { FORMATO_BACKUP } from "./marca";
 import { type ConferenciaSalva, type DadosPessoais, db, type Preferencias } from "./db";
 
 export const agoraIso = () => new Date().toISOString();
@@ -136,7 +137,7 @@ export async function exportarDados(): Promise<Blob> {
     db.itens.toArray(),
     db.lancamentos.toArray(),
   ]);
-  const json = JSON.stringify({ app: "Ponto Pro", exportadoEm: agoraIso(), config, registros, itens, lancamentos }, null, 2);
+  const json = JSON.stringify({ app: FORMATO_BACKUP, exportadoEm: agoraIso(), config, registros, itens, lancamentos }, null, 2);
   return new Blob([json], { type: "application/json" });
 }
 

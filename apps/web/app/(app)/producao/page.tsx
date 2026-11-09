@@ -13,6 +13,7 @@ import {
   valorProducao,
 } from "@ponto-pro/core";
 import {
+  Abas,
   BotaoPrincipal,
   BottomSheet,
   BuscaServico,
@@ -22,7 +23,7 @@ import {
   TituloSecao,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronLeft, RotateCcw, Save, Search, Star, Tags, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, HardHat, RotateCcw, Save, Search, Star, Tags, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
@@ -39,6 +40,7 @@ export default function LancarProducao() {
   const [area, setArea] = useState<string | null>(null);
   const [repetir, setRepetir] = useState<ItemProducao | null>(null);
   const [precos, setPrecos] = useState(false);
+  const [escolherObra, setEscolherObra] = useState(false);
   const [filtro, setFiltro] = useState("");
   const [editandoItem, setEditandoItem] = useState<ItemProducao | null>(null);
   const [precoTxt, setPrecoTxt] = useState("");
@@ -106,26 +108,28 @@ export default function LancarProducao() {
         <p className="numeros text-15 text-texto-2">No período: {formatarReais(total)}</p>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <TituloSecao>Dia do serviço</TituloSecao>
-        <div role="group" aria-label="Dia do serviço" className="flex gap-2">
-          <Chip selecionado={quando === 0} onClick={() => setQuando(0)}>Hoje</Chip>
-          <Chip selecionado={quando === -1} onClick={() => setQuando(-1)}>Ontem</Chip>
-          <Chip selecionado={quando === -2} onClick={() => setQuando(-2)}>Anteontem</Chip>
-        </div>
-      </div>
+      <Abas
+        rotulo="Dia do serviço"
+        valor={String(quando) as "0" | "-1" | "-2"}
+        onChange={(v) => setQuando(Number(v) as 0 | -1 | -2)}
+        opcoes={[
+          { id: "0", rotulo: "Hoje" },
+          { id: "-1", rotulo: "Ontem" },
+          { id: "-2", rotulo: "Anteontem" },
+        ]}
+      />
 
       {obrasAtivas.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <TituloSecao>Obra</TituloSecao>
-          <div role="group" aria-label="Obra" className="flex flex-wrap gap-2">
-            {obrasAtivas.map((o) => (
-              <Chip key={o.id} selecionado={obraAtual === o.id} onClick={() => salvarPreferencias({ ...preferencias, obraAtual: obraAtual === o.id ? undefined : o.id })}>
-                {o.nome}
-              </Chip>
-            ))}
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setEscolherObra(true)}
+          className="cartao flex min-h-14 items-center gap-3 px-4 text-left active:bg-superficie-2"
+        >
+          <HardHat aria-hidden className="size-5 text-texto-2" />
+          <span className="flex-1 text-17 font-bold">Obra</span>
+          <span className="text-15 text-texto-2">{obrasAtivas.find((o) => o.id === obraAtual)?.nome ?? "Nenhuma"}</span>
+          <ChevronRight aria-hidden className="size-5 text-texto-2" />
+        </button>
       )}
 
       {atalhos.length > 0 && !repetir && (
@@ -142,7 +146,7 @@ export default function LancarProducao() {
       )}
 
       <div className="flex flex-col gap-2">
-        <TituloSecao>Categorias</TituloSecao>
+        <TituloSecao>Escolher o serviço</TituloSecao>
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Categorias">
           {[null, ...categoriasDe(itens)].map((c) => (
             <Chip key={c ?? "todas"} className="shrink-0" selecionado={area === c} onClick={() => { setArea(c); setChave((k) => k + 1); }}>
@@ -152,9 +156,20 @@ export default function LancarProducao() {
         </div>
       </div>
 
-      <section aria-label="Escolher serviço" className="pb-4">
+      <section aria-label="Escolher serviço" className="-mt-2 pb-4">
         <BuscaServico key={chave} itens={visiveis} onLancar={lancar} itemInicial={repetir} onFavoritar={favoritar} />
       </section>
+
+      <BottomSheet aberto={escolherObra} onFechar={() => setEscolherObra(false)} titulo="Obra do lançamento">
+        <div className="flex flex-wrap gap-2 pb-4">
+          <Chip selecionado={!obraAtual} onClick={async () => { await salvarPreferencias({ ...preferencias, obraAtual: undefined }); setEscolherObra(false); }}>Nenhuma</Chip>
+          {obrasAtivas.map((o) => (
+            <Chip key={o.id} selecionado={obraAtual === o.id} onClick={async () => { await salvarPreferencias({ ...preferencias, obraAtual: o.id }); setEscolherObra(false); }}>
+              {o.nome}
+            </Chip>
+          ))}
+        </div>
+      </BottomSheet>
 
       <BottomSheet aberto={precos && !editandoItem} onFechar={() => setPrecos(false)} titulo="Preços e serviços" subtitulo="Toque num serviço para mudar o preço.">
         <div className="flex flex-col gap-3 pb-2">

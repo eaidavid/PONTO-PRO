@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { MARCA } from "../lib/marca";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ponto Pro",
-    short_name: "Ponto Pro",
-    description: "Bata o ponto, veja quanto vai receber e quanto falta.",
+    name: MARCA.nome,
+    short_name: MARCA.nome,
+    description: MARCA.descricao,
     lang: "pt-BR",
     start_url: "/hoje",
     scope: "/",
