@@ -1,0 +1,19 @@
+{
+  "name": "ponto-pro",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "coverage": "pnpm --filter @ponto-pro/core coverage",
+    "e2e": "pnpm --filter @ponto-pro/web e2e"
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "typescript": "6.0.3"
+  }
+}
