@@ -56,3 +56,10 @@ Animações de 150 a 250ms (check, painel subindo, toast). Com "reduzir moviment
 - **Valores como nos bancos:** "R$" e centavos menores que os reais. O leitor de tela lê o valor inteiro ("R$ 5.124,44").
 - **Profundidade:** cartões com borda fininha e sombra em camadas, ícones em círculos coloridos e botão de ponto com sombra verde e brilho leve no topo. A barra inferior é translúcida.
 - **Sol forte:** sombras e brilhos desligam, e entram bordas pretas de 2px. A aparência premium nunca vale mais que a leitura no sol.
+
+## 11. Identidade própria (guia "Prompting for frontend aesthetics", Claude Cookbooks)
+O guia pede para fugir do visual genérico de IA. Apliquei os quatro eixos dele, respeitando o brief:
+- **Tipografia em par contrastante:** Bricolage Grotesque 800 para números grandes e títulos, e Atkinson Hyperlegible Next 400 no texto. O texto continua com a fonte feita para baixa visão. O relógio da Hoje tem cerca de 88px, um salto de 6x em relação aos rótulos de 15px.
+- **Tema tirado do contexto (canteiro de obra):** grade de planta baixa no topo verde, que some nas bordas; faixa de segurança laranja e transparente marcando hora extra (cartão, saldo na lista e excedente da barra); régua de fita métrica sob a barra da jornada, com um traço por hora. Uma cor dominante (verde profundo) e um acento afiado (laranja, só onde significa hora extra).
+- **Movimento orquestrado:** em vez de efeitos espalhados, uma entrada única por tela, com os blocos aparecendo em sequência (60ms entre cada). Desliga com "reduzir movimento".
+- **Fundo com profundidade:** luz no canto mais a grade, sem gradiente chamativo. No Sol forte, grade, brilho e sombras desligam.

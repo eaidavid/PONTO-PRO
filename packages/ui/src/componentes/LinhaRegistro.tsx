@@ -53,7 +53,8 @@ export function LinhaRegistro({ data, marcacoes = {}, tipo = "normal", trabalhad
         ) : (
           <>
             <span className="text-17 font-bold">{trabalhadoMin > 0 ? formatarDuracao(trabalhadoMin) : "–"}</span>
-            <span className={cx("text-15 font-bold", cor)}>
+            <span className={cx("inline-flex items-center gap-1.5 text-15 font-bold", cor)}>
+              {saldoMin > 0 && <span aria-hidden className="faixa-seguranca size-3 rounded-[3px] ring-1 ring-extra" />}
               {saldoMin === 0 ? "0h" : formatarDuracao(saldoMin, { sinal: true })}
               <span className="sr-only">{saldoMin > 0 ? " de hora extra" : saldoMin < 0 ? " faltando" : " de saldo"}</span>
             </span>

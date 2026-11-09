@@ -146,7 +146,9 @@
 }
 
 @theme inline {
-  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  /* Texto: Atkinson Hyperlegible Next (feita para baixa visão). Números grandes e títulos: Bricolage Grotesque. */
+  --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
 
   --color-fundo: var(--fundo);
   --color-superficie: var(--superficie);
@@ -190,6 +192,9 @@
   --text-44--line-height: 1.05;
   --text-56: 3.2941rem;
   --text-56--line-height: 1;
+  /* relógio da tela Hoje: salto de tamanho grande em relação aos rótulos */
+  --text-relogio: clamp(4.2rem, 23vw, 5.6rem);
+  --text-relogio--line-height: 0.9;
 
   --radius-cartao: 16px;
   --radius-painel: 28px;
@@ -211,7 +216,7 @@
   to { transform: translateY(0); }
 }
 @keyframes entrar {
-  from { transform: translateY(8px); opacity: 0; }
+  from { transform: translateY(12px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 @keyframes desenhar {
@@ -255,12 +260,51 @@
     border-radius: 16px;
     box-shadow: var(--sombra);
   }
-  /* fundo de marca com luz suave no canto (não é gradiente chamativo) */
+  /* fundo de marca: verde profundo, luz suave no canto e grade de planta baixa que some nas bordas */
   .fundo-marca {
+    position: relative;
+    isolation: isolate;
     background-color: var(--marca);
     background-image: radial-gradient(120% 90% at 100% 0%, var(--marca-brilho) 0%, transparent 60%);
     color: var(--sobre-marca);
   }
+  .fundo-marca::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-position: -1px -1px;
+    mask-image: radial-gradient(90% 80% at 85% 10%, #000 0%, transparent 75%);
+  }
+  :root[data-tema="sol"] .fundo-marca::before,
+  :root[data-tema="sol"] .brilho-botao { display: none; }
+
+  /* fonte de exibição: números grandes e títulos */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* faixa de segurança (laranja e transparente): marca hora extra */
+  .faixa-seguranca {
+    background-image: repeating-linear-gradient(-45deg, var(--extra) 0 7px, transparent 7px 14px);
+  }
+
+  /* entrada orquestrada: os filhos aparecem em sequência (desliga com "reduzir movimento") */
+  .entrada-escalonada > * { animation: entrar 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .entrada-escalonada > :nth-child(2) { animation-delay: 60ms; }
+  .entrada-escalonada > :nth-child(3) { animation-delay: 120ms; }
+  .entrada-escalonada > :nth-child(4) { animation-delay: 180ms; }
+  .entrada-escalonada > :nth-child(5) { animation-delay: 240ms; }
+  .entrada-escalonada > :nth-child(6) { animation-delay: 300ms; }
+  .entrada-escalonada > :nth-child(n + 7) { animation-delay: 360ms; }
   .sombra-botao { box-shadow: var(--sombra-botao); }
   .check-traco { stroke-dasharray: 24; animation: desenhar 300ms 80ms ease-out both; }
   .barra-tempo { transform-origin: left; animation: encolher linear forwards; }

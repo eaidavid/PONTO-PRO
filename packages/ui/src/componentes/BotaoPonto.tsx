@@ -79,7 +79,7 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, som, onBate
         )}
       >
         {!encerrado && (
-          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/14 to-transparent" />
+          <span aria-hidden className="brilho-botao pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/14 to-transparent" />
         )}
         <span aria-hidden className={cx("relative flex size-11 shrink-0 items-center justify-center rounded-full", encerrado ? "bg-superficie" : "bg-white/16")}>
         {carregando ? (

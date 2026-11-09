@@ -20,7 +20,7 @@ export function EstadoVazio({ icone: Icone, frase, acao }: EstadoVazioProps) {
       <span className="-mt-[92px] mb-6 flex size-12 items-center justify-center text-primaria">
         <Icone aria-hidden className="size-10" strokeWidth={2} />
       </span>
-      <p className="text-20 font-bold text-texto">{frase}</p>
+      <p className="display text-24 text-texto">{frase}</p>
       {acao && (
         <BotaoPrincipal icone={acao.icone} onClick={acao.onClick}>
           {acao.rotulo}

@@ -35,7 +35,8 @@ const FUNDO_ICONE = {
 /** Cartão com ícone, rótulo, número grande e uma linha de detalhe. */
 export function CartaoValor({ rotulo, valor, detalhe, tom = "normal", tamanho = "m", icone: Icone, carregando, children, className }: CartaoValorProps) {
   return (
-    <div className={cx("cartao flex flex-col gap-2 p-4", className)}>
+    <div className={cx("cartao relative flex flex-col gap-2 overflow-hidden p-4", className)}>
+      {tom === "extra" && <span aria-hidden className="faixa-seguranca absolute inset-x-0 top-0 h-1.5" />}
       <span className="flex flex-col items-start gap-2 text-15 font-bold text-texto-2">
         {Icone && (
           <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", FUNDO_ICONE[tom])}>
@@ -47,7 +48,7 @@ export function CartaoValor({ rotulo, valor, detalhe, tom = "normal", tamanho = 
       {carregando ? (
         <Skeleton className={tamanho === "g" ? "h-12 w-48" : "h-8 w-24"} />
       ) : (
-        <span className={cx("numeros font-bold leading-none tracking-tight", tamanho === "g" ? "text-44" : "text-32", COR[tom])}>{valor}</span>
+        <span className={cx("display leading-none", tamanho === "g" ? "text-44" : "text-32", COR[tom])}>{valor}</span>
       )}
       {detalhe && <span className={cx("text-15", tom === "extra" ? "text-extra-texto" : "text-texto-2")}>{detalhe}</span>}
       {children}

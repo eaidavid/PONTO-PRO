@@ -1,5 +1,5 @@
-import "@fontsource/atkinson-hyperlegible/400.css";
-import "@fontsource/atkinson-hyperlegible/700.css";
+import "@fontsource-variable/atkinson-hyperlegible-next/index.css";
+import "@fontsource-variable/bricolage-grotesque/index.css";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";

@@ -70,6 +70,7 @@ test.describe("prints", () => {
         await page.setViewportSize({ width: largura, height: 900 });
         await abrir(page, tema);
         await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(700); // termina a entrada escalonada
         // a barra fixa do rodapé cobre os recortes das seções
         await page.addStyleTag({ content: 'body > * nav[aria-label="Principal"].fixed{display:none}' });
         const pasta = "../../docs/prints/m1";

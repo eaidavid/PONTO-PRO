@@ -18,12 +18,12 @@ const TAM = {
 export function ValorDinheiro({ centavos, tamanho = "m", className }: ValorDinheiroProps) {
   const txt = formatarReais(centavos);
   const m = /^(−?)R\$ ([\d.]+),(\d{2})$/.exec(txt);
-  if (!m) return <span className={cx("numeros font-bold", TAM[tamanho], className)}>{txt}</span>;
+  if (!m) return <span className={cx("display", TAM[tamanho], className)}>{txt}</span>;
   const [, sinal, reais, cent] = m;
   return (
-    <span className={cx("numeros inline-flex items-baseline whitespace-nowrap font-bold leading-none tracking-tight", TAM[tamanho], className)}>
+    <span className={cx("display inline-flex items-baseline whitespace-nowrap leading-none", TAM[tamanho], className)}>
       <span className="sr-only">{txt}</span>
-      <span aria-hidden className="mr-[0.18em] self-start pt-[0.12em] text-[0.42em] font-bold">{sinal}R$</span>
+      <span aria-hidden className="mr-[0.18em] self-start pt-[0.12em] text-[0.4em] font-semibold tracking-normal">{sinal}R$</span>
       <span aria-hidden>{reais}</span>
       <span aria-hidden className="text-[0.55em]">,{cent}</span>
     </span>

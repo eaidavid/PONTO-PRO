@@ -56,7 +56,7 @@ function Secao({ id, titulo, descricao, children }: { id: string; titulo: string
   return (
     <section id={id} aria-labelledby={`${id}-t`} className="flex flex-col gap-4 border-t-[length:var(--borda-largura)] border-borda py-8">
       <div>
-        <h2 id={`${id}-t`} className="text-24 font-bold">{titulo}</h2>
+        <h2 id={`${id}-t`} className="display text-32">{titulo}</h2>
         {descricao && <p className="text-15 text-texto-2">{descricao}</p>}
       </div>
       {children}
@@ -138,13 +138,13 @@ function TelaHoje({ marcacoes, onBater, offline }: { marcacoes: DiaRegistro["mar
             <p className="text-15 text-sobre-marca-2">Obra Jardim</p>
           </div>
         </div>
-        <p className="numeros pt-5 text-[min(var(--text-56)*1.15,19vw)] leading-none font-bold tracking-tight">{AGORA.hora}</p>
+        <p className="display pt-6 text-relogio">{AGORA.hora}</p>
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <p className="text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(HOJE)}</p>
           <StatusSync estado={offline ? "local" : "sincronizado"} sobreMarca />
         </div>
       </div>
-      <div className="-mt-8 flex flex-col gap-4 rounded-t-painel bg-fundo px-4 pt-4 pb-6">
+      <div className="entrada-escalonada relative -mt-8 flex flex-col gap-4 rounded-t-painel bg-fundo px-4 pt-4 pb-6">
         <div className="cartao flex flex-col gap-4 p-4">
           <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />
           <div className="flex flex-col gap-1.5">
@@ -152,7 +152,7 @@ function TelaHoje({ marcacoes, onBater, offline }: { marcacoes: DiaRegistro["mar
               <span className="font-bold text-texto-2">Jornada</span>
               <span className="numeros font-bold">{formatarDuracao(dia.trabalhadoMin)} de {formatarDuracao(dia.escala.horasLiquidasMin)}</span>
             </div>
-            <BarraProgresso valor={dia.trabalhadoMin / dia.escala.horasLiquidasMin} rotulo="Jornada de hoje" />
+            <BarraProgresso valor={dia.trabalhadoMin / dia.escala.horasLiquidasMin} rotulo="Jornada de hoje" marcas={dia.escala.horasLiquidasMin / 60} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -198,7 +198,7 @@ export function Vitrine() {
       <header className="flex flex-col gap-4 py-6">
         <div className="fundo-marca flex flex-col gap-2 rounded-[24px] p-5">
           <p className="text-15 font-bold text-marca-destaque">Ponto Pro · Milestone 1</p>
-          <h1 className="text-32 font-bold">Design system</h1>
+          <h1 className="display text-44">Design system</h1>
           <p className="text-17 text-sobre-marca-2">Tokens, componentes e estados. Troque a aparência para conferir os três temas.</p>
         </div>
         <TrocaTema />
@@ -226,9 +226,16 @@ export function Vitrine() {
         </ul>
       </Secao>
 
-      <Secao id="tipografia" titulo="Tipografia" descricao="Atkinson Hyperlegible. Números com algarismos tabulares.">
-        <ul className="flex flex-col gap-2">
-          {TIPOS.map(([cls, txt]) => (
+      <Secao id="tipografia" titulo="Tipografia" descricao="Dois pesos extremos: 800 nos números e títulos, 400 no texto. Algarismos tabulares.">
+        <p className="text-15 text-texto-2">Exibição — Bricolage Grotesque 800 (números grandes e títulos)</p>
+        <ul className="flex flex-col gap-1">
+          {TIPOS.slice(0, 4).map(([cls, txt]) => (
+            <li key={cls} className={cx("display", cls)}>{txt}</li>
+          ))}
+        </ul>
+        <p className="text-15 text-texto-2">Texto — Atkinson Hyperlegible Next (feita para baixa visão)</p>
+        <ul className="flex flex-col gap-1">
+          {TIPOS.slice(4).map(([cls, txt]) => (
             <li key={cls} className={cx("numeros font-bold", cls)}>{txt}</li>
           ))}
         </ul>
