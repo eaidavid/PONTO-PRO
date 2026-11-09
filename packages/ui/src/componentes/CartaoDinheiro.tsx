@@ -1,3 +1,4 @@
+import { formatarReais } from "@ponto-pro/core";
 import { CircleHelp } from "lucide-react";
 import { Skeleton } from "./Skeleton";
 import { ValorDinheiro } from "./ValorDinheiro";
@@ -6,30 +7,30 @@ export interface CartaoDinheiroProps {
   /** Líquido previsto, em centavos. */
   valor: number;
   jaGanhou: number;
-  falta: number;
   /** 0 a 1 */
   progresso: number;
   titulo?: string;
-  /** Linha pequena no topo (ex.: "Período 21/10 a 20/11"). */
-  periodo?: string;
+  /** Quando o dinheiro cai, ex.: "Cai em 05/12 · em 26 dias". */
+  quando?: string;
+  /** Complemento da linha de progresso, ex.: "faltam 9 dias de trabalho". */
+  complemento?: string;
   carregando?: boolean;
   onPorQue?: () => void;
 }
 
-/** "Você deve receber": o número mais importante do app, num cartão de marca. */
-export function CartaoDinheiro({ valor, jaGanhou, falta, progresso, titulo = "Você deve receber", periodo, carregando, onPorQue }: CartaoDinheiroProps) {
+/**
+ * O número mais importante do app: quanto vai pingar e quando.
+ * Uma informação principal (o valor), uma de apoio (quando cai) e uma linha de progresso.
+ */
+export function CartaoDinheiro({ valor, jaGanhou, progresso, titulo = "Vai pingar", quando, complemento, carregando, onPorQue }: CartaoDinheiroProps) {
   const pct = Math.round(Math.min(1, Math.max(0, progresso)) * 100);
   return (
-    <section aria-label={titulo} className="fundo-marca relative flex flex-col gap-5 overflow-hidden rounded-[24px] p-5 shadow-min">
-      <div className="flex items-start justify-between gap-3">
+    <section aria-label={titulo} className="fundo-marca relative flex flex-col gap-4 overflow-hidden rounded-[24px] p-5 shadow-min">
+      <div className="flex flex-col gap-1">
         <h2 className="text-17 font-bold text-sobre-marca-2">{titulo}</h2>
-        {periodo && <span className="numeros shrink-0 whitespace-nowrap rounded-full bg-white/12 px-3 py-1 text-13 font-bold text-sobre-marca">{periodo}</span>}
+        {carregando ? <Skeleton className="h-14 w-60 bg-white/15" /> : <ValorDinheiro centavos={valor} tamanho="gg" className="text-sobre-marca" />}
+        {quando && <p className="pt-1 text-17 font-bold text-marca-destaque">{quando}</p>}
       </div>
-      {carregando ? (
-        <Skeleton className="h-14 w-60 bg-white/15" />
-      ) : (
-        <ValorDinheiro centavos={valor} tamanho="gg" className="text-sobre-marca" />
-      )}
       <div className="flex flex-col gap-2">
         <div
           role="progressbar"
@@ -37,22 +38,15 @@ export function CartaoDinheiro({ valor, jaGanhou, falta, progresso, titulo = "Vo
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={pct}
-          className="h-2.5 w-full overflow-hidden rounded-full bg-[color:var(--marca-trilho)]"
+          className="h-2 w-full overflow-hidden rounded-full bg-[color:var(--marca-trilho)]"
         >
           <div className="h-full rounded-full bg-marca-destaque transition-[width] duration-250" style={{ width: `${pct}%` }} />
         </div>
-        <span className="numeros text-13 text-sobre-marca-2">{pct}% do previsto</span>
+        <p className="numeros text-15 text-sobre-marca-2">
+          Já ganhou <b className="text-sobre-marca">{formatarReais(jaGanhou)}</b>
+          {complemento ? ` · ${complemento}` : ""}
+        </p>
       </div>
-      <dl className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-white/8 p-3">
-          <dt className="text-15 text-sobre-marca-2">Já ganhou</dt>
-          <dd><ValorDinheiro centavos={jaGanhou} className="text-marca-destaque" /></dd>
-        </div>
-        <div className="rounded-2xl bg-white/8 p-3">
-          <dt className="text-15 text-sobre-marca-2">Falta</dt>
-          <dd><ValorDinheiro centavos={falta} className="text-sobre-marca" /></dd>
-        </div>
-      </dl>
       {onPorQue && (
         <button
           type="button"

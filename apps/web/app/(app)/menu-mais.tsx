@@ -1,7 +1,7 @@
 "use client";
 
 import { BottomSheet } from "@ponto-pro/ui";
-import { ChevronRight, HardHat, type LucideIcon, Smartphone, Tags, Target, User } from "lucide-react";
+import { ChevronRight, HardHat, type LucideIcon, Smartphone, Tags, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Preferencias } from "../../lib/db";
 import { instalarApp, usePodeInstalar } from "../../lib/instalar";
@@ -33,7 +33,6 @@ export function MenuMais({
     setTimeout(() => router.push(href), 120);
   };
   const atalhos: Atalho[] = [
-    { href: "/metas", rotulo: "Metas", descricao: "Quanto quero receber", icone: Target },
     { href: "/obras", rotulo: "Obras", descricao: "Separar horas e produção por lugar", icone: HardHat },
     ...(usaProducao ? [{ href: "/producao", rotulo: "Catálogo de serviços", descricao: "Favoritos, categorias e preços", icone: Tags }] : []),
     { href: "/conta", rotulo: "Conta e regras", descricao: "Valor, semana, feriados, descontos", icone: User },

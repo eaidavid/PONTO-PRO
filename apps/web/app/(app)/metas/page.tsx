@@ -70,9 +70,7 @@ export default function Metas() {
         <p className="pt-2 text-center text-15 text-texto-2">Pela sua escala, você deve receber {formatarReais(previsto)}.</p>
       </section>
 
-      <section aria-live="polite" className="fundo-marca rounded-[24px] p-5">
-        <p className="display text-24 leading-snug">{r.frase}</p>
-      </section>
+      <p aria-live="polite" className="px-1 text-20 font-bold leading-snug">{r.frase}</p>
 
       {r.observacao && <Banner tom="info" texto={r.observacao} />}
 

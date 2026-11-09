@@ -41,10 +41,10 @@ import {
 } from "@ponto-pro/ui";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  CalendarDays,
   CircleCheck,
   Download,
+  Ellipsis,
   Hammer,
   PackagePlus,
   Search,
@@ -83,6 +83,8 @@ function Historico() {
   const { mostrar } = useToast();
   const [periodos, setPeriodos] = useState(false);
   const [filtros, setFiltros] = useState(false);
+  const [opcoes, setOpcoes] = useState(false);
+  const [buscaAberta, setBuscaAberta] = useState(false);
 
   // estado da tela fica na URL: Voltar e links mantêm o que a pessoa filtrou
   const aba = (params.get("aba") as Aba) || "ponto";
@@ -150,6 +152,7 @@ function Historico() {
   const lancsFiltrados = filtrarLancamentos(lancs, { itens, busca, area, obraId });
   const totalProducao = lancsFiltrados.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0);
   const filtrando = filtro !== "todos" || !!busca || !!obraId || !!area;
+  const buscaVisivel = buscaAberta || !!texto;
 
   async function completarDias() {
     const antes = await salvarVariosRegistros(completar);
@@ -172,31 +175,55 @@ function Historico() {
       <CabecalhoTela
         titulo="Histórico"
         acao={
-          <button type="button" onClick={exportar} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-15 font-bold text-primaria-forte active:bg-primaria-suave">
-            <Download aria-hidden className="size-5" /> Exportar
-          </button>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setBuscaAberta(true)}
+              aria-expanded={buscaVisivel}
+              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-13 font-bold text-texto-2 active:bg-superficie-2"
+            >
+              <Search aria-hidden className="size-5" /> Buscar
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpcoes(true)}
+              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-13 font-bold text-texto-2 active:bg-superficie-2"
+            >
+              <Ellipsis aria-hidden className="size-5" /> Opções
+            </button>
+          </div>
         }
       />
 
-      <label className="flex min-h-14 items-center gap-3 rounded-full border-2 border-borda-forte bg-superficie px-4 focus-within:border-primaria">
-        <Search aria-hidden className="size-5 text-texto-2" />
-        <span className="sr-only">Buscar no histórico</span>
-        <input
-          type="search"
-          value={texto}
-          onChange={(e) => {
-            setTexto(e.target.value);
-            definir({ q: e.target.value || null });
-          }}
-          placeholder={aba === "ponto" ? "Buscar dia, nota ou obra" : "Buscar serviço"}
-          className="min-w-0 flex-1 bg-transparent text-17 outline-none placeholder:text-texto-2"
-        />
-        {texto && (
-          <button type="button" onClick={() => { setTexto(""); definir({ q: null }); }} className="-mr-2 flex size-10 items-center justify-center rounded-full text-texto-2" aria-label="Limpar busca">
+      {buscaVisivel && (
+        <label className="flex min-h-14 items-center gap-3 rounded-full border-2 border-primaria bg-superficie px-4">
+          <Search aria-hidden className="size-5 text-texto-2" />
+          <span className="sr-only">Buscar no histórico</span>
+          <input
+            type="search"
+            autoFocus={buscaAberta}
+            value={texto}
+            onChange={(e) => {
+              setTexto(e.target.value);
+              definir({ q: e.target.value || null });
+            }}
+            placeholder={aba === "ponto" ? "Dia, nota ou obra" : "Serviço"}
+            className="min-w-0 flex-1 bg-transparent text-17 outline-none placeholder:text-texto-2"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setTexto("");
+              definir({ q: null });
+              setBuscaAberta(false);
+            }}
+            className="-mr-2 flex size-10 items-center justify-center rounded-full text-texto-2"
+            aria-label="Fechar busca"
+          >
             <X aria-hidden className="size-5" />
           </button>
-        )}
-      </label>
+        </label>
+      )}
 
       {usaProducao && (
         <Abas
@@ -210,45 +237,21 @@ function Historico() {
         />
       )}
 
-      <nav aria-label="Período" className="flex items-center justify-between gap-1">
-        <button
-          type="button"
-          onClick={() => definir({ p: periodoVizinho(periodo, -1, fech).inicio })}
-          aria-label="Período anterior"
-          className="flex size-12 items-center justify-center rounded-full active:bg-superficie-2"
-        >
-          <ChevronLeft aria-hidden className="size-6" />
-        </button>
-        <button type="button" onClick={() => setPeriodos(true)} className="flex min-h-12 flex-1 flex-col items-center justify-center rounded-2xl active:bg-superficie-2">
-          <span className="numeros inline-flex items-center gap-1 text-17 font-bold">
-            {rotuloPeriodo(periodo)} <ChevronDown aria-hidden className="size-4" />
-          </span>
-          <span className="text-13 text-texto-2">{atual ? "Período atual" : "Toque para ver outros períodos"}</span>
-        </button>
-        <button
-          type="button"
-          disabled={atual}
-          onClick={() => definir({ p: periodoVizinho(periodo, 1, fech).inicio })}
-          aria-label="Próximo período"
-          className="flex size-12 items-center justify-center rounded-full active:bg-superficie-2 disabled:opacity-30"
-        >
-          <ChevronRight aria-hidden className="size-6" />
-        </button>
-      </nav>
-
       {(() => {
         const nomesFiltro = new Map(FILTROS_DIA.map((f) => [f.id, f.rotulo]));
         const ativos: { rotulo: string; limpar: () => void }[] = [];
         if (aba === "ponto" && filtro !== "todos") ativos.push({ rotulo: nomesFiltro.get(filtro) ?? filtro, limpar: () => definir({ f: null }) });
         if (aba === "producao" && area) ativos.push({ rotulo: area, limpar: () => definir({ cat: null }) });
         if (obraId) ativos.push({ rotulo: nomeObra.get(obraId) ?? "Obra", limpar: () => definir({ obra: null }) });
+        const pilula = "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2";
         return (
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setFiltros(true)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2"
-            >
+            <button type="button" onClick={() => setPeriodos(true)} className={pilula} aria-label={`Período ${rotuloPeriodo(periodo)}${atual ? ", atual" : ""}. Trocar período`}>
+              <CalendarDays aria-hidden className="size-4" />
+              <span className="numeros">{rotuloPeriodo(periodo)}</span>
+              <ChevronDown aria-hidden className="size-4" />
+            </button>
+            <button type="button" onClick={() => setFiltros(true)} className={pilula}>
               <SlidersHorizontal aria-hidden className="size-4" /> Filtrar
               {ativos.length > 0 && <span className="rounded-full bg-primaria px-2 text-13 text-sobre-primaria">{ativos.length}</span>}
             </button>
@@ -268,21 +271,24 @@ function Historico() {
       })()}
 
       {aba === "ponto" && (
-        <p className="numeros px-1 text-15 text-texto-2">
-          <b className="text-texto">{formatarDuracao(r.horas.trabalhadoMin)}</b> trabalhadas
-          {r.horas.extraMin > 0 && <> · <b className="text-extra-texto">+{formatarDuracao(r.horas.extraMin)}</b> extra</>}
-          {r.horas.deficitMin > 0 && <> · <b className="text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</b> de falta</>}
+        <p className="numeros flex flex-wrap items-center gap-x-1 px-1 text-15 text-texto-2">
+          <span>
+            <b className="text-texto">{formatarDuracao(r.horas.trabalhadoMin)}</b> trabalhadas
+            {r.horas.extraMin > 0 && <> · <b className="text-extra-texto">+{formatarDuracao(r.horas.extraMin)}</b> extra</>}
+            {r.horas.deficitMin > 0 && <> · <b className="text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</b> de falta</>}
+          </span>
+          {!filtrando && pendencias.length === 0 && (
+            <span role="status" className="inline-flex items-center gap-1 font-bold text-sucesso-texto">
+              · <CircleCheck aria-hidden className="size-4" /> tudo certo
+            </span>
+          )}
         </p>
       )}
 
       {aba === "ponto" ? (
         <>
           {!filtrando &&
-            (pendencias.length === 0 ? (
-              <p role="status" className="flex items-center gap-2 px-1 text-15 font-bold text-sucesso-texto">
-                <CircleCheck aria-hidden className="size-5" /> Tudo certo neste período.
-              </p>
-            ) : (
+            (pendencias.length === 0 ? null : (
               <section aria-label="Dias que precisam de atenção" className="cartao flex flex-col gap-3 border-l-4 border-l-[color:var(--extra)]! p-4">
                 <p className="flex items-center gap-2 text-17 font-bold">
                   <TriangleAlert aria-hidden className="size-5 shrink-0 text-extra-texto" />
@@ -401,6 +407,39 @@ function Historico() {
           )}
         </>
       )}
+
+      <BottomSheet aberto={opcoes} onFechar={() => setOpcoes(false)} titulo="Opções do histórico">
+        <ul className="cartao mb-2 divide-y divide-borda overflow-hidden">
+          <li>
+            <button type="button" onClick={() => { setOpcoes(false); exportar(); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
+              <Download aria-hidden className="size-5 text-primaria-forte" />
+              <span className="flex-1">
+                <span className="block text-17 font-bold">Baixar planilha do período</span>
+                <span className="block text-15 text-texto-2">Para mostrar ao patrão ou ao contador</span>
+              </span>
+            </button>
+          </li>
+          {completar.length > 0 && (
+            <li>
+              <button type="button" onClick={() => { setOpcoes(false); completarDias(); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
+                <Wand2 aria-hidden className="size-5 text-primaria-forte" />
+                <span className="flex-1">
+                  <span className="block text-17 font-bold">Completar {completar.length === 1 ? "1 dia" : `${completar.length} dias`} como a escala</span>
+                  <span className="block text-15 text-texto-2">Preenche os dias de trabalho sem registro</span>
+                </span>
+              </button>
+            </li>
+          )}
+          {!atual && (
+            <li>
+              <button type="button" onClick={() => { setOpcoes(false); definir({ p: null }); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
+                <CalendarDays aria-hidden className="size-5 text-primaria-forte" />
+                <span className="flex-1 text-17 font-bold">Voltar ao período atual</span>
+              </button>
+            </li>
+          )}
+        </ul>
+      </BottomSheet>
 
       <BottomSheet
         aberto={filtros}

@@ -13,7 +13,6 @@ import {
   valorProducao,
 } from "@ponto-pro/core";
 import {
-  Abas,
   BotaoPrincipal,
   BottomSheet,
   BuscaServico,
@@ -23,12 +22,15 @@ import {
   TituloSecao,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronLeft, ChevronRight, HardHat, RotateCcw, Save, Search, Star, Tags, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, HardHat, Save, Search, Tags, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
 import { Carregando } from "../../carregando";
+
+const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]: "Anteontem" };
+const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2";
 
 /** Tela de lançar produção: favoritos primeiro, categorias, obra e dia. */
 export default function LancarProducao() {
@@ -38,9 +40,9 @@ export default function LancarProducao() {
   const [chave, setChave] = useState(0);
   const [quando, setQuando] = useState<0 | -1 | -2>(0);
   const [area, setArea] = useState<string | null>(null);
-  const [repetir, setRepetir] = useState<ItemProducao | null>(null);
   const [precos, setPrecos] = useState(false);
   const [escolherObra, setEscolherObra] = useState(false);
+  const [escolherDia, setEscolherDia] = useState(false);
   const [filtro, setFiltro] = useState("");
   const [editandoItem, setEditandoItem] = useState<ItemProducao | null>(null);
   const [precoTxt, setPrecoTxt] = useState("");
@@ -62,16 +64,12 @@ export default function LancarProducao() {
   const data = somarDias(agora.data, quando);
   const obraAtual = obrasAtivas.find((o) => o.id === preferencias.obraAtual)?.id;
   const visiveis = area ? ordenados.filter((i) => i.area === area) : ordenados;
-  const favoritos = ordenados.filter((i) => i.favorito);
-  const recentes = [...new Set(lancamentos.map((l) => l.itemId))].map((id) => porId.get(id)).filter((i): i is ItemProducao => !!i && !i.favorito).slice(0, 3);
-  const atalhos = [...favoritos, ...recentes].slice(0, 6);
 
   async function lancar({ item, novo, quantidade }: { item: ItemProducao; novo: boolean; quantidade: number }) {
     if (novo) await salvarItem(item);
     const id = novoId("l");
     await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(obraAtual ? { obraId: obraAtual } : {}) });
     setChave((k) => k + 1);
-    setRepetir(null);
     mostrar({
       texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, item.preco))}`,
       desfazer: () => apagarLancamento(id),
@@ -108,57 +106,47 @@ export default function LancarProducao() {
         <p className="numeros text-15 text-texto-2">No período: {formatarReais(total)}</p>
       </div>
 
-      <Abas
-        rotulo="Dia do serviço"
-        valor={String(quando) as "0" | "-1" | "-2"}
-        onChange={(v) => setQuando(Number(v) as 0 | -1 | -2)}
-        opcoes={[
-          { id: "0", rotulo: "Hoje" },
-          { id: "-1", rotulo: "Ontem" },
-          { id: "-2", rotulo: "Anteontem" },
-        ]}
-      />
-
-      {obrasAtivas.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setEscolherObra(true)}
-          className="cartao flex min-h-14 items-center gap-3 px-4 text-left active:bg-superficie-2"
-        >
-          <HardHat aria-hidden className="size-5 text-texto-2" />
-          <span className="flex-1 text-17 font-bold">Obra</span>
-          <span className="text-15 text-texto-2">{obrasAtivas.find((o) => o.id === obraAtual)?.nome ?? "Nenhuma"}</span>
-          <ChevronRight aria-hidden className="size-5 text-texto-2" />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-15 font-bold text-texto-2">Para</span>
+        <button type="button" onClick={() => setEscolherDia(true)} className={pilula}>
+          {ROTULO_DIA[quando]} <ChevronDown aria-hidden className="size-4" />
         </button>
-      )}
+        {obrasAtivas.length > 0 && (
+          <button type="button" onClick={() => setEscolherObra(true)} className={pilula}>
+            <HardHat aria-hidden className="size-4" />
+            {obrasAtivas.find((o) => o.id === obraAtual)?.nome ?? "Sem obra"} <ChevronDown aria-hidden className="size-4" />
+          </button>
+        )}
+      </div>
 
-      {atalhos.length > 0 && !repetir && (
-        <div className="flex flex-col gap-2">
-          <TituloSecao>Favoritos e recentes</TituloSecao>
-          <div className="flex flex-wrap gap-2">
-            {atalhos.map((i) => (
-              <Chip key={i.id} icone={i.favorito ? Star : RotateCcw} onClick={() => { setRepetir(i); setChave((k) => k + 1); }}>
-                {i.nome}
-              </Chip>
-            ))}
-          </div>
-        </div>
-      )}
+      <section aria-label="Escolher serviço" className="pb-4">
+        <BuscaServico
+          key={chave}
+          itens={visiveis}
+          onLancar={lancar}
+          onFavoritar={favoritar}
+          sugestoes={6}
+          entreBuscaELista={
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Categorias">
+              {[null, ...categoriasDe(itens)].map((c) => (
+                <Chip key={c ?? "todas"} className="shrink-0" selecionado={area === c} onClick={() => setArea(c)}>
+                  {c ?? "Todas"}
+                </Chip>
+              ))}
+            </div>
+          }
+        />
+      </section>
 
-      <div className="flex flex-col gap-2">
-        <TituloSecao>Escolher o serviço</TituloSecao>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Categorias">
-          {[null, ...categoriasDe(itens)].map((c) => (
-            <Chip key={c ?? "todas"} className="shrink-0" selecionado={area === c} onClick={() => { setArea(c); setChave((k) => k + 1); }}>
-              {c ?? "Todas"}
+      <BottomSheet aberto={escolherDia} onFechar={() => setEscolherDia(false)} titulo="Dia do serviço">
+        <div className="flex flex-wrap gap-2 pb-4">
+          {([0, -1, -2] as const).map((d) => (
+            <Chip key={d} selecionado={quando === d} onClick={() => { setQuando(d); setEscolherDia(false); }}>
+              {ROTULO_DIA[d]}
             </Chip>
           ))}
         </div>
-      </div>
-
-      <section aria-label="Escolher serviço" className="-mt-2 pb-4">
-        <BuscaServico key={chave} itens={visiveis} onLancar={lancar} itemInicial={repetir} onFavoritar={favoritar} />
-      </section>
+      </BottomSheet>
 
       <BottomSheet aberto={escolherObra} onFechar={() => setEscolherObra(false)} titulo="Obra do lançamento">
         <div className="flex flex-wrap gap-2 pb-4">

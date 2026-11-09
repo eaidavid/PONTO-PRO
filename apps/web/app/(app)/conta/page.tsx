@@ -66,6 +66,9 @@ import { MARCA } from "../../../lib/marca";
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
 
+const NOME_PAGAMENTO = (p: PerfilTrabalho) =>
+  !p.diaPagamento || p.diaPagamento.tipo === "quinto-dia-util" ? "cai no 5º dia útil" : p.diaPagamento.tipo === "no-fechamento" ? "cai no fechamento" : `cai dia ${p.diaPagamento.dia}`;
+
 type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | "feriados" | null;
 
 function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
@@ -140,7 +143,13 @@ export default function Conta() {
           sugestao={ehSugestao(perfil, "adicionais.extraSabado") || ehSugestao(perfil, "adicionais.extraDiaUtil")}
           onClick={() => abrir("extra")}
         />
-        <LinhaAjuste icone={CalendarClock} rotulo="Fechamento" valor={`Fecha dia ${perfil.ciclo.diaFechamento}`} onClick={() => abrir("fechamento")} />
+        <LinhaAjuste
+          icone={CalendarClock}
+          rotulo="Fechamento e pagamento"
+          valor={`Fecha dia ${perfil.ciclo.diaFechamento} · ${NOME_PAGAMENTO(perfil)}`}
+          sugestao={!perfil.diaPagamento}
+          onClick={() => abrir("fechamento")}
+        />
         <LinhaAjuste
           icone={PartyPopper}
           rotulo="Feriados da sua cidade"
@@ -370,8 +379,8 @@ export default function Conta() {
       <BottomSheet
         aberto={painel === "fechamento"}
         onFechar={() => setPainel(null)}
-        titulo="Fechamento"
-        subtitulo="Dia em que o período fecha para o pagamento."
+        titulo="Fechamento e pagamento"
+        subtitulo="Quando o período fecha e quando o dinheiro cai."
         rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Fechamento salvo")}>Salvar</BotaoPrincipal>}
       >
         <div className="pb-2">
@@ -388,6 +397,26 @@ export default function Conta() {
           <p className="pt-3 text-center text-17 text-texto-2">
             {p.ciclo.diaFechamento >= 28 ? "Fecha no fim do mês." : `Período do dia ${p.ciclo.diaFechamento + 1} ao dia ${p.ciclo.diaFechamento}.`}
           </p>
+          <div className="flex flex-col gap-2 pt-6">
+            <span className="text-17 font-bold">Quando o dinheiro cai?</span>
+            {!p.diaPagamento && <SeloSugestao texto="Sugestão — na CLT, até o 5º dia útil do mês seguinte" />}
+            <div role="radiogroup" aria-label="Dia do pagamento" className="flex flex-wrap gap-2">
+              <Chip selecionado={(p.diaPagamento?.tipo ?? "quinto-dia-util") === "quinto-dia-util"} onClick={() => mudar([], (x) => void (x.diaPagamento = { tipo: "quinto-dia-util" }))}>5º dia útil</Chip>
+              <Chip selecionado={p.diaPagamento?.tipo === "dia-fixo"} onClick={() => mudar([], (x) => void (x.diaPagamento = { tipo: "dia-fixo", dia: x.diaPagamento?.tipo === "dia-fixo" ? x.diaPagamento.dia : 10 }))}>Dia fixo</Chip>
+              <Chip selecionado={p.diaPagamento?.tipo === "no-fechamento"} onClick={() => mudar([], (x) => void (x.diaPagamento = { tipo: "no-fechamento" }))}>No fechamento</Chip>
+            </div>
+            {p.diaPagamento?.tipo === "dia-fixo" && (
+              <Contador
+                rotulo="Cai no dia"
+                valor={String(p.diaPagamento.dia)}
+                passo="1 dia"
+                podeMenos={p.diaPagamento.dia > 1}
+                podeMais={p.diaPagamento.dia < 31}
+                onMenos={() => mudar([], (x) => void (x.diaPagamento = { tipo: "dia-fixo", dia: (x.diaPagamento as { dia: number }).dia - 1 }))}
+                onMais={() => mudar([], (x) => void (x.diaPagamento = { tipo: "dia-fixo", dia: (x.diaPagamento as { dia: number }).dia + 1 }))}
+              />
+            )}
+          </div>
         </div>
       </BottomSheet>
 

@@ -10,7 +10,7 @@ import {
   UNIDADES_CHIPS,
 } from "@ponto-pro/core";
 import { PackagePlus, Plus, Search, Star } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { BotaoPrincipal } from "./BotaoPrincipal";
 import { CampoNumero } from "./CampoNumero";
 import { Chip } from "./Chip";
@@ -32,6 +32,10 @@ export interface BuscaServicoProps {
   itemInicial?: ItemProducao | null;
   /** Mostra a estrela de favorito em cada serviço. */
   onFavoritar?: (item: ItemProducao) => void;
+  /** Conteúdo entre o campo e a lista (ex.: categorias), só quando não está digitando. */
+  entreBuscaELista?: ReactNode;
+  /** Quantas sugestões mostrar sem busca (padrão 4). */
+  sugestoes?: number;
 }
 
 function lerQuantidade(v: string): number | null {
@@ -40,7 +44,7 @@ function lerQuantidade(v: string): number | null {
 }
 
 /** Busca no catálogo sem ligar para acentos, com "+ Criar" quando não existe. */
-export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null, onFavoritar }: BuscaServicoProps) {
+export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null, onFavoritar, entreBuscaELista, sugestoes = 4 }: BuscaServicoProps) {
   const [texto, setTexto] = useState(textoInicial);
   const [escolhido, setEscolhido] = useState<ItemProducao | null>(itemInicial);
   const [criando, setCriando] = useState<string | null>(null);
@@ -50,7 +54,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
   const [quantidade, setQuantidade] = useState(quantidadeInicial);
   const [tentou, setTentou] = useState(false);
 
-  const resultado = useMemo(() => buscarItens(itens, texto, texto.trim() ? 8 : 4), [itens, texto]);
+  const resultado = useMemo(() => buscarItens(itens, texto, texto.trim() ? 8 : sugestoes), [itens, texto, sugestoes]);
   const unidadeFinal = unidade === "outra" ? outra.trim() : unidade;
   const precoCentavos = escolhido ? escolhido.preco : lerReais(preco);
   const qtd = lerQuantidade(quantidade);
@@ -164,7 +168,8 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           className="min-w-0 flex-1 bg-transparent text-20 outline-none placeholder:text-texto-2"
         />
       </label>
-      {!texto.trim() && <p className="px-1 text-15 text-texto-2">Sugestões — ou digite para buscar entre {itens.length} serviços</p>}
+      {!texto.trim() && entreBuscaELista}
+      {!texto.trim() && <p className="px-1 text-15 text-texto-2">Seus favoritos e os mais usados primeiro</p>}
       <ul className="flex flex-col divide-y divide-borda overflow-hidden cartao" aria-label="Serviços encontrados">
         {resultado.itens.map((i) => (
           <li key={i.id} className="flex items-stretch">

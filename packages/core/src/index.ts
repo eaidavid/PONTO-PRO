@@ -15,3 +15,4 @@ export * from "./contracheque";
 export * from "./modelos";
 export * from "./assistente";
 export * from "./historico";
+export * from "./pagamento";

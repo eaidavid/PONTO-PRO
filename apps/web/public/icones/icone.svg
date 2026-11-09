@@ -6,7 +6,10 @@
     </radialGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#luz)"/>
-  <path d="M256 84C256 84 132 228 132 316a124 124 0 0 0 248 0C380 228 256 84 256 84z" fill="#ffffff"/>
-  <path d="M196 318l42 42 82-86" fill="none" stroke="#07352d" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="372" cy="150" r="30" fill="#7ee0c3"/>
+  <path d="M256 70C256 70 128 222 128 316a128 128 0 0 0 256 0C384 222 256 70 256 70z" fill="#ffffff"/>
+  <g fill="none" stroke="#07352d" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 222v188"/>
+    <path d="M302 262c-8-15-26-24-46-24-27 0-46 15-46 35 0 47 94 25 94 74 0 22-20 38-48 38-23 0-42-10-50-27"/>
+  </g>
+  <circle cx="378" cy="138" r="28" fill="#7ee0c3"/>
 </svg>

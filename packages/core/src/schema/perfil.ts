@@ -180,6 +180,14 @@ export const PerfilTrabalho = z
     ciclo: Ciclo,
     descontos: z.array(Desconto).max(20),
     producao: ProducaoConfig,
+    /** Quando o dinheiro cai (sugestão para CLT: até o 5º dia útil do mês seguinte ao fechamento). */
+    diaPagamento: z
+      .discriminatedUnion("tipo", [
+        z.object({ tipo: z.literal("quinto-dia-util") }),
+        z.object({ tipo: z.literal("dia-fixo"), dia: z.number().int().min(1).max(31) }),
+        z.object({ tipo: z.literal("no-fechamento") }),
+      ])
+      .optional(),
     /** Caminhos que ainda estão no valor sugerido (mostram o selo "Sugestão"). */
     sugestoes: z.array(z.string()),
     atualizadoEm: z.string(),

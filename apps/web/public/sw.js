@@ -4,7 +4,7 @@
  * - Arquivos /_next/static (nome com hash, nunca mudam): cópia salva primeiro.
  * Os dados ficam no IndexedDB, fora deste cache.
  */
-const VERSAO = "pp-v2";
+const VERSAO = "pp-v3";
 const TELAS = ["/", "/hoje", "/registros", "/producao", "/ganhos", "/metas", "/conta", "/comecar"];
 const ESTATICOS = "pp-estaticos";
 const LIMITE_ESTATICOS = 300;

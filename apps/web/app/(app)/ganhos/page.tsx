@@ -4,9 +4,10 @@ import {
   calcularPeriodo,
   calcularPrevisao,
   conferirPagamento,
+  dataCurta,
+  dataDePagamento,
   diasEntre,
   formatarDuracao,
-  formatarHorasCurto,
   formatarReais,
   ganhosPorDia,
   gerarContracheque,
@@ -16,6 +17,7 @@ import {
   type Periodo,
   periodoDaData,
   periodoVizinho,
+  quandoFalta,
   type ResultadoPeriodo,
   rotuloPeriodo,
   somarDias,
@@ -34,7 +36,7 @@ import {
   TituloSecao,
   ValorDinheiro,
 } from "@ponto-pro/ui";
-import { ChevronRight, CircleCheck, Download, FileText, MessageCircle, Scale, Target, TriangleAlert } from "lucide-react";
+import { ChartColumn, ChevronRight, CircleCheck, Download, FileText, MessageCircle, Scale, Target, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -333,17 +335,20 @@ function Ganhos() {
   const { periodo, previsao, grafico } = calc;
   const { realizado, previsto, falta } = previsao;
   const dias = diasEntre(agora.data, periodo.fim);
-  const quando = dias === 0 ? "fecha hoje" : dias === 1 ? "fecha amanhã" : `fecha em ${dias} dias`;
+  const fecha = dias === 0 ? "fecha hoje" : dias === 1 ? "fecha amanhã" : `fecha em ${dias} dias`;
+  const pagamento = dataDePagamento(estado.perfil, periodo, estado.feriadosLocais);
+  const quandoCai = `Cai em ${dataCurta(pagamento)} · ${quandoFalta(agora.data, pagamento)}`;
+  const complemento = falta.dias > 0 ? `faltam ${falta.dias} ${falta.dias === 1 ? "dia" : "dias"} de trabalho` : "período completo";
 
   return (
     <main className="flex flex-col gap-4 px-4">
-      <CabecalhoTela titulo="Ganhos" subtitulo={`Período ${rotuloPeriodo(periodo)} · ${quando}`} />
+      <CabecalhoTela titulo="Ganhos" subtitulo={`Período ${rotuloPeriodo(periodo)} · ${fecha}`} />
       <CartaoDinheiro
         valor={previsto.liquido}
         jaGanhou={realizado.liquido}
-        falta={falta.valor}
         progresso={previsao.progresso}
-        periodo={quando}
+        quando={quandoCai}
+        complemento={complemento}
         onPorQue={() => setPorQue(true)}
       />
       <div className="print:hidden">
@@ -364,20 +369,19 @@ function Ganhos() {
           {previsto.avisos.map((a) => (
             <Banner key={a.id} tom={a.id === "descontos-maiores" ? "aviso" : "info"} texto={a.texto} />
           ))}
-          {falta.dias > 0 && (
-            <p className="px-1 text-17">
-              Faltam <b>{falta.dias} {falta.dias === 1 ? "dia" : "dias"}</b> de trabalho ({formatarHorasCurto(falta.horasMin)}) para fechar o período.
-            </p>
-          )}
           <Composicao r={previsto} onToque={setGrupo} />
-          <section aria-label="Ganho por dia" className="cartao p-4">
-            <GraficoDias dias={grafico} hoje={agora.data} />
-          </section>
-          <Link
-            href="/metas"
-            className="mb-2 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full border-2 border-primaria bg-superficie px-6 text-17 font-bold text-primaria active:bg-primaria-suave"
-          >
-            <Target aria-hidden className="size-6" /> Quero receber mais
+          <details className="cartao group overflow-hidden">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 text-17 font-bold [&::-webkit-details-marker]:hidden">
+              <ChartColumn aria-hidden className="size-5 text-texto-2" />
+              <span className="flex-1">Ver ganho por dia</span>
+              <ChevronRight aria-hidden className="size-5 text-texto-2 transition-transform group-open:rotate-90" />
+            </summary>
+            <div className="px-4 pb-4">
+              <GraficoDias dias={grafico} hoje={agora.data} />
+            </div>
+          </details>
+          <Link href="/metas" className="mb-2 inline-flex min-h-12 items-center gap-2 self-center rounded-full px-3 text-17 font-bold text-primaria-forte underline underline-offset-4">
+            <Target aria-hidden className="size-5" /> Quero receber mais
           </Link>
         </div>
       )}

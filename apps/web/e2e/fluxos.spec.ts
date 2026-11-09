@@ -80,8 +80,8 @@ test("menu Mais: tamanho compacto e atalhos", async ({ page }) => {
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-tamanho", "compacto");
   await page.getByRole("button", { name: "Mais" }).click();
-  await page.getByRole("dialog", { name: "Mais" }).getByRole("button", { name: /Metas/ }).click();
-  await expect(page.getByRole("heading", { name: "Metas" })).toBeVisible();
+  await page.getByRole("dialog", { name: "Mais" }).getByRole("button", { name: /Obras/ }).click();
+  await expect(page.getByRole("heading", { name: "Obras" })).toBeVisible();
 });
 
 test("ponto esquecido: corrige em um toque e o status responde na hora", async ({ page }) => {
@@ -115,7 +115,8 @@ test("abre sem internet depois do primeiro acesso", async ({ page, context }) =>
   await page.reload();
   await expect(page.getByText("Bom dia, José")).toBeVisible();
   await page.goto("/ganhos");
-  await expect(page.getByRole("heading", { name: "Você deve receber" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vai pingar" })).toBeVisible();
+  await expect(page.getByText("Cai em 05/12 · em 26 dias")).toBeVisible();
   await context.setOffline(false);
 });
 
@@ -123,7 +124,7 @@ test("registros mostram se está tudo certo e restauração de backup", async ({
   await fazerOnboarding(page);
   await semearHistorico(page);
   await page.getByRole("link", { name: "Histórico" }).click();
-  await expect(page.getByText("Tudo certo neste período.")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "tudo certo" })).toBeVisible();
   await page.getByRole("button", { name: /^qui 05/ }).click();
   const sheet = page.getByRole("dialog");
   await sheet.getByRole("button", { name: /^Saída/ }).click();
@@ -161,6 +162,7 @@ test("histórico: filtros e busca ficam no endereço; lista de períodos", async
   await expect(page.getByRole("button", { name: /^qua 28/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /^qui 29/ })).toHaveCount(0);
   await page.getByRole("button", { name: "Tirar o filtro Faltas" }).click();
+  await page.getByRole("button", { name: "Buscar" }).click();
   await page.getByRole("searchbox").fill("04/11");
   await expect(page).toHaveURL(/q=04%2F11/);
   await expect(page.getByRole("button", { name: /^qua 04/ })).toBeVisible();
