@@ -185,7 +185,7 @@ export default function Comecar() {
                 <ChevronLeft aria-hidden className="size-6" /> Voltar
               </button>
             ) : (
-              <span className="text-17 font-bold text-primaria-forte">{MARCA.nome}</span>
+              <span className="leading-tight"><span className="display block text-20 text-primaria-forte">{MARCA.nome}</span><span className="text-13 text-texto-2">{MARCA.slogan}</span></span>
             )}
             {p && (
               <button type="button" onClick={() => setPasso(5)} className="min-h-12 rounded-full px-3 text-17 font-bold text-texto-2 active:bg-superficie-2">

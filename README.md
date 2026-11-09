@@ -1,6 +1,6 @@
-# Ponto Pro
+# Pingou
 
-Ponto, produção e ganhos para quem trabalha na obra, no comércio, na saúde, nas entregas e por conta própria.
+Bateu o ponto, pingou. Ponto, produção e ganhos para quem trabalha na obra, no comércio, na saúde, nas entregas e por conta própria.
 
 ## Estrutura
 

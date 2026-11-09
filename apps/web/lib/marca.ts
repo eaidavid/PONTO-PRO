@@ -3,8 +3,9 @@
  * O identificador do backup NÃO muda junto, para os backups antigos continuarem válidos.
  */
 export const MARCA = {
-  nome: "Ponto Pro",
-  descricao: "Bata o ponto, veja quanto vai receber e quanto falta.",
+  nome: "Pingou",
+  slogan: "Bateu o ponto, pingou.",
+  descricao: "Bateu o ponto, pingou. Veja quanto vai receber e quanto falta.",
 } as const;
 
 export const FORMATO_BACKUP = "Ponto Pro";

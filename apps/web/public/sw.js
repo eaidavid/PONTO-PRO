@@ -1,10 +1,10 @@
 /*
- * Service worker do Ponto Pro: o app abre e funciona sem internet depois do primeiro acesso.
+ * Service worker do Pingou: o app abre e funciona sem internet depois do primeiro acesso.
  * - Telas: rede primeiro (3s), cópia salva se a rede falhar.
  * - Arquivos /_next/static (nome com hash, nunca mudam): cópia salva primeiro.
  * Os dados ficam no IndexedDB, fora deste cache.
  */
-const VERSAO = "pp-v1";
+const VERSAO = "pp-v2";
 const TELAS = ["/", "/hoje", "/registros", "/producao", "/ganhos", "/metas", "/conta", "/comecar"];
 const ESTATICOS = "pp-estaticos";
 const LIMITE_ESTATICOS = 300;
