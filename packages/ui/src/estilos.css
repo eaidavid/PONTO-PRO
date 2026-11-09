@@ -1,0 +1,234 @@
+/*
+ * Ponto Pro — tokens do design system.
+ * Cores com função fixa: verde = ação e ganho normal; laranja = hora extra;
+ * vermelho = desconto, falta e erro; verde-sucesso = concluído.
+ * Temas: claro (padrão), escuro e "sol" (Sol forte: ≥ 7:1, bordas de 2px, fonte maior).
+ * Os pares de cor foram medidos: AA em claro/escuro e AAA no Sol forte.
+ */
+
+:root {
+  color-scheme: light;
+  --fundo: #f6f7f5;
+  --superficie: #ffffff;
+  --superficie-2: #edf0ec;
+  --texto: #111827;
+  --texto-2: #4b5563;
+  --borda: #e5e7eb;
+  --borda-forte: #c9cfcb;
+  --primaria: #0e7c66;
+  --primaria-forte: #0a6352;
+  --primaria-suave: #e1f1ec;
+  --sobre-primaria: #ffffff;
+  /* laranja segurança: #EA580C para preenchimentos; texto usa o tom mais escuro (AA) */
+  --extra: #ea580c;
+  --extra-texto: #c2410c;
+  --extra-suave: #fff1e7;
+  --sucesso: #16a34a;
+  --sucesso-texto: #15803d;
+  --sucesso-suave: #e8f6ec;
+  --erro: #dc2626;
+  --erro-texto: #b91c1c;
+  --erro-suave: #fdecec;
+  --foco: #0e7c66;
+  --sombra: 0 1px 2px rgb(17 24 39 / 0.06);
+  --sombra-painel: 0 -4px 16px rgb(17 24 39 / 0.06);
+  --borda-largura: 1px;
+  --escala-fonte: 106.25%; /* 17px quando o padrão do aparelho é 16px */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]):not([data-tema="sol"]) {
+    color-scheme: dark;
+    --fundo: #0b1210;
+    --superficie: #141c1a;
+    --superficie-2: #1c2623;
+    --texto: #f3f4f6;
+    --texto-2: #b4beb9;
+    --borda: #2a3532;
+    --borda-forte: #3c4a46;
+    --primaria: #3ccba9;
+    --primaria-forte: #5fd8bb;
+    --primaria-suave: #12312a;
+    --sobre-primaria: #04221b;
+    --extra: #fb923c;
+    --extra-texto: #fdba74;
+    --extra-suave: #3a2112;
+    --sucesso: #4ade80;
+    --sucesso-texto: #4ade80;
+    --sucesso-suave: #10301d;
+    --erro: #f87171;
+    --erro-texto: #fca5a5;
+    --erro-suave: #3a1616;
+    --foco: #3ccba9;
+    --sombra: none;
+    --sombra-painel: 0 -4px 16px rgb(0 0 0 / 0.4);
+  }
+}
+
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #0b1210;
+  --superficie: #141c1a;
+  --superficie-2: #1c2623;
+  --texto: #f3f4f6;
+  --texto-2: #b4beb9;
+  --borda: #2a3532;
+  --borda-forte: #3c4a46;
+  --primaria: #3ccba9;
+  --primaria-forte: #5fd8bb;
+  --primaria-suave: #12312a;
+  --sobre-primaria: #04221b;
+  --extra: #fb923c;
+  --extra-texto: #fdba74;
+  --extra-suave: #3a2112;
+  --sucesso: #4ade80;
+  --sucesso-texto: #4ade80;
+  --sucesso-suave: #10301d;
+  --erro: #f87171;
+  --erro-texto: #fca5a5;
+  --erro-suave: #3a1616;
+  --foco: #3ccba9;
+  --sombra: none;
+  --sombra-painel: 0 -4px 16px rgb(0 0 0 / 0.4);
+}
+
+/* Sol forte: sem cinzas claros, contraste ≥ 7:1, bordas de 2px, fonte um nível maior */
+:root[data-tema="sol"] {
+  color-scheme: light;
+  --fundo: #ffffff;
+  --superficie: #ffffff;
+  --superficie-2: #f1f1f1;
+  --texto: #000000;
+  --texto-2: #1f2937;
+  --borda: #000000;
+  --borda-forte: #000000;
+  --primaria: #00513f;
+  --primaria-forte: #003b2e;
+  --primaria-suave: #d9efe8;
+  --sobre-primaria: #ffffff;
+  --extra: #9a3412;
+  --extra-texto: #9a3412;
+  --extra-suave: #ffe8d6;
+  --sucesso: #14532d;
+  --sucesso-texto: #14532d;
+  --sucesso-suave: #dcfce7;
+  --erro: #991b1b;
+  --erro-texto: #991b1b;
+  --erro-suave: #fee2e2;
+  --foco: #000000;
+  --sombra: none;
+  --sombra-painel: none;
+  --borda-largura: 2px;
+  --escala-fonte: 125%; /* 20px */
+}
+
+@theme inline {
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-texto: var(--texto);
+  --color-texto-2: var(--texto-2);
+  --color-borda: var(--borda);
+  --color-borda-forte: var(--borda-forte);
+  --color-primaria: var(--primaria);
+  --color-primaria-forte: var(--primaria-forte);
+  --color-primaria-suave: var(--primaria-suave);
+  --color-sobre-primaria: var(--sobre-primaria);
+  --color-extra: var(--extra);
+  --color-extra-texto: var(--extra-texto);
+  --color-extra-suave: var(--extra-suave);
+  --color-sucesso: var(--sucesso);
+  --color-sucesso-texto: var(--sucesso-texto);
+  --color-sucesso-suave: var(--sucesso-suave);
+  --color-erro: var(--erro);
+  --color-erro-texto: var(--erro-texto);
+  --color-erro-suave: var(--erro-suave);
+
+  /* Escala tipográfica 13 · 15 · 17 · 20 · 24 · 32 · 44 · 56 (relativa à base de 17px) */
+  --text-13: 0.7647rem;
+  --text-13--line-height: 1.35;
+  --text-15: 0.8824rem;
+  --text-15--line-height: 1.4;
+  --text-17: 1rem;
+  --text-17--line-height: 1.45;
+  --text-20: 1.1765rem;
+  --text-20--line-height: 1.35;
+  --text-24: 1.4118rem;
+  --text-24--line-height: 1.25;
+  --text-32: 1.8824rem;
+  --text-32--line-height: 1.15;
+  --text-44: 2.5882rem;
+  --text-44--line-height: 1.05;
+  --text-56: 3.2941rem;
+  --text-56--line-height: 1;
+
+  --radius-cartao: 16px;
+  --radius-painel: 28px;
+  --shadow-min: var(--sombra);
+  --shadow-painel: var(--sombra-painel);
+
+  --animate-check: check-pop 250ms ease-out;
+  --animate-subir: subir 220ms ease-out;
+  --animate-entrar: entrar 200ms ease-out;
+}
+
+@keyframes check-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes subir {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes entrar {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes desenhar {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes encolher {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@layer base {
+  html {
+    font-size: var(--escala-fonte);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.45;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 3px solid var(--foco);
+    outline-offset: 2px;
+  }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@layer utilities {
+  .numeros { font-variant-numeric: tabular-nums lining-nums; }
+  .borda { border-width: var(--borda-largura); border-color: var(--borda); }
+  .check-traco { stroke-dasharray: 24; animation: desenhar 300ms 80ms ease-out both; }
+  .barra-tempo { transform-origin: left; animation: encolher linear forwards; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

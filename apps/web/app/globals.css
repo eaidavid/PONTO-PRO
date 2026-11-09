@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "@ponto-pro/ui/estilos.css";
+
+@source "../../../packages/ui/src";
