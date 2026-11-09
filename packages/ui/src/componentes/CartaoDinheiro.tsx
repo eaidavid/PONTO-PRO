@@ -23,7 +23,7 @@ export function CartaoDinheiro({ valor, jaGanhou, falta, progresso, titulo = "Vo
     <section aria-label={titulo} className="fundo-marca relative flex flex-col gap-5 overflow-hidden rounded-[24px] p-5 shadow-min">
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-17 font-bold text-sobre-marca-2">{titulo}</h2>
-        {periodo && <span className="numeros rounded-full bg-white/12 px-3 py-1 text-13 font-bold text-sobre-marca">{periodo}</span>}
+        {periodo && <span className="numeros shrink-0 whitespace-nowrap rounded-full bg-white/12 px-3 py-1 text-13 font-bold text-sobre-marca">{periodo}</span>}
       </div>
       {carregando ? (
         <Skeleton className="h-14 w-60 bg-white/15" />

@@ -1,0 +1,510 @@
+"use client";
+
+import {
+  type Desconto,
+  ehSugestao,
+  formatarHorasCurto,
+  formatarPercentual,
+  formatarReais,
+  horasSemanais,
+  lerReais,
+  MODELOS,
+  type PerfilTrabalho,
+  resumoDoPerfil,
+} from "@ponto-pro/core";
+import {
+  BotaoPrincipal,
+  BottomSheet,
+  CampoNumero,
+  CampoTexto,
+  Chip,
+  Contador,
+  EditorSemana,
+  Interruptor,
+  LinhaAjuste,
+  SeloSugestao,
+  useToast,
+} from "@ponto-pro/ui";
+import {
+  Briefcase,
+  CalendarClock,
+  CalendarDays,
+  Contrast,
+  Download,
+  FileText,
+  Monitor,
+  Moon,
+  Percent,
+  Plus,
+  RefreshCw,
+  Save,
+  Scale,
+  ShieldCheck,
+  Sun,
+  Trash2,
+  Wallet,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type ReactNode, useState } from "react";
+import { apagarTudo, exportarDados, novoId, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
+import type { DadosPessoais, Tema } from "../../../lib/db";
+import { useEstado } from "../../../lib/estado";
+import {
+  almocoAtual,
+  centavosParaTexto,
+  comEscala,
+  definirAlmoco,
+  definirDia,
+  editar,
+  type Forma,
+  minutosDaSemana,
+  NOME_FORMA,
+  pagamentoPara,
+  valorPrincipal,
+} from "../../../lib/perfil";
+import { Carregando } from "../../carregando";
+
+type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | null;
+
+function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="px-1 text-15 font-bold text-texto-2">{titulo}</h2>
+      <div className="cartao divide-y divide-borda overflow-hidden">{children}</div>
+    </section>
+  );
+}
+
+export default function Conta() {
+  const estado = useEstado();
+  const router = useRouter();
+  const { mostrar } = useToast();
+  const [painel, setPainel] = useState<Painel>(null);
+  const [rascunho, setRascunho] = useState<PerfilTrabalho | null>(null);
+  const [valorTxt, setValorTxt] = useState("");
+  const [pessoal, setPessoal] = useState<DadosPessoais>({});
+  const [novoDesc, setNovoDesc] = useState<{ nome: string; tipo: "percentual" | "fixo"; valor: string }>({ nome: "", tipo: "percentual", valor: "" });
+
+  if (!estado?.perfil) return <Carregando />;
+  const { perfil, preferencias } = estado;
+  const p = rascunho ?? perfil;
+
+  function abrir(qual: Exclude<Painel, null>) {
+    setRascunho(structuredClone(perfil));
+    const v = valorPrincipal(perfil.pagamento);
+    setValorTxt(v ? centavosParaTexto(v.valor) : "");
+    setPessoal({ ...estado!.pessoal });
+    setNovoDesc({ nome: "", tipo: "percentual", valor: "" });
+    setPainel(qual);
+  }
+
+  async function salvar(mensagem = "Ajuste salvo") {
+    if (rascunho) await salvarPerfil(rascunho);
+    setPainel(null);
+    setRascunho(null);
+    mostrar({ texto: mensagem });
+  }
+
+  const mudar = (caminhos: string[], f: (x: PerfilTrabalho) => void) => setRascunho(editar(p, caminhos, f));
+  const vp = valorPrincipal(perfil.pagamento);
+  const sem = minutosDaSemana(p.escala);
+  const temas: { id: Tema; rotulo: string; icone: typeof Sun }[] = [
+    { id: "auto", rotulo: "Automático", icone: Monitor },
+    { id: "claro", rotulo: "Claro", icone: Sun },
+    { id: "escuro", rotulo: "Escuro", icone: Moon },
+    { id: "sol", rotulo: "Sol forte", icone: Contrast },
+  ];
+  const valorOk = !vp || (lerReais(valorTxt) ?? 0) > 0;
+
+  return (
+    <main className="flex flex-col gap-6 px-4 pb-4">
+      <header className="fundo-marca -mx-4 flex flex-col gap-3 px-5 pt-[max(28px,env(safe-area-inset-top))] pb-6">
+        <span aria-hidden className="flex size-14 items-center justify-center rounded-full bg-white/14 text-24 font-bold">
+          {(estado.pessoal.nome?.trim()[0] ?? "V").toUpperCase()}
+        </span>
+        <div>
+          <h1 className="display text-32">{estado.pessoal.nome?.trim() || "Sua conta"}</h1>
+          <p className="text-15 text-sobre-marca-2">
+            {MODELOS[perfil.area].nome} · {NOME_FORMA[perfil.pagamento.forma]}
+          </p>
+        </div>
+        <p className="rounded-2xl bg-white/8 p-3 text-17">{resumoDoPerfil(perfil)}</p>
+      </header>
+
+      <Grupo titulo="Seu trabalho">
+        {vp && <LinhaAjuste icone={Wallet} rotulo={vp.rotulo} valor={formatarReais(vp.valor)} onClick={() => abrir("pagamento")} />}
+        {!vp && <LinhaAjuste icone={Wallet} rotulo="Como você recebe" valor={NOME_FORMA[perfil.pagamento.forma]} onClick={() => abrir("pagamento")} />}
+        <LinhaAjuste icone={CalendarDays} rotulo="Sua semana" valor={`${formatarHorasCurto(horasSemanais(perfil.escala))} por semana`} onClick={() => abrir("semana")} />
+        <LinhaAjuste
+          icone={Percent}
+          rotulo="Hora extra"
+          valor={`Dia útil ${formatarPercentual(perfil.adicionais.extraDiaUtil)} · sábado ${formatarPercentual(perfil.adicionais.extraSabado)} · domingo ${formatarPercentual(perfil.adicionais.extraDomingo)}`}
+          sugestao={ehSugestao(perfil, "adicionais.extraSabado") || ehSugestao(perfil, "adicionais.extraDiaUtil")}
+          onClick={() => abrir("extra")}
+        />
+        <LinhaAjuste icone={CalendarClock} rotulo="Fechamento" valor={`Fecha dia ${perfil.ciclo.diaFechamento}`} onClick={() => abrir("fechamento")} />
+        <LinhaAjuste
+          icone={Scale}
+          rotulo="Compensação e saldo de horas"
+          valor={`Compensação ${perfil.jornada.compensacaoSemanal ? "ligada" : "desligada"} · saldo ${perfil.bancoHoras.ativo ? "ligado" : "desligado"}`}
+          onClick={() => abrir("regras")}
+        />
+        <LinhaAjuste
+          icone={Trash2}
+          rotulo="Descontos"
+          valor={perfil.descontos.length ? perfil.descontos.map((d) => `${d.nome} ${d.tipo === "percentual" ? formatarPercentual(d.valor) : formatarReais(d.valor)}`).join(" · ") : "Nenhum"}
+          sugestao={ehSugestao(perfil, "descontos")}
+          onClick={() => abrir("descontos")}
+        />
+        <LinhaAjuste icone={RefreshCw} rotulo="Refazer as perguntas do início" onClick={() => router.push("/comecar?refazer=1")} />
+      </Grupo>
+
+      <Grupo titulo="Contracheque">
+        <LinhaAjuste
+          icone={Briefcase}
+          rotulo="Nome, cargo e empresa"
+          valor={[estado.pessoal.nome, estado.pessoal.cargo, estado.pessoal.empresa].filter(Boolean).join(" · ") || "Toque para preencher"}
+          onClick={() => abrir("pessoal")}
+        />
+      </Grupo>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-15 font-bold text-texto-2">Aparência</h2>
+        <div className="cartao flex flex-col gap-2 p-4">
+          <div role="group" aria-label="Aparência" className="grid grid-cols-2 gap-2">
+            {temas.map((t) => (
+              <Chip key={t.id} icone={t.icone} selecionado={preferencias.tema === t.id} onClick={() => salvarPreferencias({ ...preferencias, tema: t.id })}>
+                {t.rotulo}
+              </Chip>
+            ))}
+          </div>
+          <Interruptor rotulo="Som ao bater o ponto" descricao="Um bipe curto, além da vibração." valor={preferencias.som} onChange={(som) => salvarPreferencias({ ...preferencias, som })} />
+        </div>
+      </section>
+
+      <Grupo titulo="Privacidade e dados">
+        <LinhaAjuste
+          icone={Download}
+          rotulo="Baixar meus dados"
+          valor="Arquivo com tudo o que está no celular"
+          onClick={async () => {
+            const blob = await exportarDados();
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "ponto-pro-meus-dados.json";
+            a.click();
+            URL.revokeObjectURL(a.href);
+          }}
+        />
+        <LinhaAjuste icone={Trash2} rotulo="Apagar todos os meus dados" perigo onClick={() => setPainel("apagar")} />
+      </Grupo>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-15 font-bold text-texto-2">Plano</h2>
+        <div className="cartao flex items-center gap-3 p-4">
+          <span className="flex size-10 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte">
+            <ShieldCheck aria-hidden className="size-5" />
+          </span>
+          <div>
+            <p className="text-17 font-bold">Grátis</p>
+            <p className="text-15 text-texto-2">1 pessoa, período atual. Seus dados ficam guardados neste celular.</p>
+          </div>
+        </div>
+      </section>
+
+      <p className="flex gap-2 px-1 text-13 text-texto-2">
+        <FileText aria-hidden className="size-4 shrink-0" />
+        O Ponto Pro é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
+      </p>
+
+      {/* ---------- painéis ---------- */}
+
+      <BottomSheet
+        aberto={painel === "pagamento"}
+        onFechar={() => setPainel(null)}
+        titulo="Como você recebe"
+        rodape={
+          <BotaoPrincipal
+            tamanho="g"
+            icone={Save}
+            disabled={!valorOk}
+            onClick={() => {
+              if (!rascunho) return;
+              const v = valorPrincipal(rascunho.pagamento);
+              const pg = { ...rascunho.pagamento } as Record<string, unknown>;
+              if (v) pg[v.campo] = lerReais(valorTxt) ?? 0;
+              setRascunho(null);
+              salvarPerfil({ ...rascunho, pagamento: pg as PerfilTrabalho["pagamento"] }).then(() => {
+                setPainel(null);
+                mostrar({ texto: "Valor salvo" });
+              });
+            }}
+          >
+            Salvar
+          </BotaoPrincipal>
+        }
+      >
+        <div className="flex flex-col gap-4 pb-2">
+          <div role="radiogroup" aria-label="Forma de pagamento" className="flex flex-wrap gap-2">
+            {(Object.keys(NOME_FORMA) as Forma[]).map((f) => (
+              <Chip
+                key={f}
+                selecionado={p.pagamento.forma === f}
+                onClick={() =>
+                  mudar([], (x) => {
+                    x.pagamento = pagamentoPara(f, x.pagamento);
+                    if (f === "producao" || f === "misto") x.producao.ativo = true;
+                  })
+                }
+              >
+                {NOME_FORMA[f]}
+              </Chip>
+            ))}
+          </div>
+          {valorPrincipal(p.pagamento) && (
+            <CampoNumero
+              rotulo={valorPrincipal(p.pagamento)!.rotulo}
+              prefixo="R$"
+              valor={valorTxt}
+              onChange={setValorTxt}
+              placeholder="0,00"
+              erro={!valorOk ? "Digite um valor maior que zero" : undefined}
+            />
+          )}
+          {p.pagamento.forma === "mensal" && (
+            <p className="text-15 text-texto-2">
+              Valor da hora para extras: salário ÷ {p.pagamento.divisorHoras} horas
+              {lerReais(valorTxt) ? ` = ${formatarReais(Math.round((lerReais(valorTxt) ?? 0) / p.pagamento.divisorHoras))}` : ""}.
+            </p>
+          )}
+          {p.pagamento.forma === "producao" && <p className="text-17">Você recebe pelo que lança na aba Produção.</p>}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "semana"}
+        onFechar={() => setPainel(null)}
+        titulo="Sua semana"
+        subtitulo="Horas de trabalho por dia, sem o almoço."
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Semana salva")}>Salvar semana</BotaoPrincipal>}
+      >
+        <div className="flex flex-col gap-5 pb-2">
+          {sem ? (
+            <EditorSemana minutos={sem} onChange={(d, m) => setRascunho(comEscala(p, definirDia(p.escala, d, m)))} />
+          ) : (
+            <p className="text-17">Escala em plantões (12x36): 12h de trabalho e 36h de descanso.</p>
+          )}
+          <div className="flex flex-col gap-2">
+            <span className="text-17 font-bold">Almoço</span>
+            <div role="group" aria-label="Tempo de almoço" className="flex flex-wrap gap-2">
+              {[0, 30, 60, 90, 120].map((m) => (
+                <Chip key={m} selecionado={almocoAtual(p.escala) === m} onClick={() => setRascunho({ ...p, escala: definirAlmoco(p.escala, m) })}>
+                  {m === 0 ? "Sem almoço" : formatarHorasCurto(m)}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "extra"}
+        onFechar={() => setPainel(null)}
+        titulo="Hora extra"
+        subtitulo="Quanto a mais vale cada hora além da sua semana."
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Percentuais salvos")}>Salvar</BotaoPrincipal>}
+      >
+        <div className="flex flex-col gap-6 pb-2">
+          <SeloSugestao />
+          {(
+            [
+              ["extraDiaUtil", "Dia útil"],
+              ["extraSabado", "Sábado"],
+              ["extraDomingo", "Domingo"],
+              ["extraFeriado", "Feriado"],
+            ] as const
+          ).map(([campo, nome]) => (
+            <Contador
+              key={campo}
+              rotulo={nome}
+              valor={`+${formatarPercentual(p.adicionais[campo])}`}
+              passo="10%"
+              podeMenos={p.adicionais[campo] >= 10}
+              podeMais={p.adicionais[campo] <= 290}
+              onMenos={() => mudar([`adicionais.${campo}`], (x) => void (x.adicionais[campo] = Math.max(0, x.adicionais[campo] - 10)))}
+              onMais={() => mudar([`adicionais.${campo}`], (x) => void (x.adicionais[campo] = Math.min(300, x.adicionais[campo] + 10)))}
+            />
+          ))}
+          <Interruptor
+            rotulo="Adicional noturno"
+            descricao={`Das ${p.adicionais.noturno.inicio} às ${p.adicionais.noturno.fim}, +${formatarPercentual(p.adicionais.noturno.percentual)}`}
+            valor={p.adicionais.noturno.ativo}
+            onChange={(v) => mudar(["adicionais.noturno"], (x) => void (x.adicionais.noturno.ativo = v))}
+          />
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "fechamento"}
+        onFechar={() => setPainel(null)}
+        titulo="Fechamento"
+        subtitulo="Dia em que o período fecha para o pagamento."
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Fechamento salvo")}>Salvar</BotaoPrincipal>}
+      >
+        <div className="pb-2">
+          <Contador
+            rotulo="Fecha no dia"
+            valor={String(p.ciclo.diaFechamento)}
+            passo="1 dia"
+            grande
+            podeMenos={p.ciclo.diaFechamento > 1}
+            podeMais={p.ciclo.diaFechamento < 31}
+            onMenos={() => mudar([], (x) => void (x.ciclo.diaFechamento -= 1))}
+            onMais={() => mudar([], (x) => void (x.ciclo.diaFechamento += 1))}
+          />
+          <p className="pt-3 text-center text-17 text-texto-2">
+            {p.ciclo.diaFechamento >= 28 ? "Fecha no fim do mês." : `Período do dia ${p.ciclo.diaFechamento + 1} ao dia ${p.ciclo.diaFechamento}.`}
+          </p>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "regras"}
+        onFechar={() => setPainel(null)}
+        titulo="Compensação e saldo"
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Regras salvas")}>Salvar</BotaoPrincipal>}
+      >
+        <div className="flex flex-col divide-y divide-borda pb-2">
+          <Interruptor
+            rotulo="Compensação na semana"
+            descricao="Horas a mais num dia cobrem horas a menos em outro, sem virar extra."
+            valor={p.jornada.compensacaoSemanal}
+            onChange={(v) => mudar([], (x) => void (x.jornada.compensacaoSemanal = v))}
+          />
+          <Interruptor
+            rotulo="Saldo de horas"
+            descricao="Hora extra vira saldo para folgar depois, em vez de dinheiro."
+            valor={p.bancoHoras.ativo}
+            onChange={(v) => mudar(["bancoHoras"], (x) => void (x.bancoHoras.ativo = v))}
+          />
+          <Interruptor
+            rotulo="Feriado é pago"
+            descricao="Em feriado de dia de trabalho, as horas do dia são pagas mesmo sem trabalhar."
+            valor={p.adicionais.feriadoTrabalhado.abonaDia}
+            onChange={(v) => mudar([], (x) => void (x.adicionais.feriadoTrabalhado.abonaDia = v))}
+          />
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "descontos"}
+        onFechar={() => setPainel(null)}
+        titulo="Descontos"
+        subtitulo="Ex.: INSS, adiantamento, vale."
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={() => salvar("Descontos salvos")}>Salvar descontos</BotaoPrincipal>}
+      >
+        <div className="flex flex-col gap-4 pb-2">
+          {ehSugestao(p, "descontos") && <SeloSugestao texto="Desconto aproximado — confira no seu contracheque" />}
+          {p.descontos.length > 0 && (
+            <ul className="cartao divide-y divide-borda overflow-hidden">
+              {p.descontos.map((d) => (
+                <li key={d.id} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
+                  <span className="flex-1">
+                    <span className="block text-17 font-bold">{d.nome}</span>
+                    <span className="numeros block text-15 text-texto-2">{d.tipo === "percentual" ? formatarPercentual(d.valor) : formatarReais(d.valor)}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => mudar(["descontos"], (x) => void (x.descontos = x.descontos.filter((y) => y.id !== d.id)))}
+                    className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-15 font-bold text-erro-texto active:bg-erro-suave"
+                  >
+                    <Trash2 aria-hidden className="size-5" /> Tirar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-col gap-3 rounded-2xl bg-superficie-2 p-4">
+            <span className="text-17 font-bold">Novo desconto</span>
+            <CampoTexto rotulo="Nome" valor={novoDesc.nome} onChange={(nome) => setNovoDesc({ ...novoDesc, nome })} placeholder="Ex.: Adiantamento" maxLength={40} />
+            <div role="group" aria-label="Tipo de desconto" className="flex gap-2">
+              <Chip selecionado={novoDesc.tipo === "percentual"} onClick={() => setNovoDesc({ ...novoDesc, tipo: "percentual" })}>Percentual</Chip>
+              <Chip selecionado={novoDesc.tipo === "fixo"} onClick={() => setNovoDesc({ ...novoDesc, tipo: "fixo" })}>Valor fixo</Chip>
+            </div>
+            <CampoNumero
+              rotulo={novoDesc.tipo === "percentual" ? "Percentual" : "Valor"}
+              prefixo={novoDesc.tipo === "fixo" ? "R$" : undefined}
+              sufixo={novoDesc.tipo === "percentual" ? "%" : undefined}
+              valor={novoDesc.valor}
+              onChange={(valor) => setNovoDesc({ ...novoDesc, valor })}
+              erro={novoDesc.tipo === "percentual" && Number(novoDesc.valor.replace(",", ".")) > 100 ? "O desconto deve ficar entre 0% e 100%" : undefined}
+            />
+            <BotaoPrincipal
+              variante="secundaria"
+              icone={Plus}
+              disabled={
+                !novoDesc.nome.trim() ||
+                !novoDesc.valor ||
+                (novoDesc.tipo === "percentual" ? !(Number(novoDesc.valor.replace(",", ".")) >= 0 && Number(novoDesc.valor.replace(",", ".")) <= 100) : lerReais(novoDesc.valor) === null)
+              }
+              onClick={() => {
+                const d: Desconto =
+                  novoDesc.tipo === "percentual"
+                    ? { id: novoId("d"), nome: novoDesc.nome.trim(), tipo: "percentual", valor: Math.round(Number(novoDesc.valor.replace(",", ".")) * 100) / 100 }
+                    : { id: novoId("d"), nome: novoDesc.nome.trim(), tipo: "fixo", valor: lerReais(novoDesc.valor) ?? 0 };
+                mudar(["descontos"], (x) => void x.descontos.push(d));
+                setNovoDesc({ nome: "", tipo: novoDesc.tipo, valor: "" });
+              }}
+            >
+              Adicionar desconto
+            </BotaoPrincipal>
+          </div>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        aberto={painel === "pessoal"}
+        onFechar={() => setPainel(null)}
+        titulo="Dados do contracheque"
+        rodape={
+          <BotaoPrincipal
+            tamanho="g"
+            icone={Save}
+            onClick={async () => {
+              await salvarPessoal(pessoal);
+              setPainel(null);
+              mostrar({ texto: "Dados salvos" });
+            }}
+          >
+            Salvar
+          </BotaoPrincipal>
+        }
+      >
+        <div className="flex flex-col gap-4 pb-2">
+          <CampoTexto rotulo="Seu nome" valor={pessoal.nome ?? ""} onChange={(nome) => setPessoal({ ...pessoal, nome })} autoComplete="name" maxLength={60} />
+          <CampoTexto rotulo="Cargo" valor={pessoal.cargo ?? ""} onChange={(cargo) => setPessoal({ ...pessoal, cargo })} placeholder="Ex.: Pedreiro" maxLength={40} />
+          <CampoTexto rotulo="Empresa ou obra" valor={pessoal.empresa ?? ""} onChange={(empresa) => setPessoal({ ...pessoal, empresa })} maxLength={60} />
+        </div>
+      </BottomSheet>
+
+      <BottomSheet aberto={painel === "apagar"} onFechar={() => setPainel(null)} titulo="Apagar todos os dados?" subtitulo="Registros, produção e ajustes saem deste celular. Não dá para desfazer.">
+        <div className="flex flex-col gap-3 pb-2">
+          <BotaoPrincipal
+            variante="perigo"
+            icone={Trash2}
+            onClick={async () => {
+              await apagarTudo();
+              window.location.href = "/comecar";
+            }}
+          >
+            Sim, apagar tudo
+          </BotaoPrincipal>
+          <BotaoPrincipal variante="fantasma" onClick={() => setPainel(null)}>Cancelar</BotaoPrincipal>
+        </div>
+      </BottomSheet>
+
+      <Link href="/hoje" className="sr-only">Voltar para Hoje</Link>
+    </main>
+  );
+}

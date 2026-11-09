@@ -40,7 +40,7 @@ export function BarraNavegacao({ abas, ativa, link: Link = "a" as unknown as Com
     <nav
       aria-label="Principal"
       className={cx(
-        "z-40 border-t-[length:var(--borda-largura)] border-[color:var(--borda-cartao)] bg-[color-mix(in_srgb,var(--superficie)_88%,transparent)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl shadow-painel",
+        "z-40 print:hidden border-t-[length:var(--borda-largura)] border-[color:var(--borda-cartao)] bg-[color-mix(in_srgb,var(--superficie)_88%,transparent)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl shadow-painel",
         fixa && "fixed inset-x-0 bottom-0",
       )}
     >

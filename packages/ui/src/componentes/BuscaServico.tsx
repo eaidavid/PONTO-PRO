@@ -46,7 +46,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
   const [quantidade, setQuantidade] = useState(quantidadeInicial);
   const [tentou, setTentou] = useState(false);
 
-  const resultado = useMemo(() => buscarItens(itens, texto, 8), [itens, texto]);
+  const resultado = useMemo(() => buscarItens(itens, texto, texto.trim() ? 8 : 4), [itens, texto]);
   const unidadeFinal = unidade === "outra" ? outra.trim() : unidade;
   const precoCentavos = escolhido ? escolhido.preco : lerReais(preco);
   const qtd = lerQuantidade(quantidade);
@@ -160,6 +160,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           className="min-w-0 flex-1 bg-transparent text-20 outline-none placeholder:text-texto-2"
         />
       </label>
+      {!texto.trim() && <p className="px-1 text-15 text-texto-2">Sugestões — ou digite para buscar entre {itens.length} serviços</p>}
       <ul className="flex flex-col divide-y divide-borda overflow-hidden cartao" aria-label="Serviços encontrados">
         {resultado.itens.map((i) => (
           <li key={i.id}>
