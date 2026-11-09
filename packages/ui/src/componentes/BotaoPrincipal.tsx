@@ -13,7 +13,7 @@ export interface BotaoPrincipalProps extends ButtonHTMLAttributes<HTMLButtonElem
 }
 
 const VARIANTES = {
-  primaria: "bg-primaria text-sobre-primaria active:bg-primaria-forte",
+  primaria: "sombra-botao bg-primaria text-sobre-primaria active:bg-primaria-forte",
   secundaria: "bg-superficie text-primaria borda border-primaria! active:bg-primaria-suave",
   perigo: "bg-erro-suave text-erro-texto borda border-erro! active:brightness-95",
   fantasma: "bg-transparent text-primaria active:bg-primaria-suave",

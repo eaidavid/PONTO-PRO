@@ -40,8 +40,9 @@ import {
   StatusSync,
   Toast,
   useToast,
+  ValorDinheiro,
 } from "@ponto-pro/ui";
-import { Clock, Contrast, Hammer, Moon, PackagePlus, Save, Sun, Trash2, Wallet } from "lucide-react";
+import { Clock, Contrast, Hammer, LogOut, Moon, PackagePlus, Save, Sun, Trash2, Wallet } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { AGORA, calcular, HOJE, itens, perfil, registros } from "./demo";
 
@@ -128,29 +129,37 @@ function TelaHoje({ marcacoes, onBater, offline }: { marcacoes: DiaRegistro["mar
     ? minParaHora(horaParaMin(marcacoes.entrada) + dia.escala.horasLiquidasMin + dia.escala.almocoMin)
     : dia.escala.fim ?? "--:--";
   return (
-    <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[32px] bg-fundo borda">
-      <div className="flex flex-col gap-1 px-5 pt-5 pb-10">
-        <div className="flex items-center justify-between">
-          <p className="text-20 font-bold">Bom dia, José</p>
-          <StatusSync estado={offline ? "local" : "sincronizado"} />
-        </div>
-        <p className="numeros pt-2 text-56 font-bold">{AGORA.hora}</p>
-        <p className="text-17 text-texto-2 first-letter:uppercase">{dataPorExtenso(HOJE)}</p>
-      </div>
-      <div className="-mt-6 flex flex-col gap-4 rounded-t-painel bg-superficie px-4 pt-5 pb-6 shadow-painel">
-        <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between text-15">
-            <span className="text-texto-2">Jornada</span>
-            <span className="numeros font-bold">{formatarDuracao(dia.trabalhadoMin)} de {formatarDuracao(dia.escala.horasLiquidasMin)}</span>
+    <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[32px] bg-fundo shadow-min ring-1 ring-[color:var(--borda-cartao)]">
+      <div className="fundo-marca flex flex-col gap-1 px-5 pt-5 pb-14">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="flex size-11 items-center justify-center rounded-full bg-white/14 text-20 font-bold">J</span>
+          <div className="flex-1 leading-tight">
+            <p className="text-20 font-bold">Bom dia, José</p>
+            <p className="text-15 text-sobre-marca-2">Obra Jardim</p>
           </div>
-          <BarraProgresso valor={dia.trabalhadoMin / dia.escala.horasLiquidasMin} rotulo="Jornada de hoje" />
+        </div>
+        <p className="numeros pt-5 text-[min(var(--text-56)*1.15,19vw)] leading-none font-bold tracking-tight">{AGORA.hora}</p>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <p className="text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(HOJE)}</p>
+          <StatusSync estado={offline ? "local" : "sincronizado"} sobreMarca />
+        </div>
+      </div>
+      <div className="-mt-8 flex flex-col gap-4 rounded-t-painel bg-fundo px-4 pt-4 pb-6">
+        <div className="cartao flex flex-col gap-4 p-4">
+          <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between text-15">
+              <span className="font-bold text-texto-2">Jornada</span>
+              <span className="numeros font-bold">{formatarDuracao(dia.trabalhadoMin)} de {formatarDuracao(dia.escala.horasLiquidasMin)}</span>
+            </div>
+            <BarraProgresso valor={dia.trabalhadoMin / dia.escala.horasLiquidasMin} rotulo="Jornada de hoje" />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <CartaoValor rotulo="Trabalhado" valor={formatarDuracao(dia.trabalhadoMin)} icone={Clock} />
-          <CartaoValor rotulo="Saída prevista" valor={prevista} icone={Clock} />
+          <CartaoValor rotulo="Saída prevista" valor={prevista} icone={LogOut} />
         </div>
-        <CartaoValor rotulo="Ganho hoje" valor={formatarReais(hoje.bruto)} tom="primaria" icone={Wallet}>
+        <CartaoValor rotulo="Ganho hoje" valor={<ValorDinheiro centavos={hoje.bruto} tamanho="g" />} tom="primaria" icone={Wallet}>
           <LinkPorQue />
         </CartaoValor>
         <BotaoPonto etapa={etapa} hora={AGORA.hora} offline={offline} onBater={onBater} />
@@ -186,10 +195,12 @@ export function Vitrine() {
 
   return (
     <main className="mx-auto flex max-w-[720px] flex-col px-4 pb-40">
-      <header className="flex flex-col gap-3 py-6">
-        <p className="text-15 font-bold text-primaria">Ponto Pro · Milestone 1</p>
-        <h1 className="text-32 font-bold">Design system</h1>
-        <p className="text-17 text-texto-2">Tokens, componentes e estados. Troque a aparência para conferir os três temas.</p>
+      <header className="flex flex-col gap-4 py-6">
+        <div className="fundo-marca flex flex-col gap-2 rounded-[24px] p-5">
+          <p className="text-15 font-bold text-marca-destaque">Ponto Pro · Milestone 1</p>
+          <h1 className="text-32 font-bold">Design system</h1>
+          <p className="text-17 text-sobre-marca-2">Tokens, componentes e estados. Troque a aparência para conferir os três temas.</p>
+        </div>
         <TrocaTema />
       </header>
 
@@ -204,7 +215,7 @@ export function Vitrine() {
       <Secao id="cores" titulo="Cores" descricao="Cada cor tem uma função fixa em todo o app.">
         <ul className="grid grid-cols-2 gap-3 min-[600px]:grid-cols-3">
           {CORES.map((c) => (
-            <li key={c.var} className="flex items-center gap-3 rounded-cartao bg-superficie p-3 borda">
+            <li key={c.var} className="cartao flex items-center gap-3 p-3">
               <span aria-hidden className="size-10 shrink-0 rounded-xl borda" style={{ background: `var(${c.var})` }} />
               <span className="min-w-0">
                 <span className="block text-15 font-bold">{c.nome}</span>
@@ -247,6 +258,7 @@ export function Vitrine() {
           jaGanhou={previsao.realizado.liquido}
           falta={previsao.falta.valor}
           progresso={previsao.progresso}
+          periodo="21/10 a 20/11"
           onPorQue={() => setSheetPorQue(true)}
         />
         <Estado nome="Carregando"><CartaoDinheiro valor={0} jaGanhou={0} falta={0} progresso={0} carregando /></Estado>
@@ -259,7 +271,7 @@ export function Vitrine() {
       </Secao>
 
       <Secao id="registros" titulo="LinhaRegistro" descricao="Hoje em destaque, fim de semana com fundo leve, saldo colorido. Toque numa linha para editar.">
-        <div className="overflow-hidden rounded-cartao bg-superficie borda divide-y divide-borda">
+        <div className="cartao overflow-hidden divide-y divide-borda">
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-20 font-bold">21/10 a 20/11</span>
             <span className="text-15 text-texto-2">Período atual</span>

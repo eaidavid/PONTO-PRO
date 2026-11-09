@@ -42,7 +42,7 @@ export function EtapasDoDia({ marcacoes, etapaAtual }: EtapasDoDiaProps) {
               {feito && <Check aria-hidden className="size-5" strokeWidth={3} />}
               {atual && <span aria-hidden className="size-2.5 rounded-full bg-primaria" />}
             </span>
-            <span className={cx("text-15", atual ? "font-bold text-texto" : "text-texto-2")}>{e.rotulo}</span>
+            <span className={cx("text-[clamp(0.75rem,3.9vw,var(--text-15))] leading-tight", atual ? "font-bold text-texto" : "text-texto-2")}>{e.rotulo}</span>
             <span className={cx("numeros text-17", feito ? "font-bold text-texto" : "text-texto-2")}>
               {hora ?? "--:--"}
               <span className="sr-only">{feito ? " registrado" : atual ? " próxima etapa" : " ainda não"}</span>

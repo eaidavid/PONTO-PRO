@@ -40,7 +40,7 @@ export function BarraNavegacao({ abas, ativa, link: Link = "a" as unknown as Com
     <nav
       aria-label="Principal"
       className={cx(
-        "z-40 border-t-[length:var(--borda-largura)] border-borda bg-superficie pb-[env(safe-area-inset-bottom)]",
+        "z-40 border-t-[length:var(--borda-largura)] border-[color:var(--borda-cartao)] bg-[color-mix(in_srgb,var(--superficie)_88%,transparent)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl shadow-painel",
         fixa && "fixed inset-x-0 bottom-0",
       )}
     >
@@ -55,7 +55,7 @@ export function BarraNavegacao({ abas, ativa, link: Link = "a" as unknown as Com
                 aria-current={ativo ? "page" : undefined}
                 className="flex min-h-[72px] flex-col items-center justify-center gap-1 px-1 py-2"
               >
-                <span className={cx("flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200", ativo ? "bg-primaria text-sobre-primaria" : "text-texto-2")}>
+                <span className={cx("flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200", ativo ? "sombra-botao bg-primaria text-sobre-primaria" : "text-texto-2")}>
                   <Icone aria-hidden className="size-6" strokeWidth={ativo ? 2.5 : 2} />
                 </span>
                 <span className={cx("text-13", ativo ? "font-bold text-primaria" : "text-texto-2")}>{a.rotulo}</span>

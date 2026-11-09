@@ -50,3 +50,9 @@ Barra inferior, chips, botões e status: nenhum ícone aparece sozinho. A aba at
 
 ## 9. Movimento curto e opcional
 Animações de 150 a 250ms (check, painel subindo, toast). Com "reduzir movimento" ligado no aparelho, elas são desligadas.
+
+## 10. Acabamento premium (sem perder a robustez)
+- **Área de marca:** verde profundo (#07352D) no topo da tela Hoje e no cartão "Você deve receber", com uma luz suave no canto (não é gradiente chamativo). O texto branco sobre esse verde passa de 13:1.
+- **Valores como nos bancos:** "R$" e centavos menores que os reais. O leitor de tela lê o valor inteiro ("R$ 5.124,44").
+- **Profundidade:** cartões com borda fininha e sombra em camadas, ícones em círculos coloridos e botão de ponto com sombra verde e brilho leve no topo. A barra inferior é translúcida.
+- **Sol forte:** sombras e brilhos desligam, e entram bordas pretas de 2px. A aparência premium nunca vale mais que a leitura no sol.

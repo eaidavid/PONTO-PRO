@@ -160,7 +160,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           className="min-w-0 flex-1 bg-transparent text-20 outline-none placeholder:text-texto-2"
         />
       </label>
-      <ul className="flex flex-col divide-y divide-borda overflow-hidden rounded-cartao bg-superficie borda" aria-label="Serviços encontrados">
+      <ul className="flex flex-col divide-y divide-borda overflow-hidden cartao" aria-label="Serviços encontrados">
         {resultado.itens.map((i) => (
           <li key={i.id}>
             <button type="button" onClick={() => setEscolhido(i)} className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left active:bg-superficie-2">

@@ -54,6 +54,7 @@ test("busca de serviço cria item novo com prévia", async ({ page }) => {
 
 for (const tema of TEMAS) {
   test(`acessibilidade sem violações graves (${tema})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await abrir(page, tema);
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");

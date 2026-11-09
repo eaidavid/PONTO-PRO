@@ -5,6 +5,7 @@ export * from "./componentes/EtapasDoDia";
 export * from "./componentes/BarraProgresso";
 export * from "./componentes/CartaoValor";
 export * from "./componentes/CartaoDinheiro";
+export * from "./componentes/ValorDinheiro";
 export * from "./componentes/LinkPorQue";
 export * from "./componentes/ListaExtrato";
 export * from "./componentes/BottomSheet";

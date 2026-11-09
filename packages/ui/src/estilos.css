@@ -30,8 +30,17 @@
   --erro-texto: #b91c1c;
   --erro-suave: #fdecec;
   --foco: #0e7c66;
-  --sombra: 0 1px 2px rgb(17 24 39 / 0.06);
-  --sombra-painel: 0 -4px 16px rgb(17 24 39 / 0.06);
+  --sombra: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 20px -8px rgb(16 24 40 / 0.12);
+  --sombra-painel: 0 -10px 30px -12px rgb(16 24 40 / 0.18);
+  --sombra-botao: 0 12px 24px -12px rgb(14 124 102 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.2);
+  --borda-cartao: rgb(16 24 40 / 0.06);
+  /* área de marca (topo da tela Hoje, cartão de dinheiro) */
+  --marca: #07352d;
+  --marca-brilho: #0f6a56;
+  --sobre-marca: #ffffff;
+  --sobre-marca-2: rgb(255 255 255 / 0.8);
+  --marca-destaque: #7ee0c3;
+  --marca-trilho: rgb(255 255 255 / 0.16);
   --borda-largura: 1px;
   --escala-fonte: 106.25%; /* 17px quando o padrão do aparelho é 16px */
 }
@@ -60,8 +69,12 @@
     --erro-texto: #fca5a5;
     --erro-suave: #3a1616;
     --foco: #3ccba9;
-    --sombra: none;
-    --sombra-painel: 0 -4px 16px rgb(0 0 0 / 0.4);
+    --sombra: 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --sombra-painel: 0 -10px 30px -12px rgb(0 0 0 / 0.6);
+    --sombra-botao: 0 12px 28px -12px rgb(60 203 169 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.25);
+    --borda-cartao: #26312e;
+    --marca: #0d2a24;
+    --marca-brilho: #17493e;
   }
 }
 
@@ -88,8 +101,12 @@
   --erro-texto: #fca5a5;
   --erro-suave: #3a1616;
   --foco: #3ccba9;
-  --sombra: none;
-  --sombra-painel: 0 -4px 16px rgb(0 0 0 / 0.4);
+  --sombra: 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --sombra-painel: 0 -10px 30px -12px rgb(0 0 0 / 0.6);
+  --sombra-botao: 0 12px 28px -12px rgb(60 203 169 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.25);
+  --borda-cartao: #26312e;
+  --marca: #0d2a24;
+  --marca-brilho: #17493e;
 }
 
 /* Sol forte: sem cinzas claros, contraste ≥ 7:1, bordas de 2px, fonte um nível maior */
@@ -118,6 +135,12 @@
   --foco: #000000;
   --sombra: none;
   --sombra-painel: none;
+  --sombra-botao: none;
+  --borda-cartao: #000000;
+  --marca: #00281f;
+  --marca-brilho: #00281f;
+  --sobre-marca-2: #ffffff;
+  --marca-trilho: rgb(255 255 255 / 0.3);
   --borda-largura: 2px;
   --escala-fonte: 125%; /* 20px */
 }
@@ -145,6 +168,10 @@
   --color-erro: var(--erro);
   --color-erro-texto: var(--erro-texto);
   --color-erro-suave: var(--erro-suave);
+  --color-marca: var(--marca);
+  --color-sobre-marca: var(--sobre-marca);
+  --color-sobre-marca-2: var(--sobre-marca-2);
+  --color-marca-destaque: var(--marca-destaque);
 
   /* Escala tipográfica 13 · 15 · 17 · 20 · 24 · 32 · 44 · 56 (relativa à base de 17px) */
   --text-13: 0.7647rem;
@@ -221,6 +248,20 @@
 @layer utilities {
   .numeros { font-variant-numeric: tabular-nums lining-nums; }
   .borda { border-width: var(--borda-largura); border-color: var(--borda); }
+  /* cartão premium: hairline + sombra em camadas (no Sol forte, borda preta de 2px) */
+  .cartao {
+    background: var(--superficie);
+    border: var(--borda-largura) solid var(--borda-cartao);
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+  }
+  /* fundo de marca com luz suave no canto (não é gradiente chamativo) */
+  .fundo-marca {
+    background-color: var(--marca);
+    background-image: radial-gradient(120% 90% at 100% 0%, var(--marca-brilho) 0%, transparent 60%);
+    color: var(--sobre-marca);
+  }
+  .sombra-botao { box-shadow: var(--sombra-botao); }
   .check-traco { stroke-dasharray: 24; animation: desenhar 300ms 80ms ease-out both; }
   .barra-tempo { transform-origin: left; animation: encolher linear forwards; }
 }

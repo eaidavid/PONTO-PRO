@@ -71,18 +71,23 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, som, onBate
         aria-busy={carregando || undefined}
         aria-label={encerrado ? "Dia encerrado" : `${info.rotulo} às ${hora}`}
         className={cx(
-          "relative flex min-h-16 w-full items-center gap-3 overflow-hidden rounded-full pl-6 pr-5 text-left font-bold select-none transition-[transform,background-color] duration-150",
+          "relative flex min-h-[72px] w-full items-center gap-3 overflow-hidden rounded-full pl-3 pr-6 text-left font-bold select-none transition-[transform,background-color] duration-150",
           encerrado
             ? "bg-superficie-2 text-texto-2 borda"
-            : "bg-primaria text-sobre-primaria active:scale-[0.98] active:bg-primaria-forte",
+            : "sombra-botao bg-primaria text-sobre-primaria active:scale-[0.98] active:bg-primaria-forte",
           erro && !encerrado && "ring-4 ring-erro",
         )}
       >
+        {!encerrado && (
+          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/14 to-transparent" />
+        )}
+        <span aria-hidden className={cx("relative flex size-11 shrink-0 items-center justify-center rounded-full", encerrado ? "bg-superficie" : "bg-white/16")}>
         {carregando ? (
           <LoaderCircle aria-hidden className="size-7 shrink-0 animate-spin" strokeWidth={2.25} />
         ) : (
-          <Icone aria-hidden className="size-7 shrink-0" strokeWidth={2.25} />
+          <Icone aria-hidden className="size-6 shrink-0" strokeWidth={2.25} />
         )}
+        </span>
         <span className="flex flex-1 flex-col py-2 leading-tight">
           <span className="text-20">{info.rotulo}</span>
           {!encerrado && (
