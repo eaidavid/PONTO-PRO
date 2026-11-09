@@ -13,3 +13,4 @@ export * from "./previsao";
 export * from "./metas";
 export * from "./contracheque";
 export * from "./modelos";
+export * from "./assistente";

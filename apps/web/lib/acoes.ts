@@ -1,7 +1,8 @@
-import type { DiaRegistro, Etapa, ItemProducao, LancamentoProducao, PerfilTrabalho } from "@ponto-pro/core";
+import type { DiaRegistro, Etapa, ItemProducao, LancamentoProducao, Marcacoes, PerfilTrabalho } from "@ponto-pro/core";
 import { type DadosPessoais, db, type Preferencias } from "./db";
 
-const agoraIso = () => new Date().toISOString();
+export const agoraIso = () => new Date().toISOString();
+const VERSOES_NO_HISTORICO = 20;
 
 /** Grava com histórico e fila de sincronização, numa transação só. */
 async function gravar<T extends { atualizadoEm: string }>(
@@ -12,9 +13,16 @@ async function gravar<T extends { atualizadoEm: string }>(
   await db.transaction("rw", [db[tabela], db.fila, db.historico], async () => {
     const t = db.table(tabela);
     const antes = await t.get(chave);
-    if (antes) await db.historico.add({ tabela, chave, antes, em: agoraIso() });
+    if (antes) {
+      await db.historico.add({ tabela, chave, antes, em: agoraIso() });
+      // guarda só as últimas versões de cada item
+      const versoes = await db.historico.where("[tabela+chave]").equals([tabela, chave]).primaryKeys();
+      if (versoes.length > VERSOES_NO_HISTORICO) await db.historico.bulkDelete(versoes.slice(0, versoes.length - VERSOES_NO_HISTORICO));
+    }
     if (valor) await t.put(valor);
     else await t.delete(chave);
+    // a fila de sincronização guarda só a última operação de cada item
+    await db.fila.where("[tabela+chave]").equals([tabela, chave]).delete();
     await db.fila.add({ tabela, chave, operacao: valor ? "salvar" : "apagar", em: agoraIso() });
   });
 }
@@ -23,6 +31,7 @@ async function gravar<T extends { atualizadoEm: string }>(
 
 export async function salvarPerfil(perfil: PerfilTrabalho) {
   await db.config.put({ chave: "perfil", valor: { ...perfil, atualizadoEm: agoraIso() }, atualizadoEm: agoraIso() });
+  await db.fila.where("[tabela+chave]").equals(["config", "perfil"]).delete();
   await db.fila.add({ tabela: "config", chave: "perfil", operacao: "salvar", em: agoraIso() });
 }
 
@@ -50,6 +59,14 @@ export async function baterPonto(data: string, etapa: Etapa, hora: string): Prom
   const antes = (await db.registros.get(data)) ?? null;
   const base: DiaRegistro = antes ?? { data, tipo: "normal", marcacoes: {} };
   await salvarRegistro({ ...base, tipo: base.tipo === "folga" || base.tipo === "compensado" ? base.tipo : "normal", marcacoes: { ...base.marcacoes, [etapa]: hora } });
+  return antes;
+}
+
+/** Aplica marcações de uma vez (correção de ponto esquecido). Devolve o anterior para desfazer. */
+export async function completarMarcacoes(data: string, marcacoes: Marcacoes): Promise<DiaRegistro | null> {
+  const antes = (await db.registros.get(data)) ?? null;
+  const base: DiaRegistro = antes ?? { data, tipo: "normal", marcacoes: {} };
+  await salvarRegistro({ ...base, marcacoes: { ...base.marcacoes, ...marcacoes } });
   return antes;
 }
 
@@ -90,6 +107,15 @@ export async function exportarDados(): Promise<Blob> {
   ]);
   const json = JSON.stringify({ app: "Ponto Pro", exportadoEm: agoraIso(), config, registros, itens, lancamentos }, null, 2);
   return new Blob([json], { type: "application/json" });
+}
+
+/** Manutenção ao abrir: pede armazenamento persistente (o celular não apaga o banco para liberar espaço). */
+export async function manutencao() {
+  try {
+    if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist();
+  } catch {
+    /* navegador sem suporte */
+  }
 }
 
 export async function apagarTudo() {

@@ -2,6 +2,7 @@
 
 import { ToastProvider } from "@ponto-pro/ui";
 import { type ReactNode, useEffect } from "react";
+import { manutencao } from "../lib/acoes";
 import { useEstado } from "../lib/estado";
 
 /** Aplica a aparência salva (Claro, Escuro, Sol forte ou automático). */
@@ -36,10 +37,22 @@ function AplicarTema() {
   return null;
 }
 
+/** Tarefas ao abrir o app: armazenamento persistente e service worker (funcionar sem internet). */
+function AoAbrir() {
+  useEffect(() => {
+    manutencao();
+    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+  return null;
+}
+
 export function Provedores({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <AplicarTema />
+      <AoAbrir />
       {children}
     </ToastProvider>
   );

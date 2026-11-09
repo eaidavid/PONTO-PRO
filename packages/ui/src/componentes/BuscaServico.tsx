@@ -28,6 +28,8 @@ export interface BuscaServicoProps {
   /** Para testes e demonstração. */
   textoInicial?: string;
   quantidadeInicial?: string;
+  /** Já começa com este serviço escolhido (ex.: "Lançar de novo"). */
+  itemInicial?: ItemProducao | null;
 }
 
 function lerQuantidade(v: string): number | null {
@@ -36,9 +38,9 @@ function lerQuantidade(v: string): number | null {
 }
 
 /** Busca no catálogo sem ligar para acentos, com "+ Criar" quando não existe. */
-export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "" }: BuscaServicoProps) {
+export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null }: BuscaServicoProps) {
   const [texto, setTexto] = useState(textoInicial);
-  const [escolhido, setEscolhido] = useState<ItemProducao | null>(null);
+  const [escolhido, setEscolhido] = useState<ItemProducao | null>(itemInicial);
   const [criando, setCriando] = useState<string | null>(null);
   const [unidade, setUnidade] = useState<string>("m");
   const [outra, setOutra] = useState("");

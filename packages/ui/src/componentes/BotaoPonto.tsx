@@ -22,6 +22,8 @@ export interface BotaoPontoProps {
   carregando?: boolean;
   /** Mensagem de erro (ex.: falha ao salvar). */
   erro?: string;
+  /** Aviso neutro (ex.: pedir confirmação de um toque repetido). */
+  aviso?: string;
   /** Toca um bipe curto ao bater. */
   som?: boolean;
   onBater?: () => void;
@@ -43,7 +45,7 @@ function bipe() {
 }
 
 /** Botão gigante de bater o ponto. O texto muda com a etapa do dia. */
-export function BotaoPonto({ etapa, hora, offline, carregando, erro, som, onBater }: BotaoPontoProps) {
+export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som, onBater }: BotaoPontoProps) {
   const [confirmado, setConfirmado] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -52,13 +54,22 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, som, onBate
   const info = encerrado ? { rotulo: "Dia encerrado", icone: CircleCheck } : ETAPAS[etapa];
   const Icone = info.icone;
 
-  function bater() {
-    if (encerrado || carregando) return;
-    navigator.vibrate?.(35);
+  // O check animado aparece quando a marcação foi salva de verdade (a etapa avançou),
+  // não a cada toque. Assim um toque que só pede confirmação não engana.
+  const etapaAnterior = useRef(etapa);
+  useEffect(() => {
+    const antes = etapaAnterior.current;
+    etapaAnterior.current = etapa;
+    if (antes === etapa || antes === null) return;
     if (som) bipe();
     setConfirmado(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setConfirmado(false), 1200);
+  }, [etapa, som]);
+
+  function bater() {
+    if (encerrado || carregando) return;
+    navigator.vibrate?.(35);
     onBater?.();
   }
 
@@ -110,6 +121,8 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, som, onBate
       </button>
       {erro ? (
         <p role="alert" className="text-center text-15 font-bold text-erro-texto">{erro}</p>
+      ) : aviso ? (
+        <p role="status" className="text-center text-15 font-bold text-extra-texto">{aviso}</p>
       ) : offline ? (
         <p className="flex items-center justify-center gap-2 text-15 text-texto-2">
           <CloudOff aria-hidden className="size-5" /> Salvo no celular

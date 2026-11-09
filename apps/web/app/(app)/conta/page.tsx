@@ -38,11 +38,12 @@ import {
   Scale,
   ShieldCheck,
   Trash2,
+  Upload,
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { apagarTudo, exportarDados, novoId, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
 import type { DadosPessoais } from "../../../lib/db";
 import { useEstado } from "../../../lib/estado";
@@ -78,6 +79,7 @@ export default function Conta() {
   const router = useRouter();
   const { mostrar } = useToast();
   const [painel, setPainel] = useState<Painel>(null);
+  const arquivo = useRef<HTMLInputElement>(null);
   const [rascunho, setRascunho] = useState<PerfilTrabalho | null>(null);
   const [valorTxt, setValorTxt] = useState("");
   const [pessoal, setPessoal] = useState<DadosPessoais>({});
@@ -182,7 +184,32 @@ export default function Conta() {
             URL.revokeObjectURL(a.href);
           }}
         />
+        <LinhaAjuste icone={Upload} rotulo="Restaurar um backup" valor="Volta os dados de um arquivo baixado antes" onClick={() => arquivo.current?.click()} />
         <LinhaAjuste icone={Trash2} rotulo="Apagar todos os meus dados" perigo onClick={() => setPainel("apagar")} />
+        <input
+          ref={arquivo}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          aria-label="Arquivo de backup"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            try {
+              const { importarDados } = await import("../../../lib/importar");
+              const r = await importarDados(await f.text());
+              const pl = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+              mostrar({
+                texto: `Backup restaurado: ${pl(r.registros, "dia", "dias")} e ${pl(r.lancamentos, "lançamento", "lançamentos")}${
+                  r.ignorados ? ` (${r.ignorados === 1 ? "1 item com erro ficou" : `${r.ignorados} itens com erro ficaram`} de fora)` : ""
+                }`,
+              });
+            } catch (err) {
+              mostrar({ texto: err instanceof Error ? err.message : "Não deu para restaurar o backup." });
+            }
+          }}
+        />
       </Grupo>
 
       <section className="flex flex-col gap-2">

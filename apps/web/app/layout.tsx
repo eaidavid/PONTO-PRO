@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: { default: "Ponto Pro", template: "%s · Ponto Pro" },
   description: "Bata o ponto, veja quanto vai receber e quanto falta.",
   applicationName: "Ponto Pro",
+  appleWebApp: { capable: true, title: "Ponto Pro", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

@@ -26,7 +26,7 @@ import {
   useToast,
   ValorDinheiro,
 } from "@ponto-pro/ui";
-import { Hammer, Save, Search, Tags, Trash2 } from "lucide-react";
+import { Hammer, RotateCcw, Save, Search, Tags, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
@@ -38,6 +38,7 @@ export default function Producao() {
   const agora = useAgora();
   const { mostrar } = useToast();
   const [chave, setChave] = useState(0);
+  const [repetir, setRepetir] = useState<ItemProducao | null>(null);
   const [quando, setQuando] = useState<"hoje" | "ontem">("hoje");
   const [precos, setPrecos] = useState(false);
   const [filtro, setFiltro] = useState("");
@@ -63,6 +64,7 @@ export default function Producao() {
     const id = novoId("l");
     await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco });
     setChave((k) => k + 1);
+    setRepetir(null);
     mostrar({
       texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} lançados`,
       desfazer: () => apagarLancamento(id),
@@ -84,6 +86,11 @@ export default function Producao() {
   }
 
   const listaPrecos = buscarItens(itens, filtro, 200).itens;
+  // últimos 3 serviços diferentes: repetir o trabalho de ontem em 2 toques
+  const ultimos = [...new Set(estado.lancamentos.map((l) => l.itemId))]
+    .map((id) => porId.get(id))
+    .filter((i): i is ItemProducao => !!i)
+    .slice(0, 3);
 
   return (
     <main className="flex flex-col gap-4 px-4">
@@ -115,7 +122,19 @@ export default function Producao() {
             <Chip selecionado={quando === "ontem"} onClick={() => setQuando("ontem")}>Ontem</Chip>
           </div>
         </div>
-        <BuscaServico key={chave} itens={itens} onLancar={lancar} />
+        {ultimos.length > 0 && !repetir && (
+          <div className="flex flex-col gap-2">
+            <span className="text-15 font-bold text-texto-2">Lançar de novo</span>
+            <div className="flex flex-wrap gap-2">
+              {ultimos.map((i) => (
+                <Chip key={i.id} icone={RotateCcw} onClick={() => { setRepetir(i); setChave((k) => k + 1); }}>
+                  {i.nome}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+        <BuscaServico key={chave} itens={itens} onLancar={lancar} itemInicial={repetir} />
       </section>
 
       <section aria-labelledby="lista" className="flex flex-col gap-2">

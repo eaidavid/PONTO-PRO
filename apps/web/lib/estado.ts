@@ -9,6 +9,7 @@ import {
   type LancamentoProducao,
   MODELOS,
   type PerfilTrabalho,
+  somarDias,
 } from "@ponto-pro/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
@@ -47,14 +48,25 @@ function tamanhoDoAparelho(): Preferencias["tamanho"] {
   return "padrao";
 }
 
-/** Todo o estado do app, ao vivo a partir do banco local. undefined enquanto carrega. */
+/** Quantos dias de histórico ficam em memória (cobre o período atual e o anterior). */
+const JANELA_DIAS = 75;
+
+function inicioDaJanela(): string {
+  return somarDias(agoraEmSaoPaulo().data, -JANELA_DIAS);
+}
+
+/**
+ * Estado do app, ao vivo a partir do banco local. undefined enquanto carrega.
+ * Carrega só os últimos ~2 períodos: o app continua leve com anos de histórico.
+ */
 export function useEstado(): Estado | undefined {
   return useLiveQuery(async () => {
+    const desde = inicioDaJanela();
     const [config, registros, proprios, lancamentos, pendentes] = await Promise.all([
       db.config.toArray(),
-      db.registros.toArray(),
+      db.registros.where("data").aboveOrEqual(desde).toArray(),
       db.itens.toArray(),
-      db.lancamentos.toArray(),
+      db.lancamentos.where("data").aboveOrEqual(desde).toArray(),
       db.fila.count(),
     ]);
     const cfg = Object.fromEntries(config.map((c) => [c.chave, c.valor]));
@@ -74,6 +86,11 @@ export function useEstado(): Estado | undefined {
       pendentes,
     };
   }, []);
+}
+
+/** Registros de um período qualquer (para navegar no histórico antigo). */
+export function useRegistrosDoPeriodo(inicio: string, fim: string): DiaRegistro[] | undefined {
+  return useLiveQuery(() => db.registros.where("data").between(inicio, fim, true, true).toArray(), [inicio, fim]);
 }
 
 /** Relógio de São Paulo, atualizado a cada 15 segundos. */

@@ -10,26 +10,29 @@ import {
   formatarDuracao,
   horariosComuns,
   marcacoesPrevistas,
+  pendenciasDoPeriodo,
   periodoDaData,
   periodoVizinho,
   rotuloPeriodo,
   saldoDoDia,
+  validarMarcacoes,
 } from "@ponto-pro/core";
 import {
+  Banner,
   BotaoPrincipal,
   BottomSheet,
   CabecalhoTela,
-  CartaoValor,
+  ResumoNumeros,
   Chip,
   EscolhaTipoDia,
   LinhaRegistro,
   SeletorHora,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronLeft, ChevronRight, Clock, Eraser, Save, Trash2 } from "lucide-react";
+import { CircleCheck, ChevronLeft, ChevronRight, Clock, Eraser, Save, Scale, TrendingDown, TrendingUp, TriangleAlert, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { apagarRegistro, restaurarRegistro, salvarRegistro } from "../../../lib/acoes";
-import { abaExtraDoPerfil, useAgora, useEstado } from "../../../lib/estado";
+import { abaExtraDoPerfil, useAgora, useEstado, useRegistrosDoPeriodo } from "../../../lib/estado";
 import { AbasRegistro } from "../abas-registro";
 import { Carregando } from "../../carregando";
 
@@ -50,19 +53,25 @@ export default function Registros() {
   const [marco, setMarco] = useState<Etapa>("entrada");
   const [confirmarApagar, setConfirmarApagar] = useState(false);
 
+  // período mostrado; o histórico antigo é lido do banco só quando a pessoa navega até ele
+  const periodoAtual = estado?.perfil && agora ? periodoDaData(referencia ?? agora.data, estado.perfil.ciclo.diaFechamento) : null;
+  const doPeriodo = useRegistrosDoPeriodo(periodoAtual?.inicio ?? "", periodoAtual?.fim ?? "");
+
   const calc = useMemo(() => {
-    if (!estado?.perfil || !agora) return null;
+    if (!estado?.perfil || !agora || !periodoAtual || !doPeriodo) return null;
     const perfil = estado.perfil;
-    const periodo = periodoDaData(referencia ?? agora.data, perfil.ciclo.diaFechamento);
-    const r = calcularPeriodo({ perfil, periodo, registros: estado.registros, agora });
+    const periodo = periodoAtual;
+    const r = calcularPeriodo({ perfil, periodo, registros: doPeriodo, agora });
     const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
     const dias = r.dias.filter((d) => d.data <= agora.data).reverse();
-    return { periodo, r, atual, dias };
-  }, [estado, agora, referencia]);
+    return { periodo, r, atual, dias, pendencias: pendenciasDoPeriodo(r.dias, agora.data) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estado, agora, periodoAtual?.inicio, doPeriodo]);
 
-  if (!estado?.perfil || !agora || !calc) return <Carregando />;
-  const { perfil, registros } = estado;
-  const { periodo, r, atual, dias } = calc;
+  if (!estado?.perfil || !agora || !calc || !doPeriodo) return <Carregando />;
+  const { perfil } = estado;
+  const registros = doPeriodo;
+  const { periodo, r, atual, dias, pendencias } = calc;
   const porData = new Map(registros.map((x) => [x.data, x]));
   const comuns = horariosComuns(perfil.escala);
 
@@ -95,7 +104,6 @@ export default function Registros() {
     mostrar({ texto: "Registro apagado", desfazer: () => restaurarRegistro(editando.data, antes) });
   }
 
-  const totalSaldo = r.horas.extraMin - r.horas.deficitMin;
   const horasEditando = editando
     ? calcularPeriodo({ perfil, periodo: { inicio: editando.data, fim: editando.data }, registros: [editando], modo: "dia" }).dias[0]!
     : null;
@@ -114,7 +122,7 @@ export default function Registros() {
           <ChevronLeft aria-hidden className="size-5" /> Anterior
         </button>
         <div className="text-center">
-          <p className="display text-24">{rotuloPeriodo(periodo)}</p>
+          <p className="display whitespace-nowrap text-20">{rotuloPeriodo(periodo)}</p>
           <p className="text-13 text-texto-2">{atual ? "Período atual" : "Período passado"}</p>
         </div>
         <button
@@ -127,15 +135,34 @@ export default function Registros() {
         </button>
       </nav>
 
-      <div className="grid grid-cols-2 gap-3">
-        <CartaoValor rotulo="Trabalhado" valor={formatarDuracao(r.horas.trabalhadoMin)} icone={Clock} />
-        <CartaoValor
-          rotulo={totalSaldo >= 0 ? "Hora extra" : "Faltando"}
-          valor={formatarDuracao(Math.abs(totalSaldo))}
-          tom={totalSaldo > 0 ? "extra" : totalSaldo < 0 ? "erro" : "normal"}
-          detalhe={perfil.bancoHoras.ativo ? `Saldo de horas: ${formatarDuracao(r.saldoBancoMin, { sinal: true })}` : undefined}
-        />
-      </div>
+      {pendencias.length === 0 ? (
+        <p role="status" className="cartao flex items-center gap-3 p-4 text-17 font-bold">
+          <CircleCheck aria-hidden className="size-6 shrink-0 text-sucesso-texto" /> Tudo certo neste período.
+        </p>
+      ) : (
+        <section aria-label="Dias que precisam de atenção" className="cartao flex flex-col gap-3 border-l-4 border-l-[color:var(--extra)]! p-4">
+          <p className="flex items-center gap-2 text-17 font-bold">
+            <TriangleAlert aria-hidden className="size-5 shrink-0 text-extra-texto" />
+            {pendencias.length === 1 ? "1 dia precisa de atenção" : `${pendencias.length} dias precisam de atenção`}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {pendencias.slice(0, 6).map((p) => (
+              <Chip key={p.data} onClick={() => abrir(p.data)}>{p.texto}</Chip>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ResumoNumeros
+        rotulo="Resumo do período"
+        itens={[
+          { rotulo: "Trabalhado", icone: Clock, valor: <span className="display text-24">{formatarDuracao(r.horas.trabalhadoMin)}</span> },
+          perfil.bancoHoras.ativo
+            ? { rotulo: "Saldo de horas", icone: Scale, valor: <span className="display text-24">{formatarDuracao(r.saldoBancoMin, { sinal: true })}</span>, tom: r.saldoBancoMin >= 0 ? "extra" : "erro" }
+            : { rotulo: "Hora extra", icone: TrendingUp, valor: <span className="display text-24">{r.horas.extraMin ? `+${formatarDuracao(r.horas.extraMin)}` : "0h"}</span>, tom: r.horas.extraMin ? "extra" : "normal" },
+          { rotulo: "Faltas e atrasos", icone: TrendingDown, valor: <span className="display text-24">{r.horas.deficitMin ? `−${formatarDuracao(r.horas.deficitMin)}` : "0h"}</span>, tom: r.horas.deficitMin ? "erro" : "normal" },
+        ]}
+      />
 
       <ul className="cartao divide-y divide-borda overflow-hidden" aria-label={`Dias de ${rotuloPeriodo(periodo)}`}>
         {dias.map((d) => (
@@ -169,6 +196,9 @@ export default function Registros() {
       >
         {editando && (
           <div className="flex flex-col gap-6 pb-2">
+            {validarMarcacoes(editando.marcacoes).map((a) => (
+              <Banner key={a} tom="aviso" texto={a} />
+            ))}
             {(editando.tipo === "normal" || editando.tipo === "folga" || editando.tipo === "compensado" || editando.tipo === "feriado") && (
               <>
                 <div role="group" aria-label="Qual horário" className="grid grid-cols-2 gap-2">

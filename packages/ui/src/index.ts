@@ -31,3 +31,4 @@ export * from "./componentes/LinhaAjuste";
 export * from "./componentes/EditorSemana";
 export * from "./componentes/GraficoDias";
 export * from "./componentes/CampoTexto";
+export * from "./componentes/ResumoNumeros";

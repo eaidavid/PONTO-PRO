@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - name: Motor de cálculo (testes e cobertura)
+        run: pnpm --filter @ponto-pro/core coverage
+      - name: Build
+        run: pnpm --filter @ponto-pro/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Navegador dos testes
+        run: pnpm --filter @ponto-pro/web exec playwright install --with-deps chromium
+      - name: Fluxos e acessibilidade (E2E)
+        run: pnpm e2e
+        env:
+          CI: "1"

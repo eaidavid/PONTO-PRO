@@ -68,6 +68,10 @@ class Banco extends Dexie {
       fila: "++id, tabela",
       historico: "++id, [tabela+chave]",
     });
+    // v2: fila indexada por item (compactação: só a última operação de cada item fica na fila)
+    this.version(2).stores({
+      fila: "++id, tabela, [tabela+chave]",
+    });
   }
 }
 

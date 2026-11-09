@@ -2,11 +2,11 @@
 
 import {
   calcularPrevisao,
-  datasEntre,
+  diasEntre,
   formatarDuracao,
   formatarHorasCurto,
   formatarReais,
-  ganhoDoDia,
+  ganhosPorDia,
   gerarContracheque,
   GLOSSARIO,
   type Linha,
@@ -78,11 +78,7 @@ export default function Ganhos() {
     const { perfil, registros, itens, lancamentos } = estado;
     const periodo = periodoDaData(agora.data, perfil.ciclo.diaFechamento);
     const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, agora, hoje: agora.data });
-    const grafico = datasEntre(periodo.inicio, agora.data).map((data) => {
-      const r = ganhoDoDia({ perfil, data, registros, itens, lancamentos, agora });
-      const extra = r.ganhos.filter((l) => l.tipo === "extra").reduce((t, l) => t + l.valor, 0);
-      return { data, normal: r.bruto - extra, extra };
-    });
+    const grafico = ganhosPorDia({ perfil, periodo: { inicio: periodo.inicio, fim: agora.data }, registros, itens, lancamentos, agora });
     return { periodo, previsao, grafico };
   }, [estado, agora]);
 
@@ -110,7 +106,13 @@ export default function Ganhos() {
 
   return (
     <main className="flex flex-col gap-4 px-4">
-      <CabecalhoTela titulo="Ganhos" subtitulo={`Período ${rotuloPeriodo(periodo)} · fecha dia ${perfil.ciclo.diaFechamento}`} />
+      <CabecalhoTela
+        titulo="Ganhos"
+        subtitulo={(() => {
+          const d = diasEntre(agora.data, periodo.fim);
+          return `Período ${rotuloPeriodo(periodo)} · ${d === 0 ? "fecha hoje" : d === 1 ? "fecha amanhã" : `fecha em ${d} dias`}`;
+        })()}
+      />
       <div className="print:hidden">
         <Abas
           rotulo="Seções de ganhos"
