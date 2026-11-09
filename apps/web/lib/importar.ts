@@ -50,7 +50,8 @@ export async function importarDados(texto: string): Promise<ResultadoImportacao>
     await Promise.all([db.registros.clear(), db.itens.clear(), db.lancamentos.clear()]);
     for (const c of dados.config ?? []) {
       if (c.chave === "perfil") await db.config.put({ chave: "perfil", valor: perfil.data, atualizadoEm: agoraIso() });
-      else if (c.chave === "pessoal" || c.chave === "preferencias") await db.config.put({ chave: c.chave, valor: c.valor, atualizadoEm: agoraIso() });
+      else if (["pessoal", "preferencias", "obras", "feriadosLocais", "conferencias"].includes(c.chave))
+        await db.config.put({ chave: c.chave as "pessoal", valor: c.valor, atualizadoEm: agoraIso() });
     }
     await db.registros.bulkPut(registros);
     await db.itens.bulkPut(itens);

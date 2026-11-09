@@ -5,43 +5,35 @@ import {
   type Etapa,
   extratoDoPeriodo,
   feriadosDoIntervalo,
-  formatarDuracao,
-  formatarQuantidade,
-  formatarReais,
+  formatarHorasCurto,
   ganhoDoDia,
   lembretesDoDia,
-  MODELOS,
   proximaEtapa,
-  rotuloUnidade,
   saidaPrevista as calcularSaidaPrevista,
   saudacao,
   somarDias,
   statusDoDia,
-  valorProducao,
 } from "@ponto-pro/core";
 import {
   BarraProgresso,
   BotaoPonto,
-  cx,
   BotaoPrincipal,
   BottomSheet,
+  Chip,
   EtapasDoDia,
-  LinkPorQue,
   ListaExtrato,
-  ResumoNumeros,
   StatusSync,
   useToast,
   ValorDinheiro,
 } from "@ponto-pro/ui";
-import { BellRing, Clock, Hammer, LogIn, LogOut, PackagePlus, Utensils, Wallet } from "lucide-react";
+import { BellRing, ChevronRight, HardHat, PackagePlus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { baterPonto, completarMarcacoes, restaurarRegistro } from "../../../lib/acoes";
+import { baterPonto, completarMarcacoes, restaurarRegistro, salvarPreferencias } from "../../../lib/acoes";
 import { primeiroNome, useAgora, useEstado } from "../../../lib/estado";
 import { Carregando } from "../../carregando";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
-const ICONE = { entrada: LogIn, almoco: Utensils, volta: Hammer, saida: LogOut } as const;
 
 function useOnline() {
   const [online, setOnline] = useState(true);
@@ -58,44 +50,52 @@ function useOnline() {
   return online;
 }
 
+/** Hoje: "o que faço agora?". Relógio no topo, a linha do dia e um botão. Cada informação uma vez. */
 export default function Hoje() {
   const estado = useEstado();
   const agora = useAgora();
   const online = useOnline();
   const { mostrar } = useToast();
   const [porQue, setPorQue] = useState(false);
+  const [escolherObra, setEscolherObra] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string>();
-  // proteção contra toque duplo (luva, mão suja): segundo toque em menos de 60s pede confirmação
+  // proteção contra toque duplo (luva, mão suja)
   const [ultimoToque, setUltimoToque] = useState(0);
   const [confirmar, setConfirmar] = useState(false);
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
-    const { perfil, registros, itens, lancamentos } = estado;
-    const r = ganhoDoDia({ perfil, data: agora.data, registros, itens, lancamentos, agora });
-    const feriado = feriadosDoIntervalo(agora.data, agora.data).get(agora.data);
+    const { perfil, registros, itens, lancamentos, feriadosLocais } = estado;
+    const r = ganhoDoDia({ perfil, data: agora.data, registros, itens, lancamentos, feriadosLocais, agora });
+    const feriado = feriadosDoIntervalo(agora.data, agora.data, feriadosLocais).get(agora.data);
     return { r, dia: r.dias[0]!, feriado };
   }, [estado, agora]);
 
   if (!estado?.perfil || !agora || !calc) return <Carregando />;
-  const { perfil, registros, lancamentos, pessoal, preferencias } = estado;
+  const { perfil, registros, pessoal, preferencias, obrasAtivas } = estado;
   const { r, dia, feriado } = calc;
   const registro = registros.find((x) => x.data === agora.data);
   const marcacoes = registro?.marcacoes ?? {};
   const etapa = registro && (registro.tipo === "falta" || registro.tipo === "atestado") ? null : proximaEtapa(marcacoes);
-  const previstoMin = dia.escala.trabalha ? dia.escala.horasLiquidasMin : 0;
-  const saidaPrevista = calcularSaidaPrevista(dia.escala, marcacoes);
+  const previstoMin = dia.escala.trabalha && !dia.feriado ? dia.escala.horasLiquidasMin : 0;
+  const saida = calcularSaidaPrevista(dia.escala, marcacoes);
   const status = statusDoDia(dia, marcacoes, agora);
-  const lembretes = lembretesDoDia({
-    perfil,
-    hoje: registro,
-    ontem: registros.find((x) => x.data === somarDias(agora.data, -1)),
-    agora,
-    feriadoHoje: feriado,
-  });
   const nome = primeiroNome(pessoal);
   const usaProducao = perfil.producao.ativo || perfil.pagamento.forma === "producao" || perfil.pagamento.forma === "misto";
+  const obraAtual = obrasAtivas.find((o) => o.id === (registro?.obraId ?? preferencias.obraAtual));
+  const lembretes = lembretesDoDia({ perfil, hoje: registro, ontem: registros.find((x) => x.data === somarDias(agora.data, -1)), agora, feriadoHoje: feriado });
+
+  // pílula do topo: só o estado (as horas ficam na linha do dia)
+  const pilula =
+    status.estado === "trabalhando" ? "Trabalhando" : status.estado === "encerrado" ? "Dia encerrado" : status.titulo;
+  // linha de apoio da linha do dia: horas e saída, uma vez só
+  const apoio =
+    status.estado === "trabalhando" || status.estado === "encerrado"
+      ? [previstoMin ? `${formatarHorasCurto(dia.trabalhadoMin)} de ${formatarHorasCurto(previstoMin)}` : `${formatarHorasCurto(dia.trabalhadoMin)} trabalhadas`, status.estado === "trabalhando" && saida && previstoMin ? `sai às ${saida}` : status.estado === "encerrado" ? status.detalhe.replace(/\.$/, "") : null]
+          .filter(Boolean)
+          .join(" · ")
+      : status.detalhe.replace(/\.$/, "");
 
   async function bater() {
     if (!etapa || !agora) return;
@@ -108,11 +108,11 @@ export default function Hoje() {
     setErro(undefined);
     setSalvando(true);
     try {
-      const antes = await baterPonto(agora.data, etapa, agora.hora);
+      const antes = await baterPonto(agora.data, etapa, agora.hora, obraAtual?.id);
       mostrar({
         texto: `${NOME[etapa]} às ${agora.hora}`,
         desfazer: () => {
-          setUltimoToque(0); // depois de desfazer, o próximo toque é intencional
+          setUltimoToque(0);
           restaurarRegistro(agora.data, antes);
         },
       });
@@ -128,42 +128,20 @@ export default function Hoje() {
     mostrar({ texto: "Ponto corrigido", desfazer: () => restaurarRegistro(l.data, antes) });
   }
 
-  const recentes = [
-    ...(["saida", "volta", "almoco", "entrada"] as Etapa[])
-      .filter((e) => marcacoes[e])
-      .map((e) => ({ id: e, icone: ICONE[e], titulo: NOME[e], detalhe: "Hoje", valor: marcacoes[e]! })),
-    ...lancamentos.slice(0, 3).map((l) => {
-      const item = estado.itens.find((i) => i.id === l.itemId);
-      return {
-        id: l.id,
-        icone: PackagePlus,
-        titulo: item?.nome ?? "Serviço",
-        detalhe: `${formatarQuantidade(l.quantidade)} ${rotuloUnidade(item?.unidade ?? "un")} · ${l.data === agora.data ? "hoje" : l.data.slice(8, 10) + "/" + l.data.slice(5, 7)}`,
-        valor: formatarReais(valorProducao(l.quantidade, l.precoUnitario)),
-      };
-    }),
-  ].slice(0, 5);
+  const linha = "flex min-h-16 w-full items-center gap-3 px-4 py-2 text-left active:bg-superficie-2";
 
   return (
     <main>
-      <section className="fundo-marca flex flex-col gap-1 px-5 pt-[max(16px,env(safe-area-inset-top))] pb-12">
-        <div className="flex items-center gap-3 pt-1">
-          <span aria-hidden className="flex size-10 items-center justify-center rounded-full bg-white/14 text-17 font-bold">
-            {(nome ?? "V")[0]!.toUpperCase()}
-          </span>
-          <div className="min-w-0 flex-1 leading-tight">
-            <p className="text-17 font-bold">{saudacao(agora.minutos)}{nome ? `, ${nome}` : ""}</p>
-            <p className="truncate text-13 text-sobre-marca-2">{pessoal.empresa?.trim() || pessoal.cargo?.trim() || MODELOS[perfil.area].nome}</p>
-          </div>
-          <p className="display text-32" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
-        </div>
-        <div aria-live="polite" className="pt-5">
-          <h1 className="display text-[min(var(--text-44),11vw)] leading-[1.05]">{status.titulo}</h1>
-          <p className="pt-1 text-20 text-sobre-marca-2">{status.detalhe}</p>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-3">
-          <p className="text-15 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>
+      <section className="fundo-marca flex flex-col px-5 pt-[max(16px,env(safe-area-inset-top))] pb-12">
+        <div className="flex items-center justify-between gap-3">
+          <p className="truncate text-17 font-bold">{saudacao(agora.minutos)}{nome ? `, ${nome}` : ""}</p>
           <StatusSync estado="local" sobreMarca />
+        </div>
+        <p className="display pt-4 text-relogio" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
+        <p className="pt-1 text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>
+        <div aria-live="polite" className="mt-4 inline-flex items-center gap-2 self-start rounded-full bg-white/14 py-2 pr-4 pl-3">
+          <span aria-hidden className={status.estado === "trabalhando" ? "size-2.5 rounded-full bg-marca-destaque animate-pulse" : "size-2.5 rounded-full bg-white/70"} />
+          <h1 className="text-17 font-bold">{pilula}</h1>
         </div>
       </section>
 
@@ -178,29 +156,23 @@ export default function Hoje() {
           </div>
         ))}
 
-        <div className="cartao flex flex-col gap-4 p-4">
+        <section aria-label="Linha do dia" className="cartao flex flex-col gap-4 p-4">
           <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />
           {previstoMin > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-15">
-                <span className="font-bold text-texto-2">Jornada</span>
-                <span className="numeros font-bold">
-                  {formatarDuracao(dia.trabalhadoMin)} de {formatarDuracao(previstoMin)}
-                </span>
-              </div>
-              <BarraProgresso
-                valor={dia.trabalhadoMin / previstoMin}
-                excedente={Math.max(0, dia.trabalhadoMin - previstoMin) / previstoMin}
-                rotulo="Jornada de hoje"
-                marcas={Math.round(previstoMin / 60)}
-              />
-            </div>
+            <BarraProgresso
+              valor={dia.trabalhadoMin / previstoMin}
+              excedente={Math.max(0, dia.trabalhadoMin - previstoMin) / previstoMin}
+              rotulo="Jornada de hoje"
+              marcas={Math.round(previstoMin / 60)}
+            />
           )}
-        </div>
+          <p className="numeros text-17 font-bold">{apoio}</p>
+        </section>
 
         <BotaoPonto
           etapa={etapa}
           hora={agora.hora}
+          mostrarHora={false}
           offline={!online}
           carregando={salvando}
           erro={erro}
@@ -209,50 +181,57 @@ export default function Hoje() {
           onBater={bater}
         />
 
-        <ResumoNumeros
-          rotulo="Resumo de hoje"
-          itens={[
-            { rotulo: "Trabalhado", icone: Clock, valor: <span className="display text-24">{formatarDuracao(dia.trabalhadoMin)}</span> },
-            { rotulo: marcacoes.saida ? "Saída" : "Saída prevista", icone: LogOut, valor: <span className="display text-24">{saidaPrevista ?? "—"}</span> },
-            { rotulo: "Ganho hoje", icone: Wallet, valor: <ValorDinheiro centavos={r.bruto} />, tom: "primaria" },
-          ]}
-        >
-          <LinkPorQue onClick={() => setPorQue(true)} className="text-15" />
-        </ResumoNumeros>
-
-        {usaProducao && (
-          <Link
-            href="/producao"
-            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full border-2 border-primaria bg-superficie px-6 text-17 font-bold text-primaria active:bg-primaria-suave"
-          >
-            <PackagePlus aria-hidden className="size-6" strokeWidth={2.25} /> Lançar produção
-          </Link>
-        )}
-
-        {recentes.length > 0 && (
-          <section aria-labelledby="recentes" className="flex flex-col gap-2 pb-2">
-            <h2 id="recentes" className="display text-24">Recentes</h2>
-            <ul className="cartao divide-y divide-borda overflow-hidden">
-              {recentes.map((x) => (
-                <li key={x.id} className="flex min-h-16 items-center gap-3 px-4 py-2">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte">
-                    <x.icone aria-hidden className="size-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-17 font-bold">{x.titulo}</span>
-                    <span className="block text-15 text-texto-2">{x.detalhe}</span>
-                  </span>
-                  <span className="numeros text-17 font-bold">{x.valor}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <ul className="cartao mb-2 divide-y divide-borda overflow-hidden">
+          <li>
+            <button type="button" onClick={() => setPorQue(true)} className={linha}>
+              <Wallet aria-hidden className="size-5 shrink-0 text-texto-2" />
+              <span className="flex-1 text-17 font-bold">Ganho hoje</span>
+              <ValorDinheiro centavos={r.bruto} />
+              <ChevronRight aria-hidden className="size-5 text-texto-2" />
+            </button>
+          </li>
+          {usaProducao && (
+            <li>
+              <Link href="/producao" className={linha}>
+                <PackagePlus aria-hidden className="size-5 shrink-0 text-texto-2" />
+                <span className="flex-1 text-17 font-bold">Lançar produção</span>
+                <ChevronRight aria-hidden className="size-5 text-texto-2" />
+              </Link>
+            </li>
+          )}
+          {obrasAtivas.length > 0 && (
+            <li>
+              <button type="button" onClick={() => setEscolherObra(true)} className={linha}>
+                <HardHat aria-hidden className="size-5 shrink-0 text-texto-2" />
+                <span className="flex-1 text-17 font-bold">Obra</span>
+                <span className="text-15 text-texto-2">{obraAtual?.nome ?? "Escolher"}</span>
+                <ChevronRight aria-hidden className="size-5 text-texto-2" />
+              </button>
+            </li>
+          )}
+        </ul>
       </div>
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo="Conta de hoje, passo a passo">
         <ListaExtrato linhas={extratoDoPeriodo(r).filter((l) => l.tipo !== "titulo")} />
         <BotaoPrincipal variante="fantasma" onClick={() => setPorQue(false)}>Entendi</BotaoPrincipal>
+      </BottomSheet>
+
+      <BottomSheet aberto={escolherObra} onFechar={() => setEscolherObra(false)} titulo="Em qual obra você está?" subtitulo="O ponto e a produção de hoje ficam nessa obra.">
+        <div className="flex flex-wrap gap-2 pb-4">
+          {obrasAtivas.map((o) => (
+            <Chip
+              key={o.id}
+              selecionado={obraAtual?.id === o.id}
+              onClick={async () => {
+                await salvarPreferencias({ ...preferencias, obraAtual: o.id });
+                setEscolherObra(false);
+              }}
+            >
+              {o.nome}
+            </Chip>
+          ))}
+        </div>
       </BottomSheet>
     </main>
   );

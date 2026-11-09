@@ -10,6 +10,7 @@ import {
   lerReais,
   MODELOS,
   type PerfilTrabalho,
+  pontosFacultativos,
   resumoDoPerfil,
 } from "@ponto-pro/core";
 import {
@@ -37,6 +38,7 @@ import {
   Save,
   Scale,
   ShieldCheck,
+  PartyPopper,
   Trash2,
   Upload,
   Wallet,
@@ -44,7 +46,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useRef, useState } from "react";
-import { apagarTudo, exportarDados, novoId, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
+import { apagarTudo, exportarDados, novoId, salvarFeriadosLocais, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
 import type { DadosPessoais } from "../../../lib/db";
 import { useEstado } from "../../../lib/estado";
 import {
@@ -63,7 +65,7 @@ import {
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
 
-type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | null;
+type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | "feriados" | null;
 
 function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
@@ -79,6 +81,7 @@ export default function Conta() {
   const router = useRouter();
   const { mostrar } = useToast();
   const [painel, setPainel] = useState<Painel>(null);
+  const [novoFeriado, setNovoFeriado] = useState({ nome: "", dia: "", todoAno: true });
   const arquivo = useRef<HTMLInputElement>(null);
   const [rascunho, setRascunho] = useState<PerfilTrabalho | null>(null);
   const [valorTxt, setValorTxt] = useState("");
@@ -137,6 +140,12 @@ export default function Conta() {
           onClick={() => abrir("extra")}
         />
         <LinhaAjuste icone={CalendarClock} rotulo="Fechamento" valor={`Fecha dia ${perfil.ciclo.diaFechamento}`} onClick={() => abrir("fechamento")} />
+        <LinhaAjuste
+          icone={PartyPopper}
+          rotulo="Feriados da sua cidade"
+          valor={estado.feriadosLocais.length ? `${estado.feriadosLocais.length} cadastrados` : "Os nacionais já estão no app"}
+          onClick={() => abrir("feriados")}
+        />
         <LinhaAjuste
           icone={Scale}
           rotulo="Compensação e saldo de horas"
@@ -498,6 +507,77 @@ export default function Conta() {
           <CampoTexto rotulo="Cargo" valor={pessoal.cargo ?? ""} onChange={(cargo) => setPessoal({ ...pessoal, cargo })} placeholder="Ex.: Pedreiro" maxLength={40} />
           <CampoTexto rotulo="Empresa ou obra" valor={pessoal.empresa ?? ""} onChange={(empresa) => setPessoal({ ...pessoal, empresa })} maxLength={60} />
         </div>
+      </BottomSheet>
+
+      <BottomSheet aberto={painel === "feriados"} onFechar={() => setPainel(null)} titulo="Feriados da sua cidade" subtitulo="Os nacionais já estão no app. Aqui entram os da sua cidade ou estado.">
+        {(() => {
+          const ano = Number(new Date().toISOString().slice(0, 4));
+          const lista = estado.feriadosLocais;
+          const jaTem = new Set(lista.map((f) => f.data));
+          const sugestoes = pontosFacultativos(ano).filter((f) => !jaTem.has(f.data) && f.data >= `${ano}-01-01`);
+          const m = /^(\d{1,2})\/(\d{1,2})$/.exec(novoFeriado.dia.trim());
+          const valido = !!m && Number(m[1]) >= 1 && Number(m[1]) <= 31 && Number(m[2]) >= 1 && Number(m[2]) <= 12 && novoFeriado.nome.trim().length > 0;
+          return (
+            <div className="flex flex-col gap-5 pb-2">
+              {lista.length > 0 && (
+                <ul className="cartao divide-y divide-borda overflow-hidden">
+                  {lista.map((f) => (
+                    <li key={f.data} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
+                      <span className="flex-1">
+                        <span className="block text-17 font-bold">{f.nome}</span>
+                        <span className="numeros block text-15 text-texto-2">{f.data.slice(8, 10)}/{f.data.slice(5, 7)}/{f.data.slice(0, 4)}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => salvarFeriadosLocais(lista.filter((x) => x.data !== f.data))}
+                        className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-15 font-bold text-erro-texto active:bg-erro-suave"
+                      >
+                        <Trash2 aria-hidden className="size-5" /> Tirar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {sugestoes.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-15 font-bold text-texto-2">Pontos facultativos comuns</span>
+                  <div className="flex flex-wrap gap-2">
+                    {sugestoes.map((f) => (
+                      <Chip key={f.data} icone={Plus} onClick={() => salvarFeriadosLocais([...lista, f])}>
+                        {f.nome} {f.data.slice(8, 10)}/{f.data.slice(5, 7)}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col gap-3 rounded-2xl bg-superficie-2 p-4">
+                <span className="text-17 font-bold">Novo feriado</span>
+                <CampoTexto rotulo="Nome" valor={novoFeriado.nome} onChange={(nome) => setNovoFeriado({ ...novoFeriado, nome })} placeholder="Ex.: Aniversário da cidade" maxLength={60} />
+                <CampoTexto rotulo="Dia e mês" valor={novoFeriado.dia} onChange={(dia) => setNovoFeriado({ ...novoFeriado, dia: dia.replace(/[^\d/]/g, "").slice(0, 5) })} placeholder="20/01" inputMode="numeric" />
+                <Interruptor rotulo="Repete todo ano" valor={novoFeriado.todoAno} onChange={(todoAno) => setNovoFeriado({ ...novoFeriado, todoAno })} />
+                <BotaoPrincipal
+                  variante="secundaria"
+                  icone={Plus}
+                  disabled={!valido}
+                  onClick={async () => {
+                    const [d, mes] = [Number(m![1]), Number(m![2])];
+                    const anos = novoFeriado.todoAno ? [ano, ano + 1, ano + 2] : [ano];
+                    const novos = anos.map((a) => ({
+                      data: `${a}-${String(mes).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
+                      nome: novoFeriado.nome.trim(),
+                      tipo: "local" as const,
+                    }));
+                    await salvarFeriadosLocais([...lista.filter((x) => !novos.some((n) => n.data === x.data)), ...novos]);
+                    setNovoFeriado({ nome: "", dia: "", todoAno: true });
+                    mostrar({ texto: "Feriado adicionado" });
+                  }}
+                >
+                  Adicionar feriado
+                </BotaoPrincipal>
+              </div>
+            </div>
+          );
+        })()}
       </BottomSheet>
 
       <BottomSheet aberto={painel === "apagar"} onFechar={() => setPainel(null)} titulo="Apagar todos os dados?" subtitulo="Registros, produção e ajustes saem deste celular. Não dá para desfazer.">

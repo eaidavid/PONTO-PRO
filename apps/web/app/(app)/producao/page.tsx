@@ -1,45 +1,43 @@
 "use client";
 
 import {
-  buscarItens,
+  categoriasDe,
   formatarQuantidade,
   formatarReais,
   type ItemProducao,
   lerReais,
+  ordenarPorUso,
   periodoDaData,
-  rotuloPeriodo,
   rotuloUnidade,
-  seloDia,
   somarDias,
-  totaisPorArea,
   valorProducao,
 } from "@ponto-pro/core";
 import {
   BotaoPrincipal,
   BottomSheet,
   BuscaServico,
-  CabecalhoTela,
   CampoNumero,
   Chip,
-  EstadoVazio,
   SeloSugestao,
+  TituloSecao,
   useToast,
-  ValorDinheiro,
 } from "@ponto-pro/ui";
-import { Hammer, RotateCcw, Save, Search, Tags, Trash2 } from "lucide-react";
+import { ChevronLeft, RotateCcw, Save, Search, Star, Tags, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem } from "../../../lib/acoes";
+import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
-import { AbasRegistro } from "../abas-registro";
 import { Carregando } from "../../carregando";
 
-export default function Producao() {
+/** Tela de lançar produção: favoritos primeiro, categorias, obra e dia. */
+export default function LancarProducao() {
   const estado = useEstado();
   const agora = useAgora();
   const { mostrar } = useToast();
   const [chave, setChave] = useState(0);
+  const [quando, setQuando] = useState<0 | -1 | -2>(0);
+  const [area, setArea] = useState<string | null>(null);
   const [repetir, setRepetir] = useState<ItemProducao | null>(null);
-  const [quando, setQuando] = useState<"hoje" | "ontem">("hoje");
   const [precos, setPrecos] = useState(false);
   const [filtro, setFiltro] = useState("");
   const [editandoItem, setEditandoItem] = useState<ItemProducao | null>(null);
@@ -49,31 +47,37 @@ export default function Producao() {
     if (!estado?.perfil || !agora) return null;
     const periodo = periodoDaData(agora.data, estado.perfil.ciclo.diaFechamento);
     const doPeriodo = estado.lancamentos.filter((l) => l.data >= periodo.inicio && l.data <= periodo.fim);
-    const total = doPeriodo.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0);
-    return { periodo, doPeriodo, total, areas: totaisPorArea(estado.itens, doPeriodo) };
+    return {
+      total: doPeriodo.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0),
+      ordenados: ordenarPorUso(estado.itens, estado.lancamentos),
+    };
   }, [estado, agora]);
 
   if (!estado?.perfil || !agora || !calc) return <Carregando />;
-  const { itens } = estado;
-  const { periodo, doPeriodo, total, areas } = calc;
+  const { itens, lancamentos, obrasAtivas, preferencias } = estado;
+  const { total, ordenados } = calc;
   const porId = new Map(itens.map((i) => [i.id, i]));
-  const data = quando === "hoje" ? agora.data : somarDias(agora.data, -1);
+  const data = somarDias(agora.data, quando);
+  const obraAtual = obrasAtivas.find((o) => o.id === preferencias.obraAtual)?.id;
+  const visiveis = area ? ordenados.filter((i) => i.area === area) : ordenados;
+  const favoritos = ordenados.filter((i) => i.favorito);
+  const recentes = [...new Set(lancamentos.map((l) => l.itemId))].map((id) => porId.get(id)).filter((i): i is ItemProducao => !!i && !i.favorito).slice(0, 3);
+  const atalhos = [...favoritos, ...recentes].slice(0, 6);
 
   async function lancar({ item, novo, quantidade }: { item: ItemProducao; novo: boolean; quantidade: number }) {
     if (novo) await salvarItem(item);
     const id = novoId("l");
-    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco });
+    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(obraAtual ? { obraId: obraAtual } : {}) });
     setChave((k) => k + 1);
     setRepetir(null);
     mostrar({
-      texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} lançados`,
+      texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, item.preco))}`,
       desfazer: () => apagarLancamento(id),
     });
   }
 
-  async function apagar(id: string) {
-    const antes = await apagarLancamento(id);
-    if (antes) mostrar({ texto: "Lançamento apagado", desfazer: () => lancarProducao(antes) });
+  async function favoritar(item: ItemProducao) {
+    await salvarItem({ ...item, favorito: !item.favorito });
   }
 
   async function salvarPreco() {
@@ -85,119 +89,79 @@ export default function Producao() {
     mostrar({ texto: `Preço de ${editandoItem.nome} salvo` });
   }
 
-  const listaPrecos = buscarItens(itens, filtro, 200).itens;
-  // últimos 3 serviços diferentes: repetir o trabalho de ontem em 2 toques
-  const ultimos = [...new Set(estado.lancamentos.map((l) => l.itemId))]
-    .map((id) => porId.get(id))
-    .filter((i): i is ItemProducao => !!i)
-    .slice(0, 3);
+  const listaPrecos = filtro ? itens.filter((i) => i.nome.toLowerCase().includes(filtro.toLowerCase())) : itens;
 
   return (
-    <main className="flex flex-col gap-4 px-4">
-      <CabecalhoTela
-        titulo="Registros"
-        subtitulo={`Período ${rotuloPeriodo(periodo)}`}
-        acao={
-          <button type="button" onClick={() => setPrecos(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-15 font-bold text-primaria-forte active:bg-primaria-suave">
-            <Tags aria-hidden className="size-5" /> Preços
-          </button>
-        }
-      />
+    <main className="flex flex-col gap-5 px-4">
+      <header className="flex items-center justify-between gap-2 pt-4">
+        <Link href="/historico?aba=producao" className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-15 font-bold active:bg-superficie-2">
+          <ChevronLeft aria-hidden className="size-6" /> Produção
+        </Link>
+        <button type="button" onClick={() => setPrecos(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-15 font-bold text-primaria-forte active:bg-primaria-suave">
+          <Tags aria-hidden className="size-5" /> Preços
+        </button>
+      </header>
+      <div>
+        <h1 className="display text-32">Lançar produção</h1>
+        <p className="numeros text-15 text-texto-2">No período: {formatarReais(total)}</p>
+      </div>
 
-      <AbasRegistro ativa="producao" />
+      <div className="flex flex-col gap-2">
+        <TituloSecao>Dia do serviço</TituloSecao>
+        <div role="group" aria-label="Dia do serviço" className="flex gap-2">
+          <Chip selecionado={quando === 0} onClick={() => setQuando(0)}>Hoje</Chip>
+          <Chip selecionado={quando === -1} onClick={() => setQuando(-1)}>Ontem</Chip>
+          <Chip selecionado={quando === -2} onClick={() => setQuando(-2)}>Anteontem</Chip>
+        </div>
+      </div>
 
-      <section aria-label="Total do período" className="fundo-marca flex flex-col gap-1 rounded-[24px] p-5">
-        <span className="text-15 font-bold text-sobre-marca-2">Produção no período</span>
-        <ValorDinheiro centavos={total} tamanho="gg" />
-        <span className="text-15 text-sobre-marca-2">
-          {doPeriodo.length} {doPeriodo.length === 1 ? "lançamento" : "lançamentos"}
-        </span>
-      </section>
-
-      <section aria-labelledby="lancar" className="cartao flex flex-col gap-4 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="lancar" className="display text-24">Lançar serviço</h2>
-          <div role="group" aria-label="Dia do serviço" className="flex gap-2">
-            <Chip selecionado={quando === "hoje"} onClick={() => setQuando("hoje")}>Hoje</Chip>
-            <Chip selecionado={quando === "ontem"} onClick={() => setQuando("ontem")}>Ontem</Chip>
+      {obrasAtivas.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <TituloSecao>Obra</TituloSecao>
+          <div role="group" aria-label="Obra" className="flex flex-wrap gap-2">
+            {obrasAtivas.map((o) => (
+              <Chip key={o.id} selecionado={obraAtual === o.id} onClick={() => salvarPreferencias({ ...preferencias, obraAtual: obraAtual === o.id ? undefined : o.id })}>
+                {o.nome}
+              </Chip>
+            ))}
           </div>
         </div>
-        {ultimos.length > 0 && !repetir && (
-          <div className="flex flex-col gap-2">
-            <span className="text-15 font-bold text-texto-2">Lançar de novo</span>
-            <div className="flex flex-wrap gap-2">
-              {ultimos.map((i) => (
-                <Chip key={i.id} icone={RotateCcw} onClick={() => { setRepetir(i); setChave((k) => k + 1); }}>
-                  {i.nome}
-                </Chip>
-              ))}
-            </div>
-          </div>
-        )}
-        <BuscaServico key={chave} itens={itens} onLancar={lancar} itemInicial={repetir} />
-      </section>
-
-      <section aria-labelledby="lista" className="flex flex-col gap-2">
-        <h2 id="lista" className="display text-24">No período</h2>
-        {doPeriodo.length === 0 ? (
-          <EstadoVazio icone={Hammer} frase="Nenhum serviço lançado ainda" />
-        ) : (
-          <ul className="cartao divide-y divide-borda overflow-hidden">
-            {doPeriodo.map((l) => {
-              const item = porId.get(l.itemId);
-              return (
-                <li key={l.id} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
-                  <span className="flex w-11 shrink-0 flex-col items-center text-center">
-                    <span className="text-13 font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
-                    <span className="display text-20 leading-none">{l.data.slice(8, 10)}</span>
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="line-clamp-2 text-17 font-bold leading-snug">{item?.nome ?? "Serviço"}</span>
-                    <span className="numeros text-15 text-texto-2">
-                      {formatarQuantidade(l.quantidade)} {rotuloUnidade(item?.unidade ?? "un")} × {formatarReais(l.precoUnitario)}
-                    </span>
-                    <span className="numeros text-17 font-bold text-primaria-forte">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => apagar(l.id)}
-                    aria-label={`Apagar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`}
-                    className="flex size-12 shrink-0 items-center justify-center rounded-full text-texto-2 active:bg-erro-suave active:text-erro-texto"
-                  >
-                    <Trash2 aria-hidden className="size-5" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      {areas.length > 0 && (
-        <section aria-labelledby="areas" className="flex flex-col gap-2 pb-2">
-          <h2 id="areas" className="display text-24">Por área</h2>
-          <ul className="cartao flex flex-col gap-3 p-4">
-            {areas.map((a) => (
-              <li key={a.area} className="flex flex-col gap-1.5">
-                <div className="flex justify-between gap-2 text-15">
-                  <span className="font-bold">{a.area}</span>
-                  <span className="numeros font-bold">{formatarReais(a.valor)}</span>
-                </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-superficie-2">
-                  <div className="h-full rounded-full bg-primaria" style={{ width: `${(a.valor / total) * 100}%` }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
+
+      {atalhos.length > 0 && !repetir && (
+        <div className="flex flex-col gap-2">
+          <TituloSecao>Favoritos e recentes</TituloSecao>
+          <div className="flex flex-wrap gap-2">
+            {atalhos.map((i) => (
+              <Chip key={i.id} icone={i.favorito ? Star : RotateCcw} onClick={() => { setRepetir(i); setChave((k) => k + 1); }}>
+                {i.nome}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <TituloSecao>Categorias</TituloSecao>
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Categorias">
+          {[null, ...categoriasDe(itens)].map((c) => (
+            <Chip key={c ?? "todas"} className="shrink-0" selecionado={area === c} onClick={() => { setArea(c); setChave((k) => k + 1); }}>
+              {c ?? "Todas"}
+            </Chip>
+          ))}
+        </div>
+      </div>
+
+      <section aria-label="Escolher serviço" className="pb-4">
+        <BuscaServico key={chave} itens={visiveis} onLancar={lancar} itemInicial={repetir} onFavoritar={favoritar} />
+      </section>
 
       <BottomSheet aberto={precos && !editandoItem} onFechar={() => setPrecos(false)} titulo="Preços e serviços" subtitulo="Toque num serviço para mudar o preço.">
         <div className="flex flex-col gap-3 pb-2">
-          <label className="flex min-h-14 items-center gap-3 rounded-cartao border-2 border-borda-forte bg-superficie px-4 focus-within:border-primaria">
-            <Search aria-hidden className="size-6 text-texto-2" />
+          <label className="flex min-h-14 items-center gap-3 rounded-full border-2 border-borda-forte bg-superficie px-4 focus-within:border-primaria">
+            <Search aria-hidden className="size-5 text-texto-2" />
             <span className="sr-only">Filtrar serviços</span>
-            <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar" className="min-w-0 flex-1 bg-transparent text-20 outline-none" />
+            <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar" className="min-w-0 flex-1 bg-transparent text-17 outline-none" />
           </label>
           <ul className="cartao divide-y divide-borda overflow-hidden">
             {listaPrecos.map((i) => (
@@ -252,7 +216,6 @@ export default function Producao() {
           </div>
         )}
       </BottomSheet>
-
     </main>
   );
 }

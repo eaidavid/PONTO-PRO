@@ -32,3 +32,4 @@ export * from "./componentes/EditorSemana";
 export * from "./componentes/GraficoDias";
 export * from "./componentes/CampoTexto";
 export * from "./componentes/ResumoNumeros";
+export * from "./componentes/TituloSecao";

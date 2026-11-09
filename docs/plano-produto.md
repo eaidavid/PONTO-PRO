@@ -253,3 +253,27 @@ Conta (em seções curtas)
 5. **Fase 3:** login, sincronização e notificações (Milestone 5).
 
 Cada fase termina com testes passando, prints em 360, 390 e 768px nos 3 temas, e publicação na Vercel.
+
+---
+
+## 8. Status (09/11/2026)
+
+**Fases 1 e 2: implementadas.**
+
+| Item | Status |
+|---|---|
+| Hoje com relógio grande, pílula de status e cada informação uma vez | Feito |
+| Navegação Hoje · Histórico · + Lançar · Ganhos · Mais | Feito |
+| "+ Lançar": bater ponto, produção, nota, falta, atestado, folga e dia esquecido | Feito |
+| Histórico: busca, filtros, semanas com subtotal, lista de períodos, exportar CSV | Feito |
+| Período, aba, filtro e busca na URL (Voltar mantém) | Feito |
+| Voltar do Android fecha painéis | Feito |
+| Nota do dia (com busca) e obra do dia | Feito |
+| Completar dias com a escala (com "Desfazer") | Feito |
+| Feriados da cidade (com pontos facultativos e "todo ano") | Feito |
+| Obras: cadastro, escolha na Hoje e na produção, filtro no histórico, horas e produção por obra | Feito |
+| Produção: favoritos, categorias, recentes, dia (hoje, ontem, anteontem) e obra | Feito |
+| Ganhos: "De onde vem", aba Períodos e "Conferir pagamento" com pistas | Feito |
+| Menus carregados sob demanda; JS da Hoje em 198 KB | Feito |
+
+**Próximo:** fase 3 (login, sincronização, notificações) e PDF do histórico.

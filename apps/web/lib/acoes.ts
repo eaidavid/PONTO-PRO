@@ -1,5 +1,5 @@
-import type { DiaRegistro, Etapa, ItemProducao, LancamentoProducao, Marcacoes, PerfilTrabalho } from "@ponto-pro/core";
-import { type DadosPessoais, db, type Preferencias } from "./db";
+import type { DiaRegistro, Etapa, Feriado, ItemProducao, LancamentoProducao, Marcacoes, Obra, PerfilTrabalho } from "@ponto-pro/core";
+import { type ConferenciaSalva, type DadosPessoais, db, type Preferencias } from "./db";
 
 export const agoraIso = () => new Date().toISOString();
 const VERSOES_NO_HISTORICO = 20;
@@ -43,6 +43,31 @@ export async function salvarPreferencias(p: Preferencias) {
   await db.config.put({ chave: "preferencias", valor: p, atualizadoEm: agoraIso() });
 }
 
+export async function salvarObras(obras: Obra[]) {
+  await db.config.put({ chave: "obras", valor: obras, atualizadoEm: agoraIso() });
+}
+
+export async function salvarFeriadosLocais(feriados: Feriado[]) {
+  await db.config.put({ chave: "feriadosLocais", valor: [...feriados].sort((a, b) => a.data.localeCompare(b.data)), atualizadoEm: agoraIso() });
+}
+
+export async function salvarConferencia(c: ConferenciaSalva) {
+  const atual = ((await db.config.get("conferencias"))?.valor as ConferenciaSalva[] | undefined) ?? [];
+  const lista = [...atual.filter((x) => x.fim !== c.fim), c].sort((a, b) => b.fim.localeCompare(a.fim));
+  await db.config.put({ chave: "conferencias", valor: lista, atualizadoEm: agoraIso() });
+}
+
+/** Grava vários registros de uma vez (ex.: completar com a escala). Devolve os anteriores para desfazer. */
+export async function salvarVariosRegistros(regs: DiaRegistro[]): Promise<{ data: string; antes: DiaRegistro | null }[]> {
+  const antes = await Promise.all(regs.map(async (r) => ({ data: r.data, antes: (await db.registros.get(r.data)) ?? null })));
+  for (const r of regs) await salvarRegistro(r);
+  return antes;
+}
+
+export async function restaurarVarios(lista: { data: string; antes: DiaRegistro | null }[]) {
+  for (const x of lista) await restaurarRegistro(x.data, x.antes);
+}
+
 // ---------- registros ----------
 
 export async function salvarRegistro(r: DiaRegistro) {
@@ -55,10 +80,16 @@ export async function apagarRegistro(data: string) {
 }
 
 /** Bate o ponto e devolve o registro anterior (para "Desfazer"). */
-export async function baterPonto(data: string, etapa: Etapa, hora: string): Promise<DiaRegistro | null> {
+export async function baterPonto(data: string, etapa: Etapa, hora: string, obraId?: string): Promise<DiaRegistro | null> {
   const antes = (await db.registros.get(data)) ?? null;
   const base: DiaRegistro = antes ?? { data, tipo: "normal", marcacoes: {} };
-  await salvarRegistro({ ...base, tipo: base.tipo === "folga" || base.tipo === "compensado" ? base.tipo : "normal", marcacoes: { ...base.marcacoes, [etapa]: hora } });
+  const novo: DiaRegistro = {
+    ...base,
+    tipo: base.tipo === "folga" || base.tipo === "compensado" ? base.tipo : "normal",
+    marcacoes: { ...base.marcacoes, [etapa]: hora },
+  };
+  if (obraId && !base.obraId) novo.obraId = obraId;
+  await salvarRegistro(novo);
   return antes;
 }
 

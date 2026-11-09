@@ -9,7 +9,7 @@ import {
   rotuloUnidade,
   UNIDADES_CHIPS,
 } from "@ponto-pro/core";
-import { PackagePlus, Plus, Search } from "lucide-react";
+import { PackagePlus, Plus, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BotaoPrincipal } from "./BotaoPrincipal";
 import { CampoNumero } from "./CampoNumero";
@@ -30,6 +30,8 @@ export interface BuscaServicoProps {
   quantidadeInicial?: string;
   /** Já começa com este serviço escolhido (ex.: "Lançar de novo"). */
   itemInicial?: ItemProducao | null;
+  /** Mostra a estrela de favorito em cada serviço. */
+  onFavoritar?: (item: ItemProducao) => void;
 }
 
 function lerQuantidade(v: string): number | null {
@@ -38,7 +40,7 @@ function lerQuantidade(v: string): number | null {
 }
 
 /** Busca no catálogo sem ligar para acentos, com "+ Criar" quando não existe. */
-export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null }: BuscaServicoProps) {
+export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null, onFavoritar }: BuscaServicoProps) {
   const [texto, setTexto] = useState(textoInicial);
   const [escolhido, setEscolhido] = useState<ItemProducao | null>(itemInicial);
   const [criando, setCriando] = useState<string | null>(null);
@@ -165,9 +167,20 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
       {!texto.trim() && <p className="px-1 text-15 text-texto-2">Sugestões — ou digite para buscar entre {itens.length} serviços</p>}
       <ul className="flex flex-col divide-y divide-borda overflow-hidden cartao" aria-label="Serviços encontrados">
         {resultado.itens.map((i) => (
-          <li key={i.id}>
-            <button type="button" onClick={() => setEscolhido(i)} className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left active:bg-superficie-2">
-              <span className="flex-1">
+          <li key={i.id} className="flex items-stretch">
+            {onFavoritar && (
+              <button
+                type="button"
+                onClick={() => onFavoritar(i)}
+                aria-pressed={!!i.favorito}
+                aria-label={i.favorito ? `Tirar ${i.nome} dos favoritos` : `Marcar ${i.nome} como favorito`}
+                className="flex w-12 shrink-0 items-center justify-center text-texto-2 active:bg-superficie-2"
+              >
+                <Star aria-hidden className={i.favorito ? "size-5 fill-[color:var(--extra)] text-extra" : "size-5"} />
+              </button>
+            )}
+            <button type="button" onClick={() => setEscolhido(i)} className={`flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pr-4 text-left active:bg-superficie-2 ${onFavoritar ? "pl-1" : "pl-4"}`}>
+              <span className="min-w-0 flex-1">
                 <span className="block text-17 font-bold">{i.nome}</span>
                 <span className="block text-15 text-texto-2">{i.area}</span>
               </span>

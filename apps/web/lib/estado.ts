@@ -4,7 +4,9 @@ import {
   type Agora,
   agoraEmSaoPaulo,
   type DiaRegistro,
+  type Feriado,
   type ItemProducao,
+  type Obra,
   itensDosPacotes,
   type LancamentoProducao,
   MODELOS,
@@ -13,7 +15,7 @@ import {
 } from "@ponto-pro/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
-import { type DadosPessoais, db, type Preferencias } from "./db";
+import { type ConferenciaSalva, type DadosPessoais, db, type Preferencias } from "./db";
 
 export interface Estado {
   perfil: PerfilTrabalho | null;
@@ -26,6 +28,11 @@ export interface Estado {
   itens: ItemProducao[];
   lancamentos: LancamentoProducao[];
   pendentes: number;
+  obras: Obra[];
+  /** Obras não arquivadas. */
+  obrasAtivas: Obra[];
+  feriadosLocais: Feriado[];
+  conferencias: ConferenciaSalva[];
 }
 
 function temaDoAparelho(): Preferencias["tema"] {
@@ -84,6 +91,10 @@ export function useEstado(): Estado | undefined {
       itens,
       lancamentos: lancamentos.sort((a, b) => b.data.localeCompare(a.data) || b.atualizadoEm.localeCompare(a.atualizadoEm)),
       pendentes,
+      obras: (cfg.obras as Obra[] | undefined) ?? [],
+      obrasAtivas: ((cfg.obras as Obra[] | undefined) ?? []).filter((o) => !o.arquivada),
+      feriadosLocais: (cfg.feriadosLocais as Feriado[] | undefined) ?? [],
+      conferencias: (cfg.conferencias as ConferenciaSalva[] | undefined) ?? [],
     };
   }, []);
 }
@@ -91,6 +102,28 @@ export function useEstado(): Estado | undefined {
 /** Registros de um período qualquer (para navegar no histórico antigo). */
 export function useRegistrosDoPeriodo(inicio: string, fim: string): DiaRegistro[] | undefined {
   return useLiveQuery(() => db.registros.where("data").between(inicio, fim, true, true).toArray(), [inicio, fim]);
+}
+
+/** Lançamentos de produção de um período qualquer. */
+export function useLancamentosDoPeriodo(inicio: string, fim: string): LancamentoProducao[] | undefined {
+  return useLiveQuery(
+    async () => (await db.lancamentos.where("data").between(inicio, fim, true, true).toArray()).sort((a, b) => b.data.localeCompare(a.data)),
+    [inicio, fim],
+  );
+}
+
+/** Histórico longo (para o resumo de períodos passados). Só carrega quando pedido. */
+export function useHistoricoLongo(ativo: boolean, desde: string) {
+  return useLiveQuery(
+    async () =>
+      ativo
+        ? {
+            registros: await db.registros.where("data").aboveOrEqual(desde).toArray(),
+            lancamentos: await db.lancamentos.where("data").aboveOrEqual(desde).toArray(),
+          }
+        : null,
+    [ativo, desde],
+  );
 }
 
 /** Relógio de São Paulo, atualizado a cada 15 segundos. */

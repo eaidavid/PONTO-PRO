@@ -17,6 +17,8 @@ export const ItemProducao = z.object({
   preco: Centavos,
   /** true = preço de exemplo do catálogo, ainda não conferido pela pessoa. */
   exemplo: z.boolean().default(false),
+  /** Marcado com estrela: aparece primeiro. */
+  favorito: z.boolean().optional(),
 });
 export type ItemProducao = z.infer<typeof ItemProducao>;
 
@@ -32,5 +34,6 @@ export const LancamentoProducao = z.object({
   /** Preço no momento do lançamento (mudar o catálogo não altera o passado). */
   precoUnitario: Centavos,
   descricao: z.string().max(200).optional(),
+  obraId: z.string().optional(),
 });
 export type LancamentoProducao = z.infer<typeof LancamentoProducao>;

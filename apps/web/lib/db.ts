@@ -15,6 +15,17 @@ export interface Preferencias {
   tema: Tema;
   tamanho: Tamanho;
   som: boolean;
+  /** Obra usada ao bater o ponto e lançar produção (quando há mais de uma). */
+  obraAtual?: string;
+}
+
+/** Conferência de pagamento de um período (chave: data de fim do período). */
+export interface ConferenciaSalva {
+  fim: string;
+  inicio: string;
+  estimado: number;
+  recebido: number;
+  em: string;
 }
 
 export interface DadosPessoais {
@@ -25,7 +36,7 @@ export interface DadosPessoais {
 }
 
 export interface Config {
-  chave: "perfil" | "pessoal" | "preferencias";
+  chave: "perfil" | "pessoal" | "preferencias" | "obras" | "feriadosLocais" | "conferencias";
   valor: unknown;
   atualizadoEm: string;
 }

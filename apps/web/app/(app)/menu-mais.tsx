@@ -1,8 +1,8 @@
 "use client";
 
 import { BottomSheet } from "@ponto-pro/ui";
-import { ChevronRight, Hammer, type LucideIcon, Smartphone, Target, User } from "lucide-react";
-import Link from "next/link";
+import { ChevronRight, HardHat, type LucideIcon, Smartphone, Tags, Target, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { Preferencias } from "../../lib/db";
 import { instalarApp, usePodeInstalar } from "../../lib/instalar";
 import { PreferenciasVisuais } from "./preferencias-visuais";
@@ -27,10 +27,16 @@ export function MenuMais({
   preferencias: Preferencias;
 }) {
   const podeInstalar = usePodeInstalar();
+  const router = useRouter();
+  const ir = (href: string) => {
+    onFechar();
+    setTimeout(() => router.push(href), 120);
+  };
   const atalhos: Atalho[] = [
-    ...(usaProducao ? [{ href: "/producao", rotulo: "Produção", descricao: "Lançar serviço e preços", icone: Hammer }] : []),
     { href: "/metas", rotulo: "Metas", descricao: "Quanto quero receber", icone: Target },
-    { href: "/conta", rotulo: "Conta e regras", descricao: "Valor, semana, descontos", icone: User },
+    { href: "/obras", rotulo: "Obras", descricao: "Separar horas e produção por lugar", icone: HardHat },
+    ...(usaProducao ? [{ href: "/producao", rotulo: "Catálogo de serviços", descricao: "Favoritos, categorias e preços", icone: Tags }] : []),
+    { href: "/conta", rotulo: "Conta e regras", descricao: "Valor, semana, feriados, descontos", icone: User },
   ];
   return (
     <BottomSheet aberto={aberto} onFechar={onFechar} titulo="Mais">
@@ -51,7 +57,7 @@ export function MenuMais({
         <ul className="cartao divide-y divide-borda overflow-hidden">
           {atalhos.map((a) => (
             <li key={a.href}>
-              <Link href={a.href} onClick={onFechar} className="flex min-h-16 items-center gap-3 px-4 py-2 active:bg-superficie-2">
+              <button type="button" onClick={() => ir(a.href)} className="flex min-h-16 w-full items-center gap-3 px-4 py-2 text-left active:bg-superficie-2">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte">
                   <a.icone aria-hidden className="size-5" />
                 </span>
@@ -60,7 +66,7 @@ export function MenuMais({
                   <span className="block text-15 text-texto-2">{a.descricao}</span>
                 </span>
                 <ChevronRight aria-hidden className="size-5 text-texto-2" />
-              </Link>
+              </button>
             </li>
           ))}
         </ul>

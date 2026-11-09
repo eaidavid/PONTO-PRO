@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { fazerOnboarding, preparar, semearHistorico } from "./ajuda";
 
 const TEMAS = ["claro", "escuro", "sol"] as const;
-const TELAS = ["hoje", "registros", "producao", "ganhos", "metas", "conta"] as const;
+const TELAS = ["hoje", "historico", "producao", "ganhos", "metas", "conta", "obras"] as const;
 
 for (const tema of TEMAS) {
   test(`acessibilidade das telas (${tema})`, async ({ page }) => {
@@ -48,7 +48,7 @@ test.describe("prints", () => {
           await page.getByRole("tab", { name: "Contracheque" }).click();
           await page.addStyleTag({ content: 'nav[aria-label="Principal"]{position:static!important}' });
           await page.screenshot({ path: `${pasta}/contracheque-${tema}-390.png`, fullPage: true });
-          await page.goto("/registros");
+          await page.goto("/historico");
           await page.getByRole("button", { name: /^qua 04/ }).click();
           await page.waitForTimeout(300);
           await page.screenshot({ path: `${pasta}/editar-dia-${tema}-390.png` });
@@ -67,7 +67,7 @@ test.describe("prints compacto", () => {
     const pasta = "../../docs/prints/produto";
     await fazerOnboarding(page);
     await semearHistorico(page);
-    for (const tela of ["hoje", "registros", "producao"]) {
+    for (const tela of ["hoje", "historico", "producao"]) {
       await page.goto(`/${tela}`);
       await page.waitForLoadState("networkidle");
       await page.screenshot({ path: `${pasta}/compacto-${tela}-390.png` });

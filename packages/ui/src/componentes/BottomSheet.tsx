@@ -23,12 +23,39 @@ export function BottomSheet({ aberto, onFechar, titulo, subtitulo, children, rod
   const ref = useRef<HTMLDialogElement>(null);
   const idTitulo = useId();
 
+  // Botão Voltar do Android fecha o painel em vez de sair da tela.
+  // A entrada no histórico copia o estado do Next.js (senão ele recarrega a página).
+  const entradaNoHistorico = useRef(false);
+  const fecharRef = useRef(onFechar);
+  fecharRef.current = onFechar;
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (aberto && !d.open) d.showModal();
-    if (!aberto && d.open) d.close();
-  }, [aberto]);
+    if (aberto && !d.open) {
+      d.showModal();
+      if (!entradaNoHistorico.current) {
+        history.pushState({ ...history.state, painel: idTitulo }, "");
+        entradaNoHistorico.current = true;
+      }
+    }
+    if (!aberto && d.open) {
+      d.close();
+      if (entradaNoHistorico.current) {
+        entradaNoHistorico.current = false;
+        if (history.state?.painel === idTitulo) history.back();
+      }
+    }
+  }, [aberto, idTitulo]);
+  useEffect(() => {
+    const voltar = () => {
+      if (entradaNoHistorico.current && history.state?.painel !== idTitulo) {
+        entradaNoHistorico.current = false;
+        fecharRef.current();
+      }
+    };
+    window.addEventListener("popstate", voltar);
+    return () => window.removeEventListener("popstate", voltar);
+  }, [idTitulo]);
 
   return (
     <dialog

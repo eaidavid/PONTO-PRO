@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Hammer, House, LayoutGrid, ListChecks, Target, User, Wallet } from "lucide-react";
+import { Hammer, House, LayoutGrid, ListChecks, Plus, Target, User, Wallet } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { cx } from "../cx";
 
@@ -10,6 +10,19 @@ export interface Aba {
   /** Link da aba. Sem href, a aba é um botão (ex.: "Mais"). */
   href?: string;
   onClick?: () => void;
+  /** Botão central em destaque (ex.: "+ Lançar"). */
+  destaque?: boolean;
+}
+
+/** Navegação do produto: Hoje, Histórico, + Lançar (central), Ganhos e Mais. */
+export function abasProduto(onLancar: () => void, onMais: () => void): Aba[] {
+  return [
+    { id: "hoje", rotulo: "Hoje", icone: House, href: "/hoje" },
+    { id: "historico", rotulo: "Histórico", icone: ListChecks, href: "/historico" },
+    { id: "lancar", rotulo: "Lançar", icone: Plus, onClick: onLancar, destaque: true },
+    { id: "ganhos", rotulo: "Ganhos", icone: Wallet, href: "/ganhos" },
+    { id: "mais", rotulo: "Mais", icone: LayoutGrid, onClick: onMais },
+  ];
 }
 
 /** Navegação compacta: 3 telas principais e um botão "Mais" que agrupa o resto. */
@@ -59,7 +72,14 @@ export function BarraNavegacao({ abas, ativa, link: Link = "a" as unknown as Com
         {abas.map((a) => {
           const ativo = a.id === ativa;
           const Icone = a.icone;
-          const conteudo = (
+          const conteudo = a.destaque ? (
+            <>
+              <span className="sombra-botao -mt-5 flex size-14 items-center justify-center rounded-full bg-primaria text-sobre-primaria ring-4 ring-[color:var(--superficie)] transition-transform duration-150 active:scale-95">
+                <Icone aria-hidden className="size-7" strokeWidth={2.5} />
+              </span>
+              <span className="text-13 font-bold leading-none text-primaria">{a.rotulo}</span>
+            </>
+          ) : (
             <>
               <span className={cx("flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200", ativo ? "sombra-botao bg-primaria text-sobre-primaria" : "text-texto-2")}>
                 <Icone aria-hidden className="size-5" strokeWidth={ativo ? 2.5 : 2} />

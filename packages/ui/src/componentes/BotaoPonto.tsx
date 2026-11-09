@@ -26,6 +26,8 @@ export interface BotaoPontoProps {
   aviso?: string;
   /** Toca um bipe curto ao bater. */
   som?: boolean;
+  /** Mostra "Registra às 09:41" no botão (desligue quando o relógio já está à vista). */
+  mostrarHora?: boolean;
   onBater?: () => void;
 }
 
@@ -45,7 +47,7 @@ function bipe() {
 }
 
 /** Botão gigante de bater o ponto. O texto muda com a etapa do dia. */
-export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som, onBater }: BotaoPontoProps) {
+export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som, mostrarHora = true, onBater }: BotaoPontoProps) {
   const [confirmado, setConfirmado] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -101,7 +103,7 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som,
         </span>
         <span className="flex flex-1 flex-col py-2 leading-tight">
           <span className="text-20">{info.rotulo}</span>
-          {!encerrado && (
+          {!encerrado && mostrarHora && (
             <span className="numeros text-15 font-normal" aria-hidden>
               Registra às <b className="font-bold">{hora}</b>
             </span>

@@ -35,7 +35,7 @@ export default function Metas() {
     if (!estado?.perfil || !agora) return null;
     const { perfil, registros, itens, lancamentos } = estado;
     const periodo = periodoDaData(agora.data, perfil.ciclo.diaFechamento);
-    const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, agora, hoje: agora.data });
+    const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, feriadosLocais: estado.feriadosLocais, agora, hoje: agora.data });
     // serviços mais lançados primeiro
     const uso = new Map<string, number>();
     for (const l of lancamentos) uso.set(l.itemId, (uso.get(l.itemId) ?? 0) + valorProducao(l.quantidade, l.precoUnitario));

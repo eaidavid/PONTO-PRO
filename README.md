@@ -5,7 +5,7 @@ Ponto, produção e ganhos para quem trabalha na obra, no comércio, na saúde, 
 ## Estrutura
 
 ```
-apps/web         Next.js (App Router): onboarding, Hoje, Registros, Produção, Ganhos, Metas e Conta
+apps/web         Next.js (App Router): onboarding, Hoje, Histórico, Lançar produção, Ganhos, Metas, Obras e Conta
 packages/core    motor de cálculo puro (sem UI), com testes
 packages/ui      design system: tokens e componentes
 packages/config  tsconfig compartilhado

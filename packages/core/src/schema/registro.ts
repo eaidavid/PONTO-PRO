@@ -17,7 +17,10 @@ export const DiaRegistro = z.object({
   data: DataISO,
   tipo: TipoDia.default("normal"),
   marcacoes: Marcacoes.default({}),
+  /** Anotação do dia ("choveu, obra parada"). Entra na busca do histórico. */
   observacao: z.string().max(200).optional(),
+  /** Obra ou cliente do dia (quando a pessoa trabalha em mais de um lugar). */
+  obraId: z.string().optional(),
 });
 export type DiaRegistro = z.infer<typeof DiaRegistro>;
 export type DiaRegistroEntrada = z.input<typeof DiaRegistro>;
@@ -28,3 +31,10 @@ export const Feriado = z.object({
   tipo: z.enum(["nacional", "local"]),
 });
 export type Feriado = z.infer<typeof Feriado>;
+
+export const Obra = z.object({
+  id: z.string(),
+  nome: z.string().trim().min(1, "Dê um nome à obra").max(40),
+  arquivada: z.boolean().default(false),
+});
+export type Obra = z.infer<typeof Obra>;

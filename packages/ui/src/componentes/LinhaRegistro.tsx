@@ -1,4 +1,5 @@
 import { formatarDuracao, type Marcacoes, seloDia, type TipoDia } from "@ponto-pro/core";
+import { StickyNote } from "lucide-react";
 import { cx } from "../cx";
 import { SeloTipoDia } from "./TipoDia";
 
@@ -12,11 +13,15 @@ export interface LinhaRegistroProps {
   hoje?: boolean;
   emAndamento?: boolean;
   fimDeSemana?: boolean;
+  /** Nota do dia (aparece numa linha pequena). */
+  nota?: string;
+  /** Nome da obra do dia. */
+  obra?: string;
   onClick?: () => void;
 }
 
 /** Linha da lista de registros: selo do dia, horários, total e saldo colorido. */
-export function LinhaRegistro({ data, marcacoes = {}, tipo = "normal", trabalhadoMin, saldoMin, feriado, hoje, emAndamento, fimDeSemana, onClick }: LinhaRegistroProps) {
+export function LinhaRegistro({ data, marcacoes = {}, tipo = "normal", trabalhadoMin, saldoMin, feriado, hoje, emAndamento, fimDeSemana, nota, obra, onClick }: LinhaRegistroProps) {
   const [dia, num] = seloDia(data).split(" ");
   const horarios = marcacoes.entrada ? `${marcacoes.entrada} – ${marcacoes.saida ?? "…"}` : null;
   const mostrarTipo = tipo !== "normal" || (!!feriado && !horarios);
@@ -46,6 +51,12 @@ export function LinhaRegistro({ data, marcacoes = {}, tipo = "normal", trabalhad
         )}
         {feriado && <span className="truncate text-13 text-texto-2">{feriado}</span>}
         {mostrarTipo && horarios && <span className="numeros text-15">{horarios}</span>}
+        {(obra || nota) && (
+          <span className="flex min-w-0 items-center gap-1 text-13 text-texto-2">
+            <StickyNote aria-hidden className="size-3.5 shrink-0" />
+            <span className="truncate">{[obra, nota].filter(Boolean).join(" · ")}</span>
+          </span>
+        )}
       </span>
       <span className="numeros flex shrink-0 flex-col items-end">
         {emAndamento ? (

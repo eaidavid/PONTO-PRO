@@ -37,14 +37,15 @@ test("lançar produção criando um serviço novo", async ({ page }) => {
   await page.getByLabel("Quantidade").fill("20");
   await expect(page.getByText("20 m² × R$ 8,50 = R$ 170,00")).toBeVisible();
   await page.getByRole("button", { name: "Lançar produção" }).click();
-  await expect(page.getByText("Serviço criado. 20 m² lançados")).toBeVisible();
-  await expect(page.getByRole("list").getByText("Rejunte de pastilha")).toBeVisible();
+  await expect(page.getByText("Serviço criado. 20 m² · R$ 170,00")).toBeVisible();
+  await page.goto("/historico?aba=producao");
+  await expect(page.getByText("Rejunte de pastilha")).toBeVisible();
 });
 
 test("editar um dia em Registros", async ({ page }) => {
   await fazerOnboarding(page);
   await semearHistorico(page);
-  await page.getByRole("link", { name: "Registros" }).click();
+  await page.getByRole("link", { name: "Histórico" }).click();
   await page.getByRole("button", { name: /^qui 05/ }).click();
   const sheet = page.getByRole("dialog");
   await sheet.getByRole("button", { name: "Falta" }).click();
@@ -79,7 +80,7 @@ test("menu Mais: tamanho compacto e atalhos", async ({ page }) => {
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-tamanho", "compacto");
   await page.getByRole("button", { name: "Mais" }).click();
-  await page.getByRole("dialog", { name: "Mais" }).getByRole("link", { name: /Metas/ }).click();
+  await page.getByRole("dialog", { name: "Mais" }).getByRole("button", { name: /Metas/ }).click();
   await expect(page.getByRole("heading", { name: "Metas" })).toBeVisible();
 });
 
@@ -89,8 +90,8 @@ test("ponto esquecido: corrige em um toque e o status responde na hora", async (
   await expect(page.getByText("Esqueceu de bater a entrada? Ela era às 07:00.")).toBeVisible();
   await page.getByRole("button", { name: "Bater entrada às 07:00" }).click();
   await expect(page.getByText("Ponto corrigido")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Trabalhando há 2h41" })).toBeVisible();
-  await expect(page.getByText("Saída prevista às 17:00.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Trabalhando" })).toBeVisible();
+  await expect(page.getByText("2h41 de 9h · sai às 17:00")).toBeVisible();
 });
 
 test("toque duplo pede confirmação", async ({ page }) => {
@@ -121,7 +122,7 @@ test("abre sem internet depois do primeiro acesso", async ({ page, context }) =>
 test("registros mostram se está tudo certo e restauração de backup", async ({ page }) => {
   await fazerOnboarding(page);
   await semearHistorico(page);
-  await page.getByRole("link", { name: "Registros" }).click();
+  await page.getByRole("link", { name: "Histórico" }).click();
   await expect(page.getByText("Tudo certo neste período.")).toBeVisible();
   await page.getByRole("button", { name: /^qui 05/ }).click();
   const sheet = page.getByRole("dialog");
@@ -146,4 +147,80 @@ test("registros mostram se está tudo certo e restauração de backup", async ({
   await page.goto("/conta");
   await page.getByLabel("Arquivo de backup").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: Buffer.from(backup) });
   await expect(page.getByText("Backup restaurado: 1 dia e 0 lançamentos (1 item com erro ficou de fora)")).toBeVisible();
+});
+
+test("histórico: filtros e busca ficam no endereço; lista de períodos", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/historico");
+  await page.getByRole("button", { name: "Faltas", exact: true }).click();
+  await expect(page).toHaveURL(/f=faltas/);
+  await expect(page.getByRole("button", { name: /^qua 28/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^qui 29/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Todos", exact: true }).click();
+  await page.getByRole("searchbox").fill("04/11");
+  await expect(page).toHaveURL(/q=04%2F11/);
+  await expect(page.getByRole("button", { name: /^qua 04/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^ter 03/ })).toHaveCount(0);
+  await page.getByRole("searchbox").fill("");
+  await page.getByRole("button", { name: /21\/10 a 20\/11/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Períodos" });
+  await expect(sheet.getByText("21/09 a 20/10")).toBeVisible();
+  await page.goBack();
+  await expect(sheet).toBeHidden();
+  await expect(page).toHaveURL(/\/historico/);
+});
+
+test("+ Lançar: bater ponto e arrumar dia esquecido; Voltar fecha o painel", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.getByRole("button", { name: "Lançar" }).click();
+  const menu = page.getByRole("dialog", { name: "Lançar" });
+  await expect(menu).toBeVisible(); // o menu carrega no primeiro toque
+  await page.goBack();
+  await expect(menu).toBeHidden();
+  await expect(page).toHaveURL(/\/hoje$/);
+  await page.getByRole("button", { name: "Lançar" }).click();
+  await menu.getByRole("button", { name: /Bater entrada agora/ }).click();
+  await expect(page.getByText("Entrada às 09:41")).toBeVisible();
+  await page.getByRole("button", { name: "Lançar" }).click();
+  await menu.getByRole("button", { name: "dom 08" }).click();
+  await expect(page).toHaveURL(/editar=2026-11-08/);
+  await expect(page.getByRole("dialog", { name: /Domingo, 08 de novembro/ })).toBeVisible();
+});
+
+test("obras: criar, escolher na Hoje e filtrar o histórico", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/obras");
+  await page.getByLabel("Nova obra").fill("Casa da Ana");
+  await page.getByRole("button", { name: "Adicionar obra" }).click();
+  await expect(page.getByText('Obra "Casa da Ana" criada')).toBeVisible();
+  await page.goto("/hoje");
+  await page.getByRole("button", { name: /^Obra/ }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Casa da Ana" }).click();
+  await page.getByRole("button", { name: "Bater entrada às 09:41" }).click();
+  await page.goto("/historico");
+  await page.getByRole("button", { name: "Casa da Ana", exact: true }).click();
+  await expect(page.getByRole("button", { name: /hoje 09/ })).toBeVisible();
+});
+
+test("feriado local muda o dia; conferir pagamento", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/conta");
+  await page.getByRole("button", { name: /Feriados da sua cidade/ }).click();
+  const painel = page.getByRole("dialog", { name: "Feriados da sua cidade" });
+  await painel.getByLabel("Nome").fill("Aniversário da cidade");
+  await painel.getByLabel("Dia e mês").fill("09/11");
+  await painel.getByRole("button", { name: "Adicionar feriado" }).click();
+  await expect(page.getByText("Feriado adicionado")).toBeVisible();
+  await page.goto("/hoje");
+  await expect(page.getByRole("heading", { name: "Hoje é feriado: Aniversário da cidade" })).toBeVisible();
+
+  await page.goto("/ganhos?aba=periodos");
+  await page.getByRole("button", { name: /21\/09 a 20\/10/ }).click();
+  await page.getByLabel("Quanto você recebeu?").fill("100,00");
+  // o período tem o feriado de 12/10 pago: a estimativa não é zero
+  await expect(page.getByText(/Você recebeu R\$ [\d.,]+ a (menos|mais) que a estimativa\./)).toBeVisible();
+  await expect(page.getByText("Pode ser que não tenham pago:")).toBeVisible();
+  await page.getByRole("button", { name: "Salvar conferência" }).click();
+  await expect(page.getByText(/Recebido R\$ 100,00/)).toBeVisible();
 });
