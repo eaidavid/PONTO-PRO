@@ -3,6 +3,7 @@
 import {
   type Agora,
   agoraEmSaoPaulo,
+  type Assinatura,
   type DiaRegistro,
   type Feriado,
   type ItemProducao,
@@ -34,6 +35,9 @@ export interface Estado {
   feriadosLocais: Feriado[];
   conferencias: ConferenciaSalva[];
   consentimento: Consentimento | null;
+  /** Data do primeiro uso (começo do teste grátis). */
+  inicioUso: string | null;
+  assinatura: Assinatura | null;
 }
 
 function temaDoAparelho(): Preferencias["tema"] {
@@ -97,6 +101,8 @@ export function useEstado(): Estado | undefined {
       feriadosLocais: (cfg.feriadosLocais as Feriado[] | undefined) ?? [],
       conferencias: (cfg.conferencias as ConferenciaSalva[] | undefined) ?? [],
       consentimento: (cfg.consentimento as Consentimento | undefined) ?? null,
+      inicioUso: (cfg.inicioUso as string | undefined) ?? null,
+      assinatura: (cfg.assinatura as Assinatura | undefined) ?? null,
     };
   }, []);
 }

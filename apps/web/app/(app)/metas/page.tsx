@@ -12,10 +12,12 @@ import {
   simularMeta,
   valorProducao,
 } from "@ponto-pro/core";
-import { Banner, BottomSheet, CabecalhoTela, Chip, Contador, TituloSecao } from "@ponto-pro/ui";
+import { Banner, Bloqueio, BottomSheet, CabecalhoTela, Chip, Contador, TituloSecao } from "@ponto-pro/ui";
 import { CalendarDays, Clock, Hammer, Moon, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAgora, useEstado } from "../../../lib/estado";
+import Link from "next/link";
+import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 
 const ICONES: Record<OpcaoMeta["tipo"], LucideIcon> = {
@@ -53,6 +55,18 @@ export default function Metas() {
   const item = usaProducao ? (favoritos.find((i) => i.id === itemId) ?? favoritos[0]) : undefined;
   const r = simularMeta({ perfil, alvo: meta, previsto, item });
 
+  if (!situacaoAtual(estado).pode("metas")) {
+    return (
+      <main className="flex flex-col gap-4 px-4">
+        <CabecalhoTela titulo="Metas" />
+        <Bloqueio
+          titulo="Quanto quero receber?"
+          texto="Diga quanto quer ganhar no período e veja quantas horas extras, sábados ou serviços faltam."
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+        />
+      </main>
+    );
+  }
   return (
     <main className="flex flex-col gap-4 px-4">
       <CabecalhoTela titulo="Metas" subtitulo={`Período ${rotuloPeriodo(periodo)}`} />

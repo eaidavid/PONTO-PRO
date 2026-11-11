@@ -44,7 +44,7 @@ export interface DadosPessoais {
 }
 
 export interface Config {
-  chave: "perfil" | "pessoal" | "preferencias" | "obras" | "feriadosLocais" | "conferencias" | "consentimento";
+  chave: "perfil" | "pessoal" | "preferencias" | "obras" | "feriadosLocais" | "conferencias" | "consentimento" | "inicioUso" | "assinatura";
   valor: unknown;
   atualizadoEm: string;
 }

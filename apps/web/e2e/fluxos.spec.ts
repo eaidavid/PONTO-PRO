@@ -264,3 +264,31 @@ test("termos e privacidade: aceite obrigatório e nova versão pede aceite de no
   await page.getByRole("button", { name: "Continuar" }).click();
   await expect(page.getByRole("heading", { name: "Atualizamos os termos" })).toBeHidden();
 });
+
+test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram o bloqueio", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/planos");
+  await expect(page.getByText("Teste grátis do Individual: 14 dias restantes")).toBeVisible();
+  await page.goto("/metas");
+  await expect(page.getByText("Quanto quero receber neste período?")).toBeVisible();
+
+  // simula o fim do teste
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok) => { const r = indexedDB.open("ponto-pro"); r.onsuccess = () => ok(r.result); });
+    await new Promise((ok) => {
+      const tx = db.transaction("config", "readwrite");
+      tx.objectStore("config").put({ chave: "inicioUso", valor: "2026-10-01", atualizadoEm: "x" });
+      tx.oncomplete = ok;
+    });
+    db.close();
+  });
+  await page.goto("/metas");
+  await expect(page.getByRole("heading", { name: "Quanto quero receber?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ver planos" })).toBeVisible();
+  await page.goto("/historico?p=2026-09-21");
+  await expect(page.getByRole("heading", { name: "Períodos passados" })).toBeVisible();
+  await page.goto("/ganhos?aba=contracheque");
+  await expect(page.getByRole("link", { name: /PDF no plano Individual/ })).toBeVisible();
+  await page.goto("/planos");
+  await expect(page.getByText("Grátis", { exact: true }).first()).toBeVisible();
+});

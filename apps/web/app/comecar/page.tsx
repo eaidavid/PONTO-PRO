@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { salvarConsentimento, salvarPerfil, salvarPessoal } from "../../lib/acoes";
+import { marcarInicioUso, salvarConsentimento, salvarPerfil, salvarPessoal } from "../../lib/acoes";
 import { useEstado } from "../../lib/estado";
 import {
   almocoAtual,
@@ -173,6 +173,7 @@ export default function Comecar() {
       return;
     }
     await salvarConsentimento({ versao: LEGAL.versao, em: new Date().toISOString(), estatisticas });
+    await marcarInicioUso(hoje);
     await salvarPerfil(r.data);
     await salvarPessoal({ ...estado!.pessoal, nome: nome.trim() || undefined });
     router.replace("/hoje");

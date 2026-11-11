@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { abaExtraDoPerfil, useEstado } from "../../lib/estado";
+import { agoraEmSaoPaulo } from "@ponto-pro/core";
+import { marcarInicioUso } from "../../lib/acoes";
 import { LEGAL } from "../../lib/marca";
 import { AceiteTermos } from "../aceite-termos";
 import { Carregando } from "../carregando";
@@ -34,6 +36,8 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
   const [usado, setUsado] = useState({ lancar: false, mais: false });
   useEffect(() => {
     if (estado && !estado.perfil) router.replace("/comecar");
+    // quem já usava antes dos planos começa o teste a partir de hoje
+    if (estado?.perfil && !estado.inicioUso) marcarInicioUso(agoraEmSaoPaulo().data);
   }, [estado, router]);
   if (!estado?.perfil) return <Carregando />;
   const tela = caminho.split("/")[1] ?? "hoje";

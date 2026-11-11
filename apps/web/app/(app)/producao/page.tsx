@@ -6,6 +6,7 @@ import {
   formatarReais,
   type ItemProducao,
   lerReais,
+  LIMITE_PRODUCAO_GRATIS,
   ordenarPorUso,
   periodoDaData,
   rotuloUnidade,
@@ -13,6 +14,7 @@ import {
   valorProducao,
 } from "@ponto-pro/core";
 import {
+  Bloqueio,
   BotaoPrincipal,
   BottomSheet,
   BuscaServico,
@@ -27,6 +29,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
+import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 
 const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]: "Anteontem" };
@@ -65,7 +68,12 @@ export default function LancarProducao() {
   const obraAtual = obrasAtivas.find((o) => o.id === preferencias.obraAtual)?.id;
   const visiveis = area ? ordenados.filter((i) => i.area === area) : ordenados;
 
+  const periodoAtual = periodoDaData(agora.data, estado.perfil.ciclo.diaFechamento);
+  const noPeriodo = lancamentos.filter((l) => l.data >= periodoAtual.inicio && l.data <= periodoAtual.fim).length;
+  const noLimite = !situacaoAtual(estado).pode("producao-ilimitada") && noPeriodo >= LIMITE_PRODUCAO_GRATIS;
+
   async function lancar({ item, novo, quantidade }: { item: ItemProducao; novo: boolean; quantidade: number }) {
+    if (noLimite) return;
     if (novo) await salvarItem(item);
     const id = novoId("l");
     await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(obraAtual ? { obraId: obraAtual } : {}) });
@@ -118,6 +126,14 @@ export default function LancarProducao() {
           </button>
         )}
       </div>
+
+      {noLimite && (
+        <Bloqueio
+          titulo={`Você chegou a ${LIMITE_PRODUCAO_GRATIS} lançamentos neste período`}
+          texto="No plano Grátis dá para lançar até 20 serviços por período. Com o Individual, é sem limite."
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+        />
+      )}
 
       <section aria-label="Escolher serviço" className="pb-4">
         <BuscaServico

@@ -17,3 +17,4 @@ export * from "./assistente";
 export * from "./historico";
 export * from "./pagamento";
 export * from "./clt";
+export * from "./planos";

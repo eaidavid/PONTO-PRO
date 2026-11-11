@@ -25,6 +25,7 @@ import {
 import {
   Abas,
   Banner,
+  Bloqueio,
   BotaoPrincipal,
   BottomSheet,
   CabecalhoTela,
@@ -44,6 +45,7 @@ import { salvarConferencia } from "../../../lib/acoes";
 import type { ConferenciaSalva } from "../../../lib/db";
 import { type Estado, useAgora, useEstado, useHistoricoLongo } from "../../../lib/estado";
 import { MARCA } from "../../../lib/marca";
+import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 
 type Aba = "resumo" | "contracheque" | "periodos";
@@ -196,7 +198,13 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
         </p>
       </article>
       <div className="flex flex-col gap-3 pb-2 print:hidden">
-        <BotaoPrincipal tamanho="g" icone={Download} onClick={() => window.print()}>Baixar PDF</BotaoPrincipal>
+        {situacaoAtual(estado).pode("pdf") ? (
+          <BotaoPrincipal tamanho="g" icone={Download} onClick={() => window.print()}>Baixar PDF</BotaoPrincipal>
+        ) : (
+          <Link href="/planos" className="inline-flex min-h-16 items-center justify-center gap-3 rounded-full border-2 border-primaria px-6 text-17 font-bold text-primaria">
+            <Download aria-hidden className="size-6" /> PDF no plano Individual
+          </Link>
+        )}
         <BotaoPrincipal variante="secundaria" icone={MessageCircle} onClick={compartilhar}>Enviar no WhatsApp</BotaoPrincipal>
         <p className="text-13 text-texto-2">Calculado pela sua escala até o fechamento. Horas: {formatarDuracao(r.horas.trabalhadoMin)}.</p>
       </div>
@@ -386,7 +394,16 @@ function Ganhos() {
         </div>
       )}
       {aba === "contracheque" && <Contracheque r={previsto} estado={estado} onTermo={setTermo} />}
-      {aba === "periodos" && <Periodos estado={estado} agora={agora.data} />}
+      {aba === "periodos" &&
+        (situacaoAtual(estado).pode("conferencia") ? (
+          <Periodos estado={estado} agora={agora.data} />
+        ) : (
+          <Bloqueio
+            titulo="Conferir pagamento"
+            texto="Digite quanto você recebeu em cada período e veja se bate com a conta — e o que pode ter faltado."
+            acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+          />
+        ))}
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo={`Previsão até ${periodo.fim.slice(8, 10)}/${periodo.fim.slice(5, 7)}`}>
         <ListaExtrato linhas={previsao.extrato} />

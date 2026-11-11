@@ -44,6 +44,11 @@ export async function salvarPreferencias(p: Preferencias) {
   await db.config.put({ chave: "preferencias", valor: p, atualizadoEm: agoraIso() });
 }
 
+/** Marca o começo do teste grátis (só na primeira vez). */
+export async function marcarInicioUso(data: string) {
+  if (!(await db.config.get("inicioUso"))) await db.config.put({ chave: "inicioUso", valor: data, atualizadoEm: agoraIso() });
+}
+
 export async function salvarConsentimento(c: Consentimento) {
   await db.config.put({ chave: "consentimento", valor: c, atualizadoEm: agoraIso() });
 }

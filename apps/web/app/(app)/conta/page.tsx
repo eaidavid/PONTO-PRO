@@ -11,6 +11,7 @@ import {
   MODELOS,
   type PerfilTrabalho,
   descreverDesconto,
+  PLANOS,
   pontosFacultativos,
   tabelaDoAno,
   resumoDoPerfil,
@@ -40,6 +41,7 @@ import {
   Save,
   Scale,
   ShieldCheck,
+  Gem,
   PartyPopper,
   Trash2,
   Upload,
@@ -65,6 +67,7 @@ import {
   valorPrincipal,
 } from "../../../lib/perfil";
 import { MARCA } from "../../../lib/marca";
+import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
 
@@ -238,18 +241,19 @@ export default function Conta() {
         <LinhaAjuste icone={ShieldCheck} rotulo="Política de privacidade" onClick={() => router.push("/privacidade")} />
       </Grupo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-15 font-bold text-texto-2">Plano</h2>
-        <div className="cartao flex items-center gap-3 p-4">
-          <span className="flex size-10 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte">
-            <ShieldCheck aria-hidden className="size-5" />
-          </span>
-          <div>
-            <p className="text-17 font-bold">Grátis</p>
-            <p className="text-15 text-texto-2">1 pessoa, período atual. Seus dados ficam guardados neste celular.</p>
-          </div>
-        </div>
-      </section>
+      <Grupo titulo="Plano">
+        {(() => {
+          const sp = situacaoAtual(estado);
+          return (
+            <LinhaAjuste
+              icone={Gem}
+              rotulo={sp.emTeste ? "Teste grátis do Individual" : PLANOS[sp.plano].nome}
+              valor={sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}
+              onClick={() => router.push("/planos")}
+            />
+          );
+        })()}
+      </Grupo>
 
       <p className="flex gap-2 px-1 text-13 text-texto-2">
         <FileText aria-hidden className="size-4 shrink-0" />

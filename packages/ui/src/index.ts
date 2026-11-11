@@ -34,3 +34,4 @@ export * from "./componentes/CampoTexto";
 export * from "./componentes/ResumoNumeros";
 export * from "./componentes/TituloSecao";
 export * from "./componentes/Caixa";
+export * from "./componentes/Bloqueio";

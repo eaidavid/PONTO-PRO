@@ -29,6 +29,7 @@ import {
 } from "@ponto-pro/core";
 import {
   Abas,
+  Bloqueio,
   BotaoPrincipal,
   BottomSheet,
   CabecalhoTela,
@@ -60,6 +61,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { apagarLancamento, lancarProducao, restaurarVarios, salvarVariosRegistros } from "../../../lib/acoes";
 import { useAgora, useEstado, useHistoricoLongo, useLancamentosDoPeriodo, useRegistrosDoPeriodo } from "../../../lib/estado";
+import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { EditorDia } from "../editor-dia";
 
@@ -143,6 +145,7 @@ function Historico() {
 
   if (!estado?.perfil || !agora || !periodo || !calc || !regs || !lancs) return <Carregando />;
   const { perfil, itens, obras, obrasAtivas } = estado;
+  const plano = situacaoAtual(estado);
   const { r, semanas, pendencias, completar } = calc;
   const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
   const porData = new Map(regs.map((x) => [x.data, x]));
@@ -285,7 +288,13 @@ function Historico() {
         </p>
       )}
 
-      {aba === "ponto" ? (
+      {!atual && !plano.pode("historico") ? (
+        <Bloqueio
+          titulo="Períodos passados"
+          texto="Veja e confira todos os períodos que já fecharam, para conversar com quem paga."
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+        />
+      ) : aba === "ponto" ? (
         <>
           {!filtrando &&
             (pendencias.length === 0 ? null : (
@@ -411,11 +420,19 @@ function Historico() {
       <BottomSheet aberto={opcoes} onFechar={() => setOpcoes(false)} titulo="Opções do histórico">
         <ul className="cartao mb-2 divide-y divide-borda overflow-hidden">
           <li>
-            <button type="button" onClick={() => { setOpcoes(false); exportar(); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOpcoes(false);
+                if (plano.pode("exportar")) exportar();
+                else setTimeout(() => router.push("/planos"), 120);
+              }}
+              className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2"
+            >
               <Download aria-hidden className="size-5 text-primaria-forte" />
               <span className="flex-1">
                 <span className="block text-17 font-bold">Baixar planilha do período</span>
-                <span className="block text-15 text-texto-2">Para mostrar ao patrão ou ao contador</span>
+                <span className="block text-15 text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Individual"}</span>
               </span>
             </button>
           </li>
