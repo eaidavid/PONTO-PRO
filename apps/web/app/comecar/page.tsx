@@ -126,7 +126,7 @@ export default function Comecar() {
   const vp = p ? valorPrincipal(p.pagamento) : null;
   const pacotesArea = p?.area === "transporte" ? PACOTES_TRANSPORTE : p?.area === "servicos" ? PACOTES_SERVICOS : PACOTES_CONSTRUCAO;
   const usaProducao = !!p && (p.pagamento.forma === "producao" || p.pagamento.forma === "misto" || p.producao.ativo);
-  const desconto = p?.descontos.find((d) => d.tipo === "percentual");
+  const desconto = p?.descontos.find((d): d is Extract<typeof d, { tipo: "percentual" }> => d.tipo === "percentual");
   const valorOk = !vp || (lerReais(valorTxt) ?? 0) > 0;
   const podeSeguir = passo === 0 ? !!p : passo === 4 ? valorOk && (!usaProducao || (p?.producao.pacotes.length ?? 0) > 0 || p?.pagamento.forma === "hora") : true;
 
@@ -353,33 +353,65 @@ export default function Comecar() {
                 </div>
               </div>
             )}
-            <div className="cartao flex flex-col gap-2 p-4">
-              <Contador
-                rotulo="Desconto aproximado (ex.: INSS)"
-                valor={formatarPercentual(desconto?.valor ?? 0)}
-                passo="1%"
-                podeMenos={(desconto?.valor ?? 0) > 0}
-                podeMais={(desconto?.valor ?? 0) < 30}
-                onMenos={() =>
-                  setPerfil(
-                    editar(p, ["descontos"], (x) => {
-                      const d = x.descontos.find((y) => y.tipo === "percentual");
-                      if (d) d.valor = Math.max(0, Math.round(d.valor) - 1);
-                      x.descontos = x.descontos.filter((y) => !(y.tipo === "percentual" && y.valor === 0));
-                    }),
-                  )
-                }
-                onMais={() =>
-                  setPerfil(
-                    editar(p, ["descontos"], (x) => {
-                      const d = x.descontos.find((y) => y.tipo === "percentual");
-                      if (d) d.valor = Math.min(30, Math.round(d.valor) + 1);
-                      else x.descontos.push({ id: "inss", nome: "INSS aproximado", tipo: "percentual", valor: 1 });
-                    }),
-                  )
-                }
-              />
-              <SeloSugestao texto="Aproximado — confira no seu contracheque" />
+            <div className="flex flex-col gap-2">
+              <span className="text-17 font-bold">Descontos no pagamento</span>
+              <div role="radiogroup" aria-label="Descontos" className="flex flex-col gap-2">
+                {(
+                  [
+                    { id: "clt", titulo: "Tenho carteira assinada (CLT)", descricao: "INSS e imposto de renda pela tabela oficial do ano" },
+                    { id: "aprox", titulo: "Desconto aproximado", descricao: "Uma porcentagem que eu escolho" },
+                    { id: "nenhum", titulo: "Não tenho desconto", descricao: "Autônomo, diarista, por conta própria" },
+                  ] as const
+                ).map((o) => {
+                  const atual = p.descontos.some((d) => d.tipo === "inss") ? "clt" : desconto ? "aprox" : "nenhum";
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={atual === o.id}
+                      onClick={() =>
+                        setPerfil(
+                          editar(p, ["descontos"], (x) => {
+                            if (o.id === "clt") {
+                              x.descontos = [
+                                { id: "inss", nome: "INSS", tipo: "inss" },
+                                { id: "irrf", nome: "Imposto de renda", tipo: "irrf", dependentes: 0 },
+                              ];
+                              x.clt = { dsrSobreExtras: true };
+                            } else if (o.id === "aprox") {
+                              x.descontos = [{ id: "aprox", nome: "Desconto aproximado", tipo: "percentual", valor: 9 }];
+                              delete x.clt;
+                            } else {
+                              x.descontos = [];
+                              delete x.clt;
+                            }
+                          }),
+                        )
+                      }
+                      className={
+                        atual === o.id
+                          ? "cartao flex min-h-16 flex-col justify-center border-primaria! px-4 py-3 text-left ring-2 ring-primaria"
+                          : "cartao flex min-h-16 flex-col justify-center px-4 py-3 text-left active:scale-[0.98]"
+                      }
+                    >
+                      <span className="text-17 font-bold">{o.titulo}</span>
+                      <span className="text-15 text-texto-2">{o.descricao}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {desconto && (
+                <Contador
+                  rotulo="Quanto é descontado"
+                  valor={formatarPercentual(desconto.valor)}
+                  passo="1%"
+                  podeMenos={desconto.valor > 1}
+                  podeMais={desconto.valor < 30}
+                  onMenos={() => setPerfil(editar(p, ["descontos"], (x) => { const d = x.descontos.find((y) => y.tipo === "percentual"); if (d && d.tipo === "percentual") d.valor = Math.max(1, Math.round(d.valor) - 1); }))}
+                  onMais={() => setPerfil(editar(p, ["descontos"], (x) => { const d = x.descontos.find((y) => y.tipo === "percentual"); if (d && d.tipo === "percentual") d.valor = Math.min(30, Math.round(d.valor) + 1); }))}
+                />
+              )}
             </div>
           </>
         )}

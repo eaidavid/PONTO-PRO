@@ -10,7 +10,9 @@ import {
   lerReais,
   MODELOS,
   type PerfilTrabalho,
+  descreverDesconto,
   pontosFacultativos,
+  tabelaDoAno,
   resumoDoPerfil,
 } from "@ponto-pro/core";
 import {
@@ -165,7 +167,7 @@ export default function Conta() {
         <LinhaAjuste
           icone={Trash2}
           rotulo="Descontos"
-          valor={perfil.descontos.length ? perfil.descontos.map((d) => `${d.nome} ${d.tipo === "percentual" ? formatarPercentual(d.valor) : formatarReais(d.valor)}`).join(" · ") : "Nenhum"}
+          valor={perfil.descontos.length ? perfil.descontos.map((d) => d.nome).join(", ") : "Nenhum"}
           sugestao={ehSugestao(perfil, "descontos")}
           onClick={() => abrir("descontos")}
         />
@@ -440,6 +442,12 @@ export default function Conta() {
             onChange={(v) => mudar(["bancoHoras"], (x) => void (x.bancoHoras.ativo = v))}
           />
           <Interruptor
+            rotulo="Folga remunerada sobre hora extra (DSR)"
+            descricao="Na CLT, quem faz hora extra recebe também pelos domingos e feriados."
+            valor={!!p.clt?.dsrSobreExtras}
+            onChange={(v) => mudar(["clt"], (x) => void (x.clt = { dsrSobreExtras: v }))}
+          />
+          <Interruptor
             rotulo="Feriado é pago"
             descricao="Em feriado de dia de trabalho, as horas do dia são pagas mesmo sem trabalhar."
             valor={p.adicionais.feriadoTrabalhado.abonaDia}
@@ -463,7 +471,7 @@ export default function Conta() {
                 <li key={d.id} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
                   <span className="flex-1">
                     <span className="block text-17 font-bold">{d.nome}</span>
-                    <span className="numeros block text-15 text-texto-2">{d.tipo === "percentual" ? formatarPercentual(d.valor) : formatarReais(d.valor)}</span>
+                    <span className="numeros block text-15 text-texto-2">{descreverDesconto(d)}</span>
                   </span>
                   <button
                     type="button"
@@ -476,8 +484,40 @@ export default function Conta() {
               ))}
             </ul>
           )}
+          {(() => {
+            const tem = (t: string) => p.descontos.some((d) => d.tipo === t);
+            const irrf = p.descontos.find((d): d is Extract<typeof d, { tipo: "irrf" }> => d.tipo === "irrf");
+            return (
+              <div className="flex flex-col gap-3">
+                <span className="text-17 font-bold">Descontos da carteira assinada</span>
+                <div className="flex flex-wrap gap-2">
+                  {!tem("inss") && (
+                    <Chip icone={Plus} onClick={() => mudar(["descontos"], (x) => void x.descontos.unshift({ id: novoId("d"), nome: "INSS", tipo: "inss" }))}>INSS (tabela oficial)</Chip>
+                  )}
+                  {!tem("irrf") && (
+                    <Chip icone={Plus} onClick={() => mudar(["descontos"], (x) => void x.descontos.push({ id: novoId("d"), nome: "Imposto de renda", tipo: "irrf", dependentes: 0 }))}>Imposto de renda</Chip>
+                  )}
+                  {!tem("vale-transporte") && (
+                    <Chip icone={Plus} onClick={() => mudar(["descontos"], (x) => void x.descontos.push({ id: novoId("d"), nome: "Vale-transporte", tipo: "vale-transporte", percentual: 6 }))}>Vale-transporte (6%)</Chip>
+                  )}
+                </div>
+                {irrf && (
+                  <Contador
+                    rotulo="Dependentes no imposto de renda"
+                    valor={String(irrf.dependentes)}
+                    passo="1"
+                    podeMenos={irrf.dependentes > 0}
+                    podeMais={irrf.dependentes < 20}
+                    onMenos={() => mudar(["descontos"], (x) => { const d = x.descontos.find((y) => y.tipo === "irrf"); if (d && d.tipo === "irrf") d.dependentes -= 1; })}
+                    onMais={() => mudar(["descontos"], (x) => { const d = x.descontos.find((y) => y.tipo === "irrf"); if (d && d.tipo === "irrf") d.dependentes += 1; })}
+                  />
+                )}
+                <p className="text-13 text-texto-2">Tabelas de {tabelaDoAno(new Date().getFullYear()).ano}: {tabelaDoAno(new Date().getFullYear()).inss.fonte}.</p>
+              </div>
+            );
+          })()}
           <div className="flex flex-col gap-3 rounded-2xl bg-superficie-2 p-4">
-            <span className="text-17 font-bold">Novo desconto</span>
+            <span className="text-17 font-bold">Outro desconto</span>
             <CampoTexto rotulo="Nome" valor={novoDesc.nome} onChange={(nome) => setNovoDesc({ ...novoDesc, nome })} placeholder="Ex.: Adiantamento" maxLength={40} />
             <div role="group" aria-label="Tipo de desconto" className="flex gap-2">
               <Chip selecionado={novoDesc.tipo === "percentual"} onClick={() => setNovoDesc({ ...novoDesc, tipo: "percentual" })}>Percentual</Chip>

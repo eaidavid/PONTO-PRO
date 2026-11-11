@@ -11,13 +11,14 @@ import {
   valorMinutos,
   valorProducao,
 } from "../dinheiro";
+import { calcularInss, calcularIrrf, descontoValeTransporte, dsrSobreExtras, tabelaDoAno } from "../clt";
 import { escalaDoDia } from "../escala";
 import { feriadosDoIntervalo } from "../feriados";
 import { rotuloUnidade } from "../producao";
 import type { PerfilTrabalho } from "../schema/perfil";
 import type { ItemProducao, LancamentoProducao } from "../schema/producao";
 import type { DiaRegistro, Feriado } from "../schema/registro";
-import { type Agora, formatarDuracao, formatarHorasCurto, inicioDaSemana } from "../tempo";
+import { type Agora, diaDaSemana, formatarDuracao, formatarHorasCurto, inicioDaSemana } from "../tempo";
 import { analisarDia, type CategoriaDia, type DiaAnalise } from "./dia";
 
 export type TipoLinha =
@@ -376,6 +377,25 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
     }
   }
 
+  // folga remunerada (DSR) sobre hora extra, quando ligada
+  if (perfil.clt?.dsrSobreExtras && modo === "periodo") {
+    const extras = ganhos.filter((l) => l.tipo === "extra").reduce((t, l) => t + l.valor, 0);
+    const descanso = datas.filter((d) => diaDaSemana(d) === 0 || feriados.has(d)).length;
+    const uteis = datas.length - descanso;
+    const valor = dsrSobreExtras(extras, uteis, descanso);
+    if (valor > 0) {
+      ganhos.push({
+        codigo: "024",
+        descricao: "Folga remunerada sobre hora extra (DSR)",
+        referencia: `${descanso} de ${uteis} dias`,
+        valor,
+        tipo: "extra",
+        conta: `Hora extra ${formatarReais(extras)} ÷ ${uteis} dias úteis × ${descanso} domingos e feriados = ${formatarReais(valor)}`,
+        explicacao: "Quem faz hora extra também recebe um pouco a mais pelos domingos e feriados do período.",
+      });
+    }
+  }
+
   const bruto = ganhos.reduce((t, l) => t + l.valor, 0);
 
   // 5) descontos
@@ -393,21 +413,75 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
         explicacao: EXPLICA.faltas,
       });
     }
-    const baseDesc = bruto - descontos.reduce((t, l) => t + l.valor, 0);
+    const baseDesc = Math.max(0, bruto - descontos.reduce((t, l) => t + l.valor, 0));
+    const ano = Number(periodo.fim.slice(0, 4));
+    const salarioBase = Math.max(
+      0,
+      ganhos.filter((l) => l.tipo === "salario" || l.tipo === "normal" || l.tipo === "diaria").reduce((t, l) => t + l.valor, 0) -
+        descontos.reduce((t, l) => t + l.valor, 0),
+    );
+    // INSS primeiro: o imposto de renda usa o INSS como dedução
+    const temInss = perfil.descontos.some((d) => d.tipo === "inss");
+    const inss = temInss ? calcularInss(baseDesc, ano) : null;
     perfil.descontos.forEach((d, i) => {
       const codigo = String(110 + i);
-      if (d.tipo === "percentual") {
-        const valor = aplicarPercentual(Math.max(0, baseDesc), d.valor);
-        descontos.push({
-          codigo, descricao: d.nome, referencia: formatarPercentual(d.valor), valor, tipo: "desconto",
-          conta: `${d.nome} ${formatarPercentual(d.valor)} de ${formatarReais(Math.max(0, baseDesc))} = −${formatarReais(valor)}`,
-          explicacao: EXPLICA.desconto,
-        });
-      } else {
-        descontos.push({
-          codigo, descricao: d.nome, referencia: "valor fixo", valor: d.valor, tipo: "desconto",
-          conta: `${d.nome} (valor fixo) = −${formatarReais(d.valor)}`, explicacao: EXPLICA.desconto,
-        });
+      switch (d.tipo) {
+        case "percentual": {
+          const valor = aplicarPercentual(baseDesc, d.valor);
+          descontos.push({
+            codigo, descricao: d.nome, referencia: formatarPercentual(d.valor), valor, tipo: "desconto",
+            conta: `${d.nome} ${formatarPercentual(d.valor)} de ${formatarReais(baseDesc)} = −${formatarReais(valor)}`,
+            explicacao: EXPLICA.desconto,
+          });
+          break;
+        }
+        case "fixo":
+          descontos.push({
+            codigo, descricao: d.nome, referencia: "valor fixo", valor: d.valor, tipo: "desconto",
+            conta: `${d.nome} (valor fixo) = −${formatarReais(d.valor)}`, explicacao: EXPLICA.desconto,
+          });
+          break;
+        case "inss":
+          descontos.push({
+            codigo: "120",
+            descricao: d.nome,
+            referencia: `tabela ${tabelaDoAno(ano).ano}`,
+            valor: inss!.valor,
+            tipo: "desconto",
+            conta: `${d.nome} sobre ${formatarReais(baseDesc)}, por faixas: ${inss!.passos.join(" + ")} = −${formatarReais(inss!.valor)}${inss!.noTeto ? " (no teto)" : ""}`,
+            explicacao: `Cada faixa do salário paga uma porcentagem. ${tabelaDoAno(ano).inss.fonte}.`,
+          });
+          break;
+        case "irrf": {
+          const ir = calcularIrrf(baseDesc, inss?.valor ?? 0, d.dependentes, ano);
+          const modo = ir.modo === "simplificado" ? "com o desconto simplificado" : `descontando INSS${d.dependentes ? ` e ${d.dependentes} dependente(s)` : ""}`;
+          descontos.push({
+            codigo: "121",
+            descricao: d.nome,
+            referencia: ir.aliquota ? formatarPercentual(ir.aliquota / 100) : "isento",
+            valor: ir.valor,
+            tipo: "desconto",
+            conta:
+              ir.impostoTabela === 0
+                ? `${d.nome}: base ${formatarReais(ir.base)} (${modo}) fica na faixa isenta = R$ 0,00`
+                : `${d.nome}: base ${formatarReais(ir.base)} (${modo}) dá ${formatarReais(ir.impostoTabela)}${ir.reducao ? `, menos a redução de ${formatarReais(ir.reducao)}` : ""} = −${formatarReais(ir.valor)}`,
+            explicacao: `Imposto pela tabela do mês, com a regra que der menos imposto. ${tabelaDoAno(ano).irrf.fonte}.`,
+          });
+          break;
+        }
+        case "vale-transporte": {
+          const valor = descontoValeTransporte(salarioBase, d.percentual, d.valorBeneficio);
+          descontos.push({
+            codigo: "122",
+            descricao: d.nome,
+            referencia: formatarPercentual(d.percentual),
+            valor,
+            tipo: "desconto",
+            conta: `${d.nome} ${formatarPercentual(d.percentual)} do salário-base ${formatarReais(salarioBase)}${d.valorBeneficio !== undefined ? ` (limite ${formatarReais(d.valorBeneficio)})` : ""} = −${formatarReais(valor)}`,
+            explicacao: "A empresa pode descontar até 6% do salário-base, nunca mais do que o valor do vale.",
+          });
+          break;
+        }
       }
     });
   }

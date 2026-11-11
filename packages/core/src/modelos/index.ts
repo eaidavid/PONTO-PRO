@@ -30,6 +30,7 @@ const SUGESTOES_BASE = [
   "adicionais.noturno",
   "jornada.limiteDiarioMin",
   "descontos",
+  "clt",
 ];
 
 function perfilBase(area: Area, preset: PresetId, agoraIso: string): PerfilTrabalho {
@@ -54,7 +55,11 @@ function perfilBase(area: Area, preset: PresetId, agoraIso: string): PerfilTraba
     },
     bancoHoras: { ativo: false, pagaDomingoFeriado: true },
     ciclo: { diaFechamento: 20 },
-    descontos: [{ id: "inss", nome: "INSS aproximado", tipo: "percentual", valor: 9 }],
+    descontos: [
+      { id: "inss", nome: "INSS", tipo: "inss" },
+      { id: "irrf", nome: "Imposto de renda", tipo: "irrf", dependentes: 0 },
+    ],
+    clt: { dsrSobreExtras: true },
     producao: { ativo: false, pacotes: [] },
     sugestoes: [...SUGESTOES_BASE],
     atualizadoEm: agoraIso,
@@ -119,6 +124,7 @@ export const MODELOS: Record<Area, Modelo> = {
       p.pagamento = { forma: "diaria", valorDiaria: 15_000, horasDiariaMin: 480 };
       p.producao = { ativo: true, pacotes: ["transporte.entregas"] };
       p.descontos = [];
+      delete p.clt;
       return p;
     },
   },
@@ -134,6 +140,7 @@ export const MODELOS: Record<Area, Modelo> = {
       p.pagamento = { forma: "diaria", valorDiaria: 18_000, horasDiariaMin: 480 };
       p.producao = { ativo: false, pacotes: ["servicos.diarista"] };
       p.descontos = [];
+      delete p.clt;
       return p;
     },
   },
@@ -149,6 +156,7 @@ export const MODELOS: Record<Area, Modelo> = {
       p.pagamento = { forma: "hora", valorHora: 4000 };
       p.jornada.compensacaoSemanal = false;
       p.descontos = [];
+      delete p.clt;
       return p;
     },
   },

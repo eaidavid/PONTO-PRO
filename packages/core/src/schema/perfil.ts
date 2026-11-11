@@ -153,6 +153,23 @@ const NomeDesconto = z.string().trim().min(1, "Dê um nome ao desconto").max(40)
 export const Desconto = z.discriminatedUnion("tipo", [
   z.object({ id: z.string(), nome: NomeDesconto, tipo: z.literal("percentual"), valor: Percentual }),
   z.object({ id: z.string(), nome: NomeDesconto, tipo: z.literal("fixo"), valor: Centavos }),
+  /** INSS pela tabela oficial do ano, por faixas. */
+  z.object({ id: z.string(), nome: NomeDesconto, tipo: z.literal("inss") }),
+  /** Imposto de renda pela tabela oficial do ano. */
+  z.object({
+    id: z.string(),
+    nome: NomeDesconto,
+    tipo: z.literal("irrf"),
+    dependentes: z.number().int().min(0, "Dependentes não pode ser negativo").max(20),
+  }),
+  /** Vale-transporte: até 6% do salário-base, limitado ao valor do benefício. */
+  z.object({
+    id: z.string(),
+    nome: NomeDesconto,
+    tipo: z.literal("vale-transporte"),
+    percentual: z.number().min(0, "Entre 0% e 6%").max(6, "O desconto do vale-transporte é de no máximo 6%"),
+    valorBeneficio: Centavos.optional(),
+  }),
 ]);
 export type Desconto = z.infer<typeof Desconto>;
 
@@ -180,6 +197,8 @@ export const PerfilTrabalho = z
     ciclo: Ciclo,
     descontos: z.array(Desconto).max(20),
     producao: ProducaoConfig,
+    /** Regras da CLT ligadas pela pessoa (todas como sugestão, editáveis). */
+    clt: z.object({ dsrSobreExtras: z.boolean() }).optional(),
     /** Quando o dinheiro cai (sugestão para CLT: até o 5º dia útil do mês seguinte ao fechamento). */
     diaPagamento: z
       .discriminatedUnion("tipo", [

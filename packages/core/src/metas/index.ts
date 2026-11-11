@@ -1,4 +1,5 @@
 import { tarifaDoPerfil } from "../calculo/periodo";
+import { tabelaDoAno } from "../clt";
 import { formatarQuantidade, formatarReaisCurto, valorMinutos } from "../dinheiro";
 import { rotuloUnidade } from "../producao";
 import type { PerfilTrabalho } from "../schema/perfil";
@@ -50,7 +51,18 @@ function horasTipicas(perfil: PerfilTrabalho): number {
 export function simularMeta(e: EntradaMeta): ResultadoMeta {
   const { perfil } = e;
   const faltaLiquido = Math.max(0, e.alvo - e.previsto);
-  const pct = perfil.descontos.reduce((t, d) => t + (d.tipo === "percentual" ? d.valor : 0), 0);
+  // percentuais fixos + a alíquota da faixa de INSS e IR em que o dinheiro extra cai
+  const ano = Number(new Date().getFullYear());
+  const t = tabelaDoAno(ano);
+  const ref = e.previsto;
+  const marginalInss = perfil.descontos.some((d) => d.tipo === "inss")
+    ? (t.inss.faixas.find((f) => ref <= f.ate)?.aliquota ?? 0) / 100
+    : 0;
+  const marginalIr =
+    perfil.descontos.some((d) => d.tipo === "irrf") && ref > (t.irrf.reducao?.limiteIsencao ?? 0)
+      ? (t.irrf.faixas.find((f) => ref <= f.ate)?.aliquota ?? 0) / 100
+      : 0;
+  const pct = perfil.descontos.reduce((tt, d) => tt + (d.tipo === "percentual" ? d.valor : 0), 0) + marginalInss + marginalIr;
   if (faltaLiquido === 0) {
     return {
       faltaLiquido: 0,
