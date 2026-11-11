@@ -102,3 +102,38 @@ export function valorMensal(plano: Exclude<Plano, "gratis">, trabalhadores = 1):
   const p = PLANOS[plano];
   return p.porTrabalhador ? p.preco * Math.max(1, trabalhadores) : p.preco;
 }
+
+/** Equipe: mínimo e máximo de trabalhadores numa assinatura. */
+export const TRABALHADORES_MIN = 2;
+export const TRABALHADORES_MAX = 200;
+
+/** Último dia coberto por uma mensalidade que vence em `vencimento` (um mês depois, menos um dia). */
+export function pagoAteDoPagamento(vencimento: string): string {
+  const [a, m, d] = vencimento.split("-").map(Number) as [number, number, number];
+  const ano = m === 12 ? a + 1 : a;
+  const mes = m === 12 ? 1 : m + 1;
+  const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  const dia = Math.min(d, ultimo);
+  return somarDias(`${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`, -1);
+}
+
+/** CPF (11 dígitos) ou CNPJ (14 dígitos) com dígitos verificadores válidos. Devolve só os números, ou null. */
+export function lerCpfCnpj(texto: string): string | null {
+  const n = texto.replace(/\D/g, "");
+  if (/^(\d)\1+$/.test(n)) return null;
+  const dv = (base: string, pesos: number[]) => {
+    const r = pesos.reduce((t, p, i) => t + Number(base[i]) * p, 0) % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  if (n.length === 11) {
+    const d1 = dv(n, [10, 9, 8, 7, 6, 5, 4, 3, 2]);
+    const d2 = dv(n, [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]);
+    return d1 === Number(n[9]) && d2 === Number(n[10]) ? n : null;
+  }
+  if (n.length === 14) {
+    const d1 = dv(n, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+    const d2 = dv(n, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+    return d1 === Number(n[12]) && d2 === Number(n[13]) ? n : null;
+  }
+  return null;
+}

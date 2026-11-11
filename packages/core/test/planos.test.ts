@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LIMITE_PRODUCAO_GRATIS, PLANOS, pode, situacaoDoPlano, valorMensal } from "../src/planos";
+import { LIMITE_PRODUCAO_GRATIS, lerCpfCnpj, pagoAteDoPagamento, PLANOS, pode, situacaoDoPlano, valorMensal } from "../src/planos";
 
 const inicioUso = "2026-11-01";
 
@@ -44,5 +44,22 @@ describe("recursos e preço", () => {
     expect(valorMensal("individual")).toBe(1490);
     expect(valorMensal("equipe", 5)).toBe(4950);
     expect(valorMensal("equipe", 0)).toBe(990);
+  });
+});
+
+describe("cobrança", () => {
+  it("mensalidade cobre até a véspera do mesmo dia no mês seguinte", () => {
+    expect(pagoAteDoPagamento("2026-11-11")).toBe("2026-12-10");
+    expect(pagoAteDoPagamento("2026-12-20")).toBe("2027-01-19");
+    expect(pagoAteDoPagamento("2027-01-31")).toBe("2027-02-27");
+  });
+
+  it("valida CPF e CNPJ", () => {
+    expect(lerCpfCnpj("529.982.247-25")).toBe("52998224725");
+    expect(lerCpfCnpj("529.982.247-24")).toBeNull();
+    expect(lerCpfCnpj("111.111.111-11")).toBeNull();
+    expect(lerCpfCnpj("11.222.333/0001-81")).toBe("11222333000181");
+    expect(lerCpfCnpj("11.222.333/0001-80")).toBeNull();
+    expect(lerCpfCnpj("123")).toBeNull();
   });
 });

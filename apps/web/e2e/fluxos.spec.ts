@@ -292,3 +292,14 @@ test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram
   await page.goto("/planos");
   await expect(page.getByText("Grátis", { exact: true }).first()).toBeVisible();
 });
+
+test("sem servidor configurado, conta e assinatura avisam e o app segue no celular", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/planos/assinar?plano=individual");
+  await expect(page.getByRole("heading", { name: "Assinar o Individual" })).toBeVisible();
+  await expect(page.getByText("As assinaturas ainda não estão disponíveis")).toBeVisible();
+  await page.goto("/entrar");
+  await expect(page.getByText("As contas ainda não estão disponíveis")).toBeVisible();
+  await page.goto("/hoje");
+  await expect(page.getByRole("status").filter({ hasText: "Salvo no celular" })).toBeVisible();
+});
