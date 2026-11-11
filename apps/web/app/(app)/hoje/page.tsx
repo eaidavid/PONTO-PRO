@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { baterPonto, completarMarcacoes, restaurarRegistro, salvarPreferencias } from "../../../lib/acoes";
 import { primeiroNome, useAgora, useEstado } from "../../../lib/estado";
+import { seloSync, useStatusNuvem } from "../../../lib/nuvem/status";
 import { Carregando } from "../../carregando";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
@@ -53,6 +54,7 @@ function useOnline() {
 /** Hoje: "o que faço agora?". Relógio no topo, a linha do dia e um botão. Cada informação uma vez. */
 export default function Hoje() {
   const estado = useEstado();
+  const nuvem = useStatusNuvem();
   const agora = useAgora();
   const online = useOnline();
   const { mostrar } = useToast();
@@ -135,7 +137,7 @@ export default function Hoje() {
       <section className="fundo-marca flex flex-col px-5 pt-[max(16px,env(safe-area-inset-top))] pb-12">
         <div className="flex items-center justify-between gap-3">
           <p className="truncate text-17 font-bold">{saudacao(agora.minutos)}{nome ? `, ${nome}` : ""}</p>
-          <StatusSync estado="local" sobreMarca />
+          <StatusSync estado={seloSync(nuvem, estado.pendentes)} sobreMarca />
         </div>
         <p className="display pt-4 text-relogio" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
         <p className="pt-1 text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>

@@ -57,6 +57,8 @@ export async function importarDados(texto: string): Promise<ResultadoImportacao>
     await db.registros.bulkPut(registros);
     await db.itens.bulkPut(itens);
     await db.lancamentos.bulkPut(lancamentos);
+    // com conta: a próxima sincronização envia tudo de novo e junta com o que já está na nuvem
+    await db.config.delete("sincronizacao");
   });
   return { registros: registros.length, lancamentos: lancamentos.length, ignorados };
 }

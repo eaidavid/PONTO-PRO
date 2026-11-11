@@ -1,6 +1,6 @@
 import type { DiaRegistro, Etapa, Feriado, ItemProducao, LancamentoProducao, Marcacoes, Obra, PerfilTrabalho } from "@ponto-pro/core";
 import { FORMATO_BACKUP } from "./marca";
-import { type ConferenciaSalva, type Consentimento, type DadosPessoais, db, type Preferencias } from "./db";
+import { type Config, type ConferenciaSalva, type Consentimento, type DadosPessoais, db, type Preferencias } from "./db";
 
 export const agoraIso = () => new Date().toISOString();
 const VERSOES_NO_HISTORICO = 20;
@@ -28,43 +28,55 @@ async function gravar<T extends { atualizadoEm: string }>(
   });
 }
 
+/** Grava uma configuração e coloca na fila de sincronização (só a última de cada chave). */
+async function gravarConfig(chave: Config["chave"], valor: unknown) {
+  await db.transaction("rw", [db.config, db.fila], async () => {
+    await db.config.put({ chave, valor, atualizadoEm: agoraIso() });
+    if (!CONFIG_LOCAL.includes(chave)) {
+      await db.fila.where("[tabela+chave]").equals(["config", chave]).delete();
+      await db.fila.add({ tabela: "config", chave, operacao: "salvar", em: agoraIso() });
+    }
+  });
+}
+
+/** Configurações que ficam só no aparelho (não sobem para a nuvem). */
+const CONFIG_LOCAL: Config["chave"][] = ["assinatura", "sincronizacao"];
+
 // ---------- configuração ----------
 
 export async function salvarPerfil(perfil: PerfilTrabalho) {
-  await db.config.put({ chave: "perfil", valor: { ...perfil, atualizadoEm: agoraIso() }, atualizadoEm: agoraIso() });
-  await db.fila.where("[tabela+chave]").equals(["config", "perfil"]).delete();
-  await db.fila.add({ tabela: "config", chave: "perfil", operacao: "salvar", em: agoraIso() });
+  await gravarConfig("perfil", { ...perfil, atualizadoEm: agoraIso() });
 }
 
 export async function salvarPessoal(dados: DadosPessoais) {
-  await db.config.put({ chave: "pessoal", valor: dados, atualizadoEm: agoraIso() });
+  await gravarConfig("pessoal", dados);
 }
 
 export async function salvarPreferencias(p: Preferencias) {
-  await db.config.put({ chave: "preferencias", valor: p, atualizadoEm: agoraIso() });
+  await gravarConfig("preferencias", p);
 }
 
 /** Marca o começo do teste grátis (só na primeira vez). */
 export async function marcarInicioUso(data: string) {
-  if (!(await db.config.get("inicioUso"))) await db.config.put({ chave: "inicioUso", valor: data, atualizadoEm: agoraIso() });
+  if (!(await db.config.get("inicioUso"))) await gravarConfig("inicioUso", data);
 }
 
 export async function salvarConsentimento(c: Consentimento) {
-  await db.config.put({ chave: "consentimento", valor: c, atualizadoEm: agoraIso() });
+  await gravarConfig("consentimento", c);
 }
 
 export async function salvarObras(obras: Obra[]) {
-  await db.config.put({ chave: "obras", valor: obras, atualizadoEm: agoraIso() });
+  await gravarConfig("obras", obras);
 }
 
 export async function salvarFeriadosLocais(feriados: Feriado[]) {
-  await db.config.put({ chave: "feriadosLocais", valor: [...feriados].sort((a, b) => a.data.localeCompare(b.data)), atualizadoEm: agoraIso() });
+  await gravarConfig("feriadosLocais", [...feriados].sort((a, b) => a.data.localeCompare(b.data)));
 }
 
 export async function salvarConferencia(c: ConferenciaSalva) {
   const atual = ((await db.config.get("conferencias"))?.valor as ConferenciaSalva[] | undefined) ?? [];
   const lista = [...atual.filter((x) => x.fim !== c.fim), c].sort((a, b) => b.fim.localeCompare(a.fim));
-  await db.config.put({ chave: "conferencias", valor: lista, atualizadoEm: agoraIso() });
+  await gravarConfig("conferencias", lista);
 }
 
 /** Grava vários registros de uma vez (ex.: completar com a escala). Devolve os anteriores para desfazer. */

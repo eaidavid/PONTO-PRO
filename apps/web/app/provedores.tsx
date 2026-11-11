@@ -4,6 +4,7 @@ import { ToastProvider } from "@ponto-pro/ui";
 import { type ReactNode, useEffect } from "react";
 import { manutencao } from "../lib/acoes";
 import { useEstado } from "../lib/estado";
+import { AgendadorSync } from "../lib/nuvem/agendador";
 
 /** Aplica a aparência salva (Claro, Escuro, Sol forte ou automático). */
 function AplicarTema() {
@@ -53,6 +54,7 @@ export function Provedores({ children }: { children: ReactNode }) {
     <ToastProvider>
       <AplicarTema />
       <AoAbrir />
+      <AgendadorSync />
       {children}
     </ToastProvider>
   );

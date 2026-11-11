@@ -31,6 +31,9 @@ import {
 } from "@ponto-pro/ui";
 import {
   Briefcase,
+  Cloud,
+  LogIn,
+  LogOut,
   CalendarClock,
   CalendarDays,
   Download,
@@ -67,6 +70,7 @@ import {
   valorPrincipal,
 } from "../../../lib/perfil";
 import { MARCA } from "../../../lib/marca";
+import { sincronizarAgora, useStatusNuvem } from "../../../lib/nuvem/status";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
@@ -75,6 +79,12 @@ const NOME_PAGAMENTO = (p: PerfilTrabalho) =>
   !p.diaPagamento || p.diaPagamento.tipo === "quinto-dia-util" ? "cai no 5º dia útil" : p.diaPagamento.tipo === "no-fechamento" ? "cai no fechamento" : `cai dia ${p.diaPagamento.dia}`;
 
 type Painel = "pagamento" | "semana" | "extra" | "fechamento" | "regras" | "descontos" | "pessoal" | "apagar" | "feriados" | null;
+
+/** +5511987654321 → (11) 98765-4321 */
+function formatarTelefone(t: string) {
+  const d = t.replace(/\D/g, "").replace(/^55/, "");
+  return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}` : t;
+}
 
 function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
@@ -87,6 +97,7 @@ function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
 
 export default function Conta() {
   const estado = useEstado();
+  const nuvem = useStatusNuvem();
   const router = useRouter();
   const { mostrar } = useToast();
   const [painel, setPainel] = useState<Painel>(null);
@@ -193,6 +204,42 @@ export default function Conta() {
           <Interruptor rotulo="Som ao bater o ponto" descricao="Um bipe curto, além da vibração." valor={preferencias.som} onChange={(som) => salvarPreferencias({ ...preferencias, som })} />
         </div>
       </section>
+
+      {nuvem.configurado && (
+        <Grupo titulo="Sua conta">
+          {nuvem.usuario ? (
+            <>
+              <LinhaAjuste
+                icone={Cloud}
+                rotulo={nuvem.usuario.telefone ? formatarTelefone(nuvem.usuario.telefone) : nuvem.usuario.email ?? "Conectado"}
+                valor={
+                  nuvem.fase === "sincronizando"
+                    ? "Enviando…"
+                    : nuvem.fase === "erro"
+                      ? "Não deu para sincronizar. Toque para tentar de novo"
+                      : nuvem.ultimaEm
+                        ? `Sincronizado às ${new Date(nuvem.ultimaEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" })}`
+                        : "Toque para sincronizar agora"
+                }
+                onClick={() => sincronizarAgora()}
+              />
+              <LinhaAjuste
+                icone={LogOut}
+                rotulo="Sair da conta"
+                valor="Os dados continuam neste celular"
+                onClick={async () => {
+                  const [{ sairDaConta }, { esquecerSincronizacao }] = await Promise.all([import("../../../lib/nuvem/supabase"), import("../../../lib/nuvem/sincronizar")]);
+                  await sairDaConta();
+                  await esquecerSincronizacao();
+                  mostrar({ texto: "Você saiu da conta" });
+                }}
+              />
+            </>
+          ) : (
+            <LinhaAjuste icone={LogIn} rotulo="Entrar ou criar conta" valor="Guarde seus dados e use em outro celular" onClick={() => router.push("/entrar")} />
+          )}
+        </Grupo>
+      )}
 
       <Grupo titulo="Privacidade e dados">
         <LinhaAjuste
@@ -659,12 +706,21 @@ export default function Conta() {
         })()}
       </BottomSheet>
 
-      <BottomSheet aberto={painel === "apagar"} onFechar={() => setPainel(null)} titulo="Apagar todos os dados?" subtitulo="Registros, produção e ajustes saem deste celular. Não dá para desfazer.">
+      <BottomSheet aberto={painel === "apagar"} onFechar={() => setPainel(null)} titulo="Apagar todos os dados?" subtitulo={`Registros, produção e ajustes saem deste celular${nuvem.usuario ? " e da sua conta" : ""}. Não dá para desfazer.`}>
         <div className="flex flex-col gap-3 pb-2">
           <BotaoPrincipal
             variante="perigo"
             icone={Trash2}
             onClick={async () => {
+              if (nuvem.usuario) {
+                try {
+                  const { apagarDadosNaNuvem } = await import("../../../lib/nuvem/supabase");
+                  await apagarDadosNaNuvem();
+                } catch {
+                  mostrar({ texto: "Sem internet: não deu para apagar os dados da sua conta. Tente de novo com internet." });
+                  return;
+                }
+              }
               await apagarTudo();
               window.location.href = "/comecar";
             }}
