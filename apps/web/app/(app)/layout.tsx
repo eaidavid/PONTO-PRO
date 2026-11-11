@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { abaExtraDoPerfil, useEstado } from "../../lib/estado";
+import { LEGAL } from "../../lib/marca";
+import { AceiteTermos } from "../aceite-termos";
 import { Carregando } from "../carregando";
 import dynamic from "next/dynamic";
 
@@ -53,6 +55,7 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
         ativa={ativa}
         link={Link}
       />
+      {estado.consentimento?.versao !== LEGAL.versao && <AceiteTermos jaAceitouAntes={!!estado.consentimento} />}
       {usado.lancar && <MenuLancar aberto={lancar} onFechar={() => setLancar(false)} estado={estado} />}
       {usado.mais && (
         <MenuMais

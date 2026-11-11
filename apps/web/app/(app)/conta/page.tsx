@@ -233,6 +233,11 @@ export default function Conta() {
         />
       </Grupo>
 
+      <Grupo titulo="Sobre">
+        <LinhaAjuste icone={FileText} rotulo="Termos de uso" onClick={() => router.push("/termos")} />
+        <LinhaAjuste icone={ShieldCheck} rotulo="Política de privacidade" onClick={() => router.push("/privacidade")} />
+      </Grupo>
+
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-15 font-bold text-texto-2">Plano</h2>
         <div className="cartao flex items-center gap-3 p-4">

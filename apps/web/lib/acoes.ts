@@ -1,6 +1,6 @@
 import type { DiaRegistro, Etapa, Feriado, ItemProducao, LancamentoProducao, Marcacoes, Obra, PerfilTrabalho } from "@ponto-pro/core";
 import { FORMATO_BACKUP } from "./marca";
-import { type ConferenciaSalva, type DadosPessoais, db, type Preferencias } from "./db";
+import { type ConferenciaSalva, type Consentimento, type DadosPessoais, db, type Preferencias } from "./db";
 
 export const agoraIso = () => new Date().toISOString();
 const VERSOES_NO_HISTORICO = 20;
@@ -42,6 +42,10 @@ export async function salvarPessoal(dados: DadosPessoais) {
 
 export async function salvarPreferencias(p: Preferencias) {
   await db.config.put({ chave: "preferencias", valor: p, atualizadoEm: agoraIso() });
+}
+
+export async function salvarConsentimento(c: Consentimento) {
+  await db.config.put({ chave: "consentimento", valor: c, atualizadoEm: agoraIso() });
 }
 
 export async function salvarObras(obras: Obra[]) {

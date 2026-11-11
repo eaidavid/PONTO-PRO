@@ -22,6 +22,7 @@ import {
   BotaoPrincipal,
   CampoNumero,
   CampoTexto,
+  Caixa,
   CartaoOpcao,
   Chip,
   Contador,
@@ -50,7 +51,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { salvarPerfil, salvarPessoal } from "../../lib/acoes";
+import { salvarConsentimento, salvarPerfil, salvarPessoal } from "../../lib/acoes";
 import { useEstado } from "../../lib/estado";
 import {
   almocoAtual,
@@ -66,7 +67,8 @@ import {
   pagamentoPara,
   valorPrincipal,
 } from "../../lib/perfil";
-import { MARCA } from "../../lib/marca";
+import { LEGAL, MARCA } from "../../lib/marca";
+import { TextoAceite } from "../aceite-termos";
 import { Carregando } from "../carregando";
 
 const AREAS: { id: Area; icone: LucideIcon; descricao: string }[] = [
@@ -107,6 +109,8 @@ export default function Comecar() {
   const [nome, setNome] = useState("");
   const [erro, setErro] = useState<string>();
   const [pronto, setPronto] = useState(false);
+  const [aceito, setAceito] = useState(false);
+  const [estatisticas, setEstatisticas] = useState(false);
   const hoje = agoraEmSaoPaulo().data;
 
   useEffect(() => {
@@ -168,6 +172,7 @@ export default function Comecar() {
       setErro(r.error.issues[0]?.message ?? "Confira os valores.");
       return;
     }
+    await salvarConsentimento({ versao: LEGAL.versao, em: new Date().toISOString(), estatisticas });
     await salvarPerfil(r.data);
     await salvarPessoal({ ...estado!.pessoal, nome: nome.trim() || undefined });
     router.replace("/hoje");
@@ -439,6 +444,14 @@ export default function Comecar() {
               />
             </div>
             <p className="text-13 text-texto-2">O {MARCA.nome} é controle pessoal, não é ponto eletrônico oficial. Seus dados ficam guardados neste celular.</p>
+            <div className="flex flex-col gap-4 pt-2">
+              <Caixa marcado={aceito} onChange={setAceito}>
+                <TextoAceite />
+              </Caixa>
+              <Caixa marcado={estatisticas} onChange={setEstatisticas}>
+                Quero ajudar a melhorar o app com estatísticas de uso, sem me identificar. (Opcional)
+              </Caixa>
+            </div>
             {erro && <Banner tom="erro" texto={erro} />}
           </>
         )}
@@ -447,7 +460,7 @@ export default function Comecar() {
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[color:var(--borda-cartao)] bg-[color-mix(in_srgb,var(--fundo)_92%,transparent)] px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] backdrop-blur-xl">
         <div className="mx-auto max-w-[560px]">
           {final ? (
-            <BotaoPrincipal tamanho="g" icone={ArrowRight} onClick={concluir}>Começar a usar</BotaoPrincipal>
+            <BotaoPrincipal tamanho="g" icone={ArrowRight} disabled={!aceito} onClick={concluir}>Começar a usar</BotaoPrincipal>
           ) : (
             <BotaoPrincipal tamanho="g" icone={ArrowRight} disabled={!podeSeguir} onClick={() => setPasso(passo + 1)}>
               Continuar

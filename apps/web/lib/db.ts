@@ -19,6 +19,14 @@ export interface Preferencias {
   obraAtual?: string;
 }
 
+/** Aceite dos Termos e da Política de privacidade (com a versão aceita). */
+export interface Consentimento {
+  versao: string;
+  em: string;
+  /** Estatísticas de uso sem identificar a pessoa. */
+  estatisticas: boolean;
+}
+
 /** Conferência de pagamento de um período (chave: data de fim do período). */
 export interface ConferenciaSalva {
   fim: string;
@@ -36,7 +44,7 @@ export interface DadosPessoais {
 }
 
 export interface Config {
-  chave: "perfil" | "pessoal" | "preferencias" | "obras" | "feriadosLocais" | "conferencias";
+  chave: "perfil" | "pessoal" | "preferencias" | "obras" | "feriadosLocais" | "conferencias" | "consentimento";
   valor: unknown;
   atualizadoEm: string;
 }

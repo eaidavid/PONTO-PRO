@@ -24,6 +24,7 @@ export async function fazerOnboarding(page: Page, nome = "José") {
   await expect(page.getByRole("heading", { name: "Pronto!" })).toBeVisible();
   await expect(page.getByText("Sua semana: 44h. Sábado conta como hora extra a 50%.")).toBeVisible();
   await page.getByLabel("Como quer ser chamado?").fill(nome);
+  await page.getByRole("checkbox", { name: /Li e aceito/ }).click();
   await page.getByRole("button", { name: "Começar a usar" }).click();
   await expect(page).toHaveURL(/\/hoje$/);
 }

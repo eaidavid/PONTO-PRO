@@ -232,3 +232,35 @@ test("feriado local muda o dia; conferir pagamento", async ({ page }) => {
   await page.getByRole("button", { name: "Salvar conferência" }).click();
   await expect(page.getByText(/Recebido R\$ 100,00/)).toBeVisible();
 });
+
+test("termos e privacidade: aceite obrigatório e nova versão pede aceite de novo", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("radio", { name: /Construção civil/ }).click();
+  await page.getByRole("button", { name: "Pular" }).click();
+  await expect(page.getByRole("button", { name: "Começar a usar" })).toBeDisabled();
+  await page.getByRole("checkbox", { name: /Li e aceito/ }).click();
+  await page.getByRole("button", { name: "Começar a usar" }).click();
+  await expect(page).toHaveURL(/\/hoje$/);
+
+  await page.goto("/termos");
+  await expect(page.getByRole("heading", { name: "Termos de uso" })).toBeVisible();
+  await expect(page.getByText("Não é ponto eletrônico oficial")).toBeVisible();
+  await page.goto("/privacidade");
+  await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
+
+  // simula quem aceitou uma versão antiga
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok) => { const r = indexedDB.open("ponto-pro"); r.onsuccess = () => ok(r.result); });
+    await new Promise((ok) => {
+      const tx = db.transaction("config", "readwrite");
+      tx.objectStore("config").put({ chave: "consentimento", valor: { versao: "2020-01-01", em: "x", estatisticas: false }, atualizadoEm: "x" });
+      tx.oncomplete = ok;
+    });
+    db.close();
+  });
+  await page.goto("/hoje");
+  await expect(page.getByRole("heading", { name: "Atualizamos os termos" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("checkbox", { name: /Li e aceito/ }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByRole("heading", { name: "Atualizamos os termos" })).toBeHidden();
+});

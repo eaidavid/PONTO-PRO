@@ -15,7 +15,7 @@ import {
 } from "@ponto-pro/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
-import { type ConferenciaSalva, type DadosPessoais, db, type Preferencias } from "./db";
+import { type ConferenciaSalva, type Consentimento, type DadosPessoais, db, type Preferencias } from "./db";
 
 export interface Estado {
   perfil: PerfilTrabalho | null;
@@ -33,6 +33,7 @@ export interface Estado {
   obrasAtivas: Obra[];
   feriadosLocais: Feriado[];
   conferencias: ConferenciaSalva[];
+  consentimento: Consentimento | null;
 }
 
 function temaDoAparelho(): Preferencias["tema"] {
@@ -95,6 +96,7 @@ export function useEstado(): Estado | undefined {
       obrasAtivas: ((cfg.obras as Obra[] | undefined) ?? []).filter((o) => !o.arquivada),
       feriadosLocais: (cfg.feriadosLocais as Feriado[] | undefined) ?? [],
       conferencias: (cfg.conferencias as ConferenciaSalva[] | undefined) ?? [],
+      consentimento: (cfg.consentimento as Consentimento | undefined) ?? null,
     };
   }, []);
 }
