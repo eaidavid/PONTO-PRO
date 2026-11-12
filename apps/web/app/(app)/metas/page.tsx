@@ -81,7 +81,15 @@ export default function Metas() {
           onMais={() => setAlvo(meta + PASSO_META)}
           podeMenos={meta > PASSO_META}
         />
-        <p className="pt-2 text-center text-15 text-texto-2">Pela sua escala, você deve receber {formatarReais(previsto)}.</p>
+        <div className="flex flex-col gap-1.5 pt-2">
+          <span aria-hidden className="h-2.5 overflow-hidden rounded-full bg-superficie-2">
+            <span className={previsto >= meta ? "block h-full rounded-full bg-sucesso" : "block h-full rounded-full bg-primaria"} style={{ width: `${Math.min(100, Math.round((previsto / Math.max(1, meta)) * 100))}%` }} />
+          </span>
+          <p className="numeros flex justify-between gap-3 text-15 text-texto-2">
+            <span>Pela sua escala: <b className="text-texto">{formatarReais(previsto)}</b></span>
+            <span className="font-bold">{Math.min(100, Math.round((previsto / Math.max(1, meta)) * 100))}%</span>
+          </p>
+        </div>
       </section>
 
       <p aria-live="polite" className="px-1 text-20 font-bold leading-snug">{r.frase}</p>

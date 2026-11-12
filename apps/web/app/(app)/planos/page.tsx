@@ -1,6 +1,6 @@
 "use client";
 
-import { formatarReais, PLANOS, type Plano } from "@ponto-pro/core";
+import { DIAS_TESTE, formatarReais, PLANOS, type Plano } from "@ponto-pro/core";
 import { Banner, CabecalhoTela, cx, TituloSecao } from "@ponto-pro/ui";
 import { Check } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +23,21 @@ export default function Planos() {
 
   return (
     <main className="flex flex-col gap-5 px-4 pb-6">
-      <CabecalhoTela titulo="Planos" subtitulo={status} />
+      <CabecalhoTela titulo="Planos" subtitulo={s.emTeste ? "Escolha quando quiser. Nada é cobrado no teste." : status} />
+      {s.emTeste && (
+        <section aria-label="Seu teste grátis" className="flex flex-col gap-2 rounded-[20px] bg-primaria-suave p-4">
+          <p className="flex items-baseline justify-between gap-3">
+            <span className="text-17 font-bold">Teste grátis do Individual</span>
+            <span className="numeros text-15 font-bold text-primaria-forte">{DIAS_TESTE - s.diasDeTeste} de {DIAS_TESTE} dias</span>
+          </p>
+          <span aria-hidden className="h-2 overflow-hidden rounded-full bg-superficie">
+            <span className="block h-full rounded-full bg-primaria" style={{ width: `${Math.round(((DIAS_TESTE - s.diasDeTeste) / DIAS_TESTE) * 100)}%` }} />
+          </span>
+          <p className="text-15 text-texto-2">
+            {s.diasDeTeste === 1 ? "Hoje é o último dia." : `Faltam ${s.diasDeTeste} dias.`} Se não assinar, você volta ao Grátis sem perder nada do que registrou.
+          </p>
+        </section>
+      )}
       {s.aviso && <Banner tom="aviso" texto={s.aviso} />}
 
       {ORDEM.map((id) => {
@@ -32,7 +46,14 @@ export default function Planos() {
         return (
           <section key={id} aria-labelledby={`plano-${id}`} className={cx("flex flex-col gap-3 rounded-[20px] p-5", id === "individual" ? "fundo-marca" : "bg-superficie-2")}>
             <div className="flex items-baseline justify-between gap-3">
-              <h2 id={`plano-${id}`} className="display text-24">{p.nome}</h2>
+              <h2 id={`plano-${id}`} className="display flex items-center gap-2 text-24">
+                {p.nome}
+                {(atual || (s.emTeste && id === "individual")) && (
+                  <span className={cx("rounded-full px-2 py-0.5 font-sans text-13 font-bold tracking-normal", id === "individual" ? "bg-white/15 text-marca-destaque" : "bg-primaria-suave text-primaria-forte")}>
+                    {s.emTeste && id === "individual" ? "em teste" : "seu plano"}
+                  </span>
+                )}
+              </h2>
               <p className="numeros text-17 font-bold">
                 {p.preco ? formatarReais(p.preco) : "R$ 0"}
                 <span className={cx("text-13 font-normal", id === "individual" ? "text-sobre-marca-2" : "text-texto-2")}>
