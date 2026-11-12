@@ -81,35 +81,58 @@ function agrupar(r: ResultadoPeriodo): Grupo[] {
 function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) => void }) {
   const grupos = agrupar(r);
   const ganhos = grupos.filter((g) => g.id !== "descontos");
+  const descontos = grupos.find((g) => g.id === "descontos");
   const total = ganhos.reduce((t, g) => t + g.valor, 0) || 1;
   return (
     <section aria-labelledby="de-onde" className="flex flex-col gap-2">
-      <TituloSecao id="de-onde">De onde vem</TituloSecao>
-      <div className="cartao flex flex-col gap-1 overflow-hidden">
-        <div aria-hidden className="mx-4 mt-4 mb-2 flex h-3 gap-[2px] overflow-hidden rounded-full">
+      <div className="flex items-end justify-between gap-3 px-1">
+        <h2 id="de-onde" className="text-15 font-bold text-texto-2">De onde vem</h2>
+        <span className="numeros text-15 text-texto-2">
+          ganho <b className="text-texto">{formatarReais(r.bruto)}</b>
+        </span>
+      </div>
+      <div className="cartao overflow-hidden">
+        <div aria-hidden className="mx-4 mt-4 flex h-3 gap-[2px] overflow-hidden rounded-full">
           {ganhos.map((g) => (
             <span key={g.id} className={cx("h-full first:rounded-l-full last:rounded-r-full", g.cor)} style={{ width: `${(g.valor / total) * 100}%` }} />
           ))}
         </div>
-        <ul className="divide-y divide-borda">
-          {grupos.map((g) => (
-            <li key={g.id}>
-              <button type="button" onClick={() => onToque(g)} className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left active:bg-superficie-2">
-                <span aria-hidden className={cx("size-3 shrink-0 rounded-sm", g.cor)} />
-                <span className="flex-1 text-17">{g.rotulo}</span>
-                <span className={cx("numeros text-17 font-bold", g.id === "descontos" ? "text-erro-texto" : g.id === "extra" ? "text-extra-texto" : "text-texto")}>
-                  {g.id === "descontos" ? "−" : ""}
-                  {formatarReais(g.valor)}
-                </span>
-                <ChevronRight aria-hidden className="size-4 text-texto-2" />
-              </button>
-            </li>
-          ))}
-          <li className="flex min-h-14 items-center justify-between gap-3 bg-superficie-2 px-4">
-            <span className="text-17 font-bold">Você deve receber</span>
-            <ValorDinheiro centavos={r.liquido} />
-          </li>
+        <ul className="flex flex-col px-2 py-2">
+          {ganhos.map((g) => {
+            const pct = Math.round((g.valor / total) * 100);
+            return (
+              <li key={g.id}>
+                <button type="button" onClick={() => onToque(g)} className="flex w-full flex-col gap-1.5 rounded-2xl px-2 py-3 text-left active:bg-superficie-2">
+                  <span className="flex w-full items-center gap-3">
+                    <span aria-hidden className={cx("size-3 shrink-0 rounded-sm", g.cor)} />
+                    <span className="min-w-0 flex-1 text-17 leading-snug">{g.rotulo}</span>
+                    <span className={cx("numeros text-17 font-bold whitespace-nowrap", g.id === "extra" ? "text-extra-texto" : "text-texto")}>{formatarReais(g.valor)}</span>
+                    <ChevronRight aria-hidden className="size-4 shrink-0 text-texto-2" />
+                  </span>
+                  <span className="flex items-center gap-3 pl-6">
+                    <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-superficie-2">
+                      <span className={cx("block h-full rounded-full", g.cor)} style={{ width: `${pct}%` }} />
+                    </span>
+                    <span className="numeros w-10 text-right text-13 font-bold text-texto-2">{pct}%</span>
+                    <span className="w-4" />
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
+        {descontos && (
+          <button type="button" onClick={() => onToque(descontos)} className="flex min-h-14 w-full items-center gap-3 border-t border-borda bg-erro-suave/50 px-4 text-left active:bg-erro-suave">
+            <span aria-hidden className={cx("size-3 shrink-0 rounded-sm", descontos.cor)} />
+            <span className="flex-1 text-17">Descontos</span>
+            <span className="numeros text-17 font-bold text-erro-texto">−{formatarReais(descontos.valor)}</span>
+            <ChevronRight aria-hidden className="size-4 shrink-0 text-texto-2" />
+          </button>
+        )}
+        <div className="fundo-marca flex min-h-16 items-center justify-between gap-3 px-4">
+          <span className="text-17 font-bold">Você deve receber</span>
+          <ValorDinheiro centavos={r.liquido} />
+        </div>
       </div>
     </section>
   );

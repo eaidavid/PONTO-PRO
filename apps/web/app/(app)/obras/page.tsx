@@ -1,7 +1,7 @@
 "use client";
 
 import { calcularPeriodo, formatarDuracao, formatarReais, type Obra, periodoDaData, rotuloPeriodo, valorProducao } from "@ponto-pro/core";
-import { BotaoPrincipal, BottomSheet, CabecalhoTela, CampoTexto, EstadoVazio, TituloSecao, useToast } from "@ponto-pro/ui";
+import { BotaoPrincipal, BottomSheet, CabecalhoTela, CampoTexto, TituloSecao, useToast } from "@ponto-pro/ui";
 import { Archive, ArchiveRestore, ChevronRight, HardHat, Plus, Save } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -87,15 +87,36 @@ export default function Obras() {
   return (
     <main className="flex flex-col gap-5 px-4 pb-4">
       <CabecalhoTela titulo="Obras" subtitulo={`Período ${rotuloPeriodo(periodo)}`} />
-      <p className="text-17 text-texto-2">Trabalha em mais de um lugar? Escolha a obra ao bater o ponto e lançar produção, e filtre o histórico por obra.</p>
-
-      <div className="cartao flex flex-col gap-3 p-4">
-        <CampoTexto rotulo="Nova obra" valor={nome} onChange={setNome} placeholder="Ex.: Casa da Ana, Obra Jardim" maxLength={40} onKeyDown={(e) => e.key === "Enter" && adicionar()} />
-        <BotaoPrincipal variante="secundaria" icone={Plus} disabled={!nome.trim()} onClick={adicionar}>Adicionar obra</BotaoPrincipal>
-      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          adicionar();
+        }}
+        className="flex items-end gap-2"
+      >
+        <div className="min-w-0 flex-1">
+          <CampoTexto rotulo="Nova obra" valor={nome} onChange={setNome} placeholder="Ex.: Casa da Ana" maxLength={40} />
+        </div>
+        <button
+          type="submit"
+          disabled={!nome.trim()}
+          aria-label="Adicionar obra"
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primaria text-sobre-primaria disabled:bg-superficie-2 disabled:text-texto-2"
+        >
+          <Plus aria-hidden className="size-7" strokeWidth={2.5} />
+        </button>
+      </form>
 
       {ativas.length === 0 ? (
-        <EstadoVazio icone={HardHat} frase="Nenhuma obra cadastrada" />
+        <div className="flex items-start gap-4 rounded-2xl bg-superficie-2 p-4">
+          <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primaria-suave text-primaria-forte">
+            <HardHat className="size-7" />
+          </span>
+          <span className="flex flex-col gap-1">
+            <span className="text-17 font-bold">Nenhuma obra ainda</span>
+            <span className="text-15 text-texto-2">Trabalha em mais de um lugar? Cadastre as obras e escolha uma ao bater o ponto ou lançar produção. Depois dá para ver o histórico de cada uma.</span>
+          </span>
+        </div>
       ) : (
         <section className="flex flex-col gap-2">
           <TituloSecao>Ativas</TituloSecao>

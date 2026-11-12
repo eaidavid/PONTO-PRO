@@ -49,6 +49,7 @@ import {
   Trash2,
   Upload,
   Wallet,
+  ChevronLeft,
   History,
 } from "lucide-react";
 import Link from "next/link";
@@ -58,6 +59,7 @@ import { apagarTudo, exportarDados, novoId, salvarFeriadosLocais, salvarPerfil, 
 import type { DadosPessoais } from "../../../lib/db";
 import { useEstado } from "../../../lib/estado";
 import { ImportarAntigo } from "./importar-antigo";
+import { abrirMenuMais } from "../../../lib/eventos";
 import {
   almocoAtual,
   centavosParaTexto,
@@ -138,7 +140,10 @@ export default function Conta() {
 
   return (
     <main className="flex flex-col gap-6 px-4 pb-4">
-      <header className="fundo-marca -mx-4 flex flex-col gap-3 px-5 pt-[max(28px,env(safe-area-inset-top))] pb-6">
+      <header className="fundo-marca -mx-4 flex flex-col gap-3 px-5 pt-[max(8px,env(safe-area-inset-top))] pb-6">
+        <button type="button" onClick={abrirMenuMais} aria-label="Voltar ao menu Mais" className="-ml-3 inline-flex min-h-12 items-center gap-1 self-start rounded-full px-2 text-15 font-bold text-sobre-marca-2 active:bg-white/10">
+          <ChevronLeft aria-hidden className="size-5" /> Mais
+        </button>
         <span aria-hidden className="flex size-14 items-center justify-center rounded-full bg-white/14 text-24 font-bold">
           {(estado.pessoal.nome?.trim()[0] ?? "V").toUpperCase()}
         </span>

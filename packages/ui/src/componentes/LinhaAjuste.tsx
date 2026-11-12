@@ -23,7 +23,7 @@ export function LinhaAjuste({ icone: Icone, rotulo, valor, sugestao, perigo, onC
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className={perigo ? "text-17 font-bold text-erro-texto" : "text-17 font-bold"}>{rotulo}</span>
         {valor && <span className="numeros text-15 text-texto-2">{valor}</span>}
-        {sugestao && <span><SeloSugestao texto="Sugestão — confira com seu sindicato" /></span>}
+        {sugestao && <SeloSugestao compacto />}
       </span>
       <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
     </button>

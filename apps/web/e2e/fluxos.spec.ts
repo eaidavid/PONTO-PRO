@@ -112,6 +112,12 @@ test("menu Mais: tamanho compacto e atalhos", async ({ page }) => {
   await page.getByRole("button", { name: "Mais" }).click();
   await page.getByRole("dialog", { name: "Mais" }).getByRole("button", { name: /Obras/ }).click();
   await expect(page.getByRole("heading", { name: "Obras" })).toBeVisible();
+  // "‹ Mais" volta para o menu, inclusive na Conta (que tem o topo verde)
+  await page.getByRole("button", { name: "Voltar ao menu Mais" }).click();
+  await page.getByRole("dialog", { name: "Mais" }).getByRole("button", { name: /Conta e regras/ }).click();
+  await expect(page).toHaveURL(/\/conta$/);
+  await page.getByRole("button", { name: "Voltar ao menu Mais" }).click();
+  await expect(page.getByRole("dialog", { name: "Mais" })).toBeVisible();
 });
 
 test("ponto esquecido: corrige em um toque e o status responde na hora", async ({ page }) => {
@@ -305,7 +311,8 @@ test("termos e privacidade: aceite obrigatório e nova versão pede aceite de no
 test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram o bloqueio", async ({ page }) => {
   await fazerOnboarding(page);
   await page.goto("/planos");
-  await expect(page.getByText("Teste grátis do Individual: 14 dias restantes")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Seu teste grátis" })).toContainText("0 de 14 dias");
+  await expect(page.getByText("Faltam 14 dias.", { exact: false })).toBeVisible();
   await page.goto("/metas");
   await expect(page.getByText("Quanto quero receber neste período?")).toBeVisible();
 
