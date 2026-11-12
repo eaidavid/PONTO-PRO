@@ -36,6 +36,7 @@ import {
   BottomSheet,
   CabecalhoTela,
   Chip,
+  cx,
   EstadoVazio,
   LinhaRegistro,
   TituloSecao,
@@ -44,6 +45,7 @@ import {
 } from "@ponto-pro/ui";
 import {
   ChevronDown,
+  ChevronRight,
   CalendarDays,
   CircleCheck,
   Download,
@@ -61,7 +63,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { apagarLancamento, lancarProducao, restaurarVarios, salvarVariosRegistros } from "../../../lib/acoes";
+import { restaurarVarios, salvarVariosRegistros } from "../../../lib/acoes";
 import { useAgora, useEstado, useHistoricoLongo, useLancamentosDoPeriodo, useRegistrosDoPeriodo } from "../../../lib/estado";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
@@ -179,11 +181,6 @@ function Historico() {
     mostrar({ texto: `${completar.length} ${completar.length === 1 ? "dia preenchido" : "dias preenchidos"} como a escala`, desfazer: () => restaurarVarios(antes) });
   }
 
-  async function apagarLanc(id: string) {
-    const antes = await apagarLancamento(id);
-    if (antes) mostrar({ texto: "Lançamento apagado", desfazer: () => lancarProducao(antes) });
-  }
-
   function exportar() {
     const csv = csvDoPeriodo(r, regs!, { itens, lancamentos: lancs!, obras });
     baixar(`ponto-pro-${periodo!.inicio}-a-${periodo!.fim}.csv`, csv, "text/csv;charset=utf-8");
@@ -291,18 +288,39 @@ function Historico() {
       })()}
 
       {aba === "ponto" && (
-        <p className="numeros flex flex-wrap items-center gap-x-1 px-1 text-15 text-texto-2">
-          <span>
-            <b className="text-texto">{formatarDuracao(r.horas.trabalhadoMin)}</b> trabalhadas
-            {r.horas.extraMin > 0 && <> · <b className="text-extra-texto">+{formatarDuracao(r.horas.extraMin)}</b> extra</>}
-            {r.horas.deficitMin > 0 && <> · <b className="text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</b> de falta</>}
-          </span>
-          {!filtrando && pendencias.length === 0 && (
-            <span role="status" className="inline-flex items-center gap-1 font-bold text-sucesso-texto">
-              · <CircleCheck aria-hidden className="size-4" /> tudo certo
+        <section aria-label="Resumo do período" className="grid grid-cols-2 gap-2">
+          <div className="fundo-marca col-span-2 flex items-center justify-between gap-3 rounded-[20px] px-4 py-3">
+            <span className="flex flex-col">
+              <span className="text-13 font-bold text-sobre-marca-2">Ganho até {atual ? "hoje" : "o fechamento"}</span>
+              <span className="numeros text-24 font-bold">{formatarReais([...valores.values()].reduce((t, v) => t + v, 0))}</span>
             </span>
+            {!filtrando && (
+              pendencias.length === 0 ? (
+                <span role="status" className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-13 font-bold">
+                  <CircleCheck aria-hidden className="size-4 text-marca-destaque" /> tudo certo
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-13 font-bold">
+                  <TriangleAlert aria-hidden className="size-4 text-marca-destaque" /> {pendencias.length} para ver
+                </span>
+              )
+            )}
+          </div>
+          <div className="cartao flex flex-col px-3 py-2">
+            <span className="numeros text-20 font-bold">{formatarDuracao(r.horas.trabalhadoMin)}</span>
+            <span className="text-13 text-texto-2">trabalhadas</span>
+          </div>
+          <div className="cartao flex flex-col px-3 py-2">
+            <span className={cx("numeros text-20 font-bold", r.horas.extraMin > 0 ? "text-extra-texto" : "")}>{r.horas.extraMin > 0 ? "+" : ""}{formatarDuracao(r.horas.extraMin)}</span>
+            <span className="text-13 text-texto-2">de hora extra</span>
+          </div>
+          {r.horas.deficitMin > 0 && (
+            <div className="cartao col-span-2 flex items-center justify-between gap-3 px-3 py-2">
+              <span className="text-13 text-texto-2">faltaram nas horas da escala</span>
+              <span className="numeros text-17 font-bold text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</span>
+            </div>
           )}
-        </p>
+        </section>
       )}
 
       {!atual && !plano.pode("historico") ? (
@@ -338,7 +356,7 @@ function Historico() {
           ) : (
             semanas.map((s) => (
               <section key={s.inicio} aria-label={s.rotulo} className="flex flex-col gap-2">
-                <div className="flex items-end justify-between gap-3 px-1">
+                <div className="sticky top-0 z-10 -mx-4 flex items-end justify-between gap-3 bg-fundo/95 px-5 py-2 backdrop-blur">
                   <span className="flex flex-col">
                     <h2 className="text-15 font-bold text-texto-2">{s.rotulo}</h2>
                     <span className="numeros text-13 text-texto-2">
@@ -385,9 +403,36 @@ function Historico() {
         </>
       ) : (
         <>
-          <p className="numeros px-1 text-15 text-texto-2">
-            <b className="text-texto">{formatarReais(totalProducao)}</b> em {lancsFiltrados.length} {lancsFiltrados.length === 1 ? "lançamento" : "lançamentos"}
-          </p>
+          <section aria-label="Resumo da produção" className="fundo-marca flex flex-col gap-3 rounded-[20px] p-4">
+            <span className="flex items-end justify-between gap-3">
+              <span className="flex flex-col">
+                <span className="text-13 font-bold text-sobre-marca-2">Produção no período</span>
+                <span className="numeros text-24 font-bold">{formatarReais(totalProducao)}</span>
+              </span>
+              <span className="numeros text-15 text-sobre-marca-2">
+                {lancsFiltrados.length} {lancsFiltrados.length === 1 ? "lançamento" : "lançamentos"}
+              </span>
+            </span>
+            {(() => {
+              const areas = totaisPorArea(itens, lancsFiltrados);
+              if (areas.length < 2) return null;
+              return (
+                <ul className="flex flex-col gap-1.5">
+                  {areas.slice(0, 4).map((a) => (
+                    <li key={a.area} className="flex flex-col gap-1">
+                      <span className="numeros flex justify-between gap-3 text-13">
+                        <span className="truncate">{a.area}</span>
+                        <b>{formatarReais(a.valor)}</b>
+                      </span>
+                      <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-[color:var(--marca-trilho)]">
+                        <span className="block h-full rounded-full bg-marca-destaque" style={{ width: `${Math.round((a.valor / Math.max(1, totalProducao)) * 100)}%` }} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+          </section>
           <Link
             href="/producao"
             className="sombra-botao inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria"
@@ -399,16 +444,18 @@ function Historico() {
           ) : (
             agruparPorSemanaGenerico(lancsFiltrados).map((g) => (
               <section key={g.inicio} aria-label={g.rotulo} className="flex flex-col gap-2">
-                <TituloSecao
-                  acao={<span className="numeros text-13 font-bold text-texto-2">{formatarReais(g.itens.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0))}</span>}
-                >
-                  {g.rotulo}
-                </TituloSecao>
+                <div className="sticky top-0 z-10 -mx-4 flex items-end justify-between gap-3 bg-fundo/95 px-5 py-2 backdrop-blur">
+                  <span className="flex flex-col">
+                    <h2 className="text-15 font-bold text-texto-2">{g.rotulo}</h2>
+                    <span className="numeros text-13 text-texto-2">{g.itens.length} {g.itens.length === 1 ? "lançamento" : "lançamentos"}</span>
+                  </span>
+                  <span className="numeros text-17 font-bold">{formatarReais(g.itens.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0))}</span>
+                </div>
                 <ul className="cartao divide-y divide-borda overflow-hidden">
                   {g.itens.map((l) => {
                     const item = porItem.get(l.itemId);
                     return (
-                      <li key={l.id} className="flex min-h-16 items-center gap-1 py-2 pr-1 pl-4">
+                      <li key={l.id} className="flex min-h-16 items-center gap-1 py-2 pr-3 pl-4">
                         <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left active:bg-superficie-2">
                         <span className="flex w-11 shrink-0 flex-col items-center">
                           <span className="text-13 font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
@@ -424,14 +471,7 @@ function Historico() {
                         </span>
                         <span className="numeros text-17 font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => apagarLanc(l.id)}
-                          aria-label={`Apagar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`}
-                          className="flex size-12 shrink-0 items-center justify-center rounded-full text-texto-2 active:bg-erro-suave active:text-erro-texto"
-                        >
-                          <Trash2 aria-hidden className="size-5" />
-                        </button>
+                        <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
                       </li>
                     );
                   })}

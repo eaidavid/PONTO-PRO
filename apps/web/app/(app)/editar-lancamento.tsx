@@ -2,9 +2,9 @@
 
 import { formatarQuantidade, formatarReais, type ItemProducao, type LancamentoProducao, rotuloUnidade, seloDia, valorProducao } from "@ponto-pro/core";
 import { BotaoPrincipal, BottomSheet, CampoNumero, useToast } from "@ponto-pro/ui";
-import { Save } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { lancarProducao } from "../../lib/acoes";
+import { apagarLancamento, lancarProducao } from "../../lib/acoes";
 
 function lerQuantidade(v: string): number | null {
   const n = Number(v.replace(/\./g, "").replace(",", "."));
@@ -58,6 +58,17 @@ export function EditarLancamento({ lancamento, item, onFechar, comDesfazer = tru
           <p className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-20 font-bold">
             {quantidade !== null ? `${formatarQuantidade(quantidade)} ${un} × ${formatarReais(lancamento.precoUnitario)} = ${formatarReais(valorProducao(quantidade, lancamento.precoUnitario))}` : "—"}
           </p>
+          <BotaoPrincipal
+            variante="perigo"
+            icone={Trash2}
+            onClick={async () => {
+              const antes = await apagarLancamento(lancamento.id);
+              onFechar();
+              mostrar({ texto: "Lançamento apagado", ...(comDesfazer && antes ? { desfazer: () => lancarProducao(antes) } : {}) });
+            }}
+          >
+            Apagar lançamento
+          </BotaoPrincipal>
         </div>
       )}
     </BottomSheet>

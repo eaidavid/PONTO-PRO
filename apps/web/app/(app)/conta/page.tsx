@@ -50,6 +50,8 @@ import {
   Upload,
   Wallet,
   ChevronLeft,
+  ChevronRight,
+  Palette,
   History,
 } from "lucide-react";
 import Link from "next/link";
@@ -106,6 +108,7 @@ export default function Conta() {
   const { mostrar } = useToast();
   const [painel, setPainel] = useState<Painel>(null);
   const [importarAntigo, setImportarAntigo] = useState(false);
+  const [aparencia, setAparencia] = useState(false);
   const [novoFeriado, setNovoFeriado] = useState({ nome: "", dia: "", todoAno: true });
   const arquivo = useRef<HTMLInputElement>(null);
   const [rascunho, setRascunho] = useState<PerfilTrabalho | null>(null);
@@ -153,12 +156,59 @@ export default function Conta() {
             {MODELOS[perfil.area].nome} · {NOME_FORMA[perfil.pagamento.forma]}
           </p>
         </div>
-        <p className="rounded-2xl bg-white/8 p-3 text-17">{resumoDoPerfil(perfil)}</p>
+        <ul className="grid grid-cols-3 gap-2">
+          {[
+            { v: vp ? formatarReais(vp.valor) : NOME_FORMA[perfil.pagamento.forma], r: vp ? vp.rotulo.replace(/^Valor d[ao] /, "por ").replace("Salário", "salário") : "como recebe", p: "pagamento" as const },
+            { v: formatarHorasCurto(horasSemanais(perfil.escala)), r: "por semana", p: "semana" as const },
+            { v: `dia ${perfil.ciclo.diaFechamento}`, r: "fecha o período", p: "fechamento" as const },
+          ].map((c) => (
+            <li key={c.p}>
+              <button type="button" onClick={() => abrir(c.p)} className="flex h-full w-full flex-col items-start rounded-2xl bg-white/10 px-3 py-2 text-left active:bg-white/15">
+                <span className="numeros text-17 font-bold leading-tight">{c.v}</span>
+                <span className="text-13 text-sobre-marca-2">{c.r}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="text-15 text-sobre-marca-2">{resumoDoPerfil(perfil)}</p>
       </header>
 
-      <Grupo titulo="Seu trabalho">
+      {(() => {
+        const sp = situacaoAtual(estado);
+        return (
+          <button type="button" onClick={() => router.push("/planos")} className="cartao -mt-2 flex min-h-16 items-center gap-3 px-4 py-3 text-left active:bg-superficie-2">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-extra-suave text-extra-texto">
+              <Gem className="size-5" strokeWidth={2.25} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-17 font-bold">{sp.emTeste ? "Teste grátis do Individual" : `Plano ${PLANOS[sp.plano].nome}`}</span>
+              <span className="block text-15 text-texto-2">{sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}</span>
+            </span>
+            <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
+          </button>
+        );
+      })()}
+
+      <Grupo titulo="Quanto e quando você recebe">
         {vp && <LinhaAjuste icone={Wallet} rotulo={vp.rotulo} valor={formatarReais(vp.valor)} onClick={() => abrir("pagamento")} />}
         {!vp && <LinhaAjuste icone={Wallet} rotulo="Como você recebe" valor={NOME_FORMA[perfil.pagamento.forma]} onClick={() => abrir("pagamento")} />}
+        <LinhaAjuste
+          icone={CalendarClock}
+          rotulo="Fechamento e pagamento"
+          valor={`Fecha dia ${perfil.ciclo.diaFechamento} · ${NOME_PAGAMENTO(perfil)}`}
+          sugestao={!perfil.diaPagamento}
+          onClick={() => abrir("fechamento")}
+        />
+        <LinhaAjuste
+          icone={Trash2}
+          rotulo="Descontos"
+          valor={perfil.descontos.length ? perfil.descontos.map((d) => d.nome).join(", ") : "Nenhum"}
+          sugestao={ehSugestao(perfil, "descontos")}
+          onClick={() => abrir("descontos")}
+        />
+      </Grupo>
+
+      <Grupo titulo="Sua jornada">
         <LinhaAjuste icone={CalendarDays} rotulo="Sua semana" valor={`${formatarHorasCurto(horasSemanais(perfil.escala))} por semana`} onClick={() => abrir("semana")} />
         <LinhaAjuste
           icone={Percent}
@@ -166,13 +216,6 @@ export default function Conta() {
           valor={`Dia útil ${formatarPercentual(perfil.adicionais.extraDiaUtil)} · sábado ${formatarPercentual(perfil.adicionais.extraSabado)} · domingo ${formatarPercentual(perfil.adicionais.extraDomingo)}`}
           sugestao={ehSugestao(perfil, "adicionais.extraSabado") || ehSugestao(perfil, "adicionais.extraDiaUtil")}
           onClick={() => abrir("extra")}
-        />
-        <LinhaAjuste
-          icone={CalendarClock}
-          rotulo="Fechamento e pagamento"
-          valor={`Fecha dia ${perfil.ciclo.diaFechamento} · ${NOME_PAGAMENTO(perfil)}`}
-          sugestao={!perfil.diaPagamento}
-          onClick={() => abrir("fechamento")}
         />
         <LinhaAjuste
           icone={PartyPopper}
@@ -186,32 +229,33 @@ export default function Conta() {
           valor={`Compensação ${perfil.jornada.compensacaoSemanal ? "ligada" : "desligada"} · saldo ${perfil.bancoHoras.ativo ? "ligado" : "desligado"}`}
           onClick={() => abrir("regras")}
         />
-        <LinhaAjuste
-          icone={Trash2}
-          rotulo="Descontos"
-          valor={perfil.descontos.length ? perfil.descontos.map((d) => d.nome).join(", ") : "Nenhum"}
-          sugestao={ehSugestao(perfil, "descontos")}
-          onClick={() => abrir("descontos")}
-        />
-        <LinhaAjuste icone={RefreshCw} rotulo="Refazer as perguntas do início" onClick={() => router.push("/comecar?refazer=1")} />
       </Grupo>
 
-      <Grupo titulo="Contracheque">
+      <Grupo titulo="Contracheque e aparência">
         <LinhaAjuste
           icone={Briefcase}
           rotulo="Nome, cargo e empresa"
           valor={[estado.pessoal.nome, estado.pessoal.cargo, estado.pessoal.empresa].filter(Boolean).join(" · ") || "Toque para preencher"}
           onClick={() => abrir("pessoal")}
         />
+        <LinhaAjuste
+          icone={Palette}
+          rotulo="Tamanho, aparência e som"
+          valor={[
+            { compacto: "Compacto", padrao: "Tamanho padrão", grande: "Grande" }[preferencias.tamanho],
+            { auto: "automático", claro: "claro", escuro: "escuro", sol: "sol forte" }[preferencias.tema],
+            preferencias.som ? "com som" : "sem som",
+          ].join(" · ")}
+          onClick={() => setAparencia(true)}
+        />
       </Grupo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-15 font-bold text-texto-2">Tamanho e aparência</h2>
-        <div className="cartao flex flex-col gap-2 p-4">
+      <BottomSheet aberto={aparencia} onFechar={() => setAparencia(false)} titulo="Tamanho, aparência e som" subtitulo="Muda na hora, para o app todo.">
+        <div className="flex flex-col gap-4 pb-4">
           <PreferenciasVisuais preferencias={preferencias} />
           <Interruptor rotulo="Som ao bater o ponto" descricao="Um bipe curto, além da vibração." valor={preferencias.som} onChange={(som) => salvarPreferencias({ ...preferencias, som })} />
         </div>
-      </section>
+      </BottomSheet>
 
       {nuvem.configurado && (
         <Grupo titulo="Sua conta">
@@ -292,29 +336,23 @@ export default function Conta() {
         />
       </Grupo>
 
-      <Grupo titulo="Sobre">
-        <LinhaAjuste icone={FileText} rotulo="Termos de uso" onClick={() => router.push("/termos")} />
-        <LinhaAjuste icone={ShieldCheck} rotulo="Política de privacidade" onClick={() => router.push("/privacidade")} />
-      </Grupo>
+      <button type="button" onClick={() => router.push("/comecar?refazer=1")} className="inline-flex min-h-12 items-center gap-2 self-start rounded-full px-2 text-15 font-bold text-primaria-forte">
+        <RefreshCw aria-hidden className="size-4" /> Refazer as perguntas do início
+      </button>
 
-      <Grupo titulo="Plano">
-        {(() => {
-          const sp = situacaoAtual(estado);
-          return (
-            <LinhaAjuste
-              icone={Gem}
-              rotulo={sp.emTeste ? "Teste grátis do Individual" : PLANOS[sp.plano].nome}
-              valor={sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}
-              onClick={() => router.push("/planos")}
-            />
-          );
-        })()}
-      </Grupo>
-
-      <p className="flex gap-2 px-1 text-13 text-texto-2">
-        <FileText aria-hidden className="size-4 shrink-0" />
-        O {MARCA.nome} é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
-      </p>
+      <footer className="flex flex-col gap-2 border-t border-borda pt-4">
+        <p className="text-13 text-texto-2">
+          O {MARCA.nome} é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
+        </p>
+        <nav aria-label="Documentos" className="-ml-2 flex flex-wrap">
+          <Link href="/termos" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-15 font-bold text-texto underline underline-offset-4">
+            <FileText aria-hidden className="size-4" /> Termos de uso
+          </Link>
+          <Link href="/privacidade" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-15 font-bold text-texto underline underline-offset-4">
+            <ShieldCheck aria-hidden className="size-4" /> Política de privacidade
+          </Link>
+        </nav>
+      </footer>
 
       {/* ---------- painéis ---------- */}
 
