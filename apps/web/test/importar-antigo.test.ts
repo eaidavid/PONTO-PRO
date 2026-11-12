@@ -79,3 +79,46 @@ describe("importar do Ponto Pro antigo", () => {
     expect(() => converterPontoAntigo("null", { itens: [], datasComRegistro: [] })).toThrow(/Não achei registros/);
   });
 });
+
+import { calcularPeriodo } from "@ponto-pro/core";
+import { aplicarRegrasAntigas } from "../lib/importar-antigo";
+import { perfilJose } from "../../../packages/core/test/ajuda";
+
+describe("regras de cálculo do app antigo", () => {
+  const cfgAntigo = { rate: 25, jornada: 8, almoco: 60, fecha: 20, x50: 50, x100: 100, inss: 8, outros: 0 };
+  const dias = {
+    "2026-11-10": { t: ["07:00", "12:00", "13:00", "17:00"], type: "normal" }, // ter: 9h → 8h + 1h extra
+    "2026-11-14": { t: ["07:00", "", "", "12:00"], type: "normal" }, // sáb: 5h, tudo extra a 100%
+  };
+
+  it("lê as regras e lista o que muda no perfil", () => {
+    const conv = converterPontoAntigo(JSON.stringify({ cfg: cfgAntigo, days: dias }), { itens: [], datasComRegistro: [] });
+    expect(conv.regras).toEqual({ valorHora: 2500, jornadaMin: 480, almocoMin: 60, diaFechamento: 20, extraDiaUtil: 50, extraFimDeSemana: 100, descontoPct: 8, outrosDescontos: 0 });
+    const { perfil, mudancas } = aplicarRegrasAntigas(perfilJose(), conv.regras!);
+    expect(perfil.pagamento).toEqual({ forma: "hora", valorHora: 2500 });
+    expect(perfil.escala.tipo === "semanal" && perfil.escala.dias.map((d) => d.horasLiquidasMin)).toEqual([0, 480, 480, 480, 480, 480, 0]);
+    expect(mudancas.some((m) => m.startsWith("Sua semana:"))).toBe(true);
+    expect(mudancas.some((m) => m.startsWith("Descontos:"))).toBe(true);
+    expect(perfil.sugestoes.some((c) => c.startsWith("escala") || c.startsWith("descontos"))).toBe(false);
+  });
+
+  it("com as regras do app antigo, o Pingou chega no mesmo valor que ele mostrava", () => {
+    const conv = converterPontoAntigo(JSON.stringify({ cfg: cfgAntigo, days: dias }), { itens: [], datasComRegistro: [] });
+    const { perfil } = aplicarRegrasAntigas(perfilJose(), conv.regras!);
+    const r = calcularPeriodo({ perfil, periodo: { inicio: "2026-11-10", fim: "2026-11-14" }, registros: conv.registros });
+    // app antigo: 8h × 25 + 1h × 25 × 1,5 + 5h × 25 × 2 = 487,50; desconto de 8% = 39,00
+    expect(r.bruto).toBe(48750);
+    expect(r.totalDescontos).toBe(3900);
+    expect(r.liquido).toBe(44850);
+  });
+
+  it("sem valor da hora ou jornada no app antigo, não há regras para trazer", () => {
+    expect(converterPontoAntigo(JSON.stringify({ cfg: { rate: 0, jornada: 8 }, days: dias }), { itens: [], datasComRegistro: [] }).regras).toBeNull();
+  });
+
+  it("não lista mudança quando o perfil já calcula igual", () => {
+    const conv = converterPontoAntigo(JSON.stringify({ cfg: cfgAntigo, days: dias }), { itens: [], datasComRegistro: [] });
+    const uma = aplicarRegrasAntigas(perfilJose(), conv.regras!).perfil;
+    expect(aplicarRegrasAntigas(uma, conv.regras!).mudancas).toEqual([]);
+  });
+});

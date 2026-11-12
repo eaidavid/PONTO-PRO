@@ -1,4 +1,4 @@
-import { formatarDuracao, type Marcacoes, seloDia, type TipoDia } from "@ponto-pro/core";
+import { formatarDuracao, formatarReais, type Marcacoes, seloDia, type TipoDia } from "@ponto-pro/core";
 import { cx } from "../cx";
 import { TIPOS_DIA } from "./TipoDia";
 
@@ -16,6 +16,8 @@ export interface LinhaRegistroProps {
   folgaDaEscala?: boolean;
   nota?: string;
   obra?: string;
+  /** Quanto o dia rendeu (bruto, em centavos). Mostrado à direita quando maior que zero. */
+  valor?: number;
   onClick?: () => void;
 }
 
@@ -36,6 +38,7 @@ export function LinhaRegistro({
   folgaDaEscala,
   nota,
   obra,
+  valor,
   onClick,
 }: LinhaRegistroProps) {
   const [dia, num] = seloDia(data).split(" ");
@@ -81,17 +84,31 @@ export function LinhaRegistro({
         {principal}
         {apoio.length > 0 && <span className="numeros truncate text-15 text-texto-2">{apoio.join(" · ")}</span>}
       </span>
-      {!emAndamento && saldoMin !== 0 ? (
-        <span
-          className={cx(
-            "numeros shrink-0 rounded-full px-2.5 py-1 text-15 font-bold",
-            saldoMin > 0 ? "bg-extra-suave text-extra-texto" : "bg-erro-suave text-erro-texto",
-          )}
-        >
-          {formatarDuracao(saldoMin, { sinal: true })}
-          <span className="sr-only">{saldoMin > 0 ? " de hora extra" : " faltando"}</span>
-        </span>
-      ) : null}
+      {(() => {
+        const etiqueta =
+          !emAndamento && saldoMin !== 0 ? (
+            <span
+              className={cx(
+                "numeros shrink-0 rounded-full px-2.5 py-1 font-bold",
+                valor ? "text-13" : "text-15",
+                saldoMin > 0 ? "bg-extra-suave text-extra-texto" : "bg-erro-suave text-erro-texto",
+              )}
+            >
+              {formatarDuracao(saldoMin, { sinal: true })}
+              <span className="sr-only">{saldoMin > 0 ? " de hora extra" : " faltando"}</span>
+            </span>
+          ) : null;
+        if (!valor) return etiqueta;
+        return (
+          <span className="flex shrink-0 flex-col items-end gap-1">
+            <span className="numeros text-17 font-bold">
+              {formatarReais(valor)}
+              <span className="sr-only"> no dia</span>
+            </span>
+            {etiqueta}
+          </span>
+        );
+      })()}
     </button>
   );
 }

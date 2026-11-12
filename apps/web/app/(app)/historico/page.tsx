@@ -4,6 +4,7 @@ import {
   agruparPorSemana,
   agruparPorSemanaGenerico,
   calcularPeriodo,
+  ganhosPorDia,
   categoriasDe,
   completarComEscala,
   csvDoPeriodo,
@@ -124,13 +125,22 @@ function Historico() {
     if (!estado?.perfil || !agora || !periodo || !regs) return null;
     const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: regs, feriadosLocais: estado.feriadosLocais, agora });
     const ateHoje = r.dias.filter((d) => d.data <= agora.data);
+    // quanto rendeu cada dia (bruto), como no app antigo
+    const fimValores = periodo.fim < agora.data ? periodo.fim : agora.data;
+    const valores =
+      fimValores >= periodo.inicio
+        ? new Map(
+            ganhosPorDia({ perfil: estado.perfil, periodo: { inicio: periodo.inicio, fim: fimValores }, registros: regs, lancamentos: lancs ?? [], itens: estado.itens, feriadosLocais: estado.feriadosLocais, agora }).map((g) => [g.data, g.total]),
+          )
+        : new Map<string, number>();
     return {
       r,
+      valores,
       semanas: agruparPorSemana(filtrarDias([...ateHoje].reverse(), { filtro, busca, obraId, registros: regs, obras: estado.obras })),
       pendencias: pendenciasDoPeriodo(r.dias, agora.data),
       completar: completarComEscala(estado.perfil, r.dias, agora.data),
     };
-  }, [estado, agora, periodo?.inicio, regs, filtro, busca, obraId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [estado, agora, periodo?.inicio, regs, lancs, filtro, busca, obraId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const listaPeriodos = useMemo(() => {
     if (!longo || !estado?.perfil || !agora || !periodo) return null;
@@ -146,7 +156,7 @@ function Historico() {
   if (!estado?.perfil || !agora || !periodo || !calc || !regs || !lancs) return <Carregando />;
   const { perfil, itens, obras, obrasAtivas } = estado;
   const plano = situacaoAtual(estado);
-  const { r, semanas, pendencias, completar } = calc;
+  const { r, semanas, pendencias, completar, valores } = calc;
   const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
   const porData = new Map(regs.map((x) => [x.data, x]));
   const nomeObra = new Map(obras.map((o) => [o.id, o.nome]));
@@ -324,6 +334,10 @@ function Historico() {
                 <TituloSecao
                   acao={
                     <span className="numeros text-13 font-bold text-texto-2">
+                      {(() => {
+                        const v = s.itens.reduce((t, d) => t + (valores.get(d.data) ?? 0), 0);
+                        return v > 0 ? `${formatarReais(v)} · ` : "";
+                      })()}
                       {formatarDuracao(s.trabalhadoMin)}
                       {s.saldoMin !== 0 && (
                         <span className={s.saldoMin > 0 ? "text-extra-texto" : "text-erro-texto"}> · {formatarDuracao(s.saldoMin, { sinal: true })}</span>
@@ -351,6 +365,7 @@ function Historico() {
                           folgaDaEscala={!d.registrado && !d.escala.trabalha}
                           nota={reg?.observacao}
                           obra={reg?.obraId ? nomeObra.get(reg.obraId) : undefined}
+                          valor={valores.get(d.data)}
                           onClick={() => definir({ editar: d.data })}
                         />
                       </li>

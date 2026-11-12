@@ -4,9 +4,9 @@ import { dataCurta } from "@ponto-pro/core";
 import { BotaoPrincipal, BottomSheet, Caixa, useToast } from "@ponto-pro/ui";
 import { ClipboardPaste, FileUp, Import } from "lucide-react";
 import { useRef, useState } from "react";
-import { lancarProducao, salvarItem, salvarPessoal, salvarVariosRegistros } from "../../../lib/acoes";
+import { lancarProducao, salvarItem, salvarPerfil, salvarPessoal, salvarVariosRegistros } from "../../../lib/acoes";
 import type { Estado } from "../../../lib/estado";
-import { converterPontoAntigo, type ImportacaoAntiga } from "../../../lib/importar-antigo";
+import { aplicarRegrasAntigas, converterPontoAntigo, type ImportacaoAntiga } from "../../../lib/importar-antigo";
 
 const pl = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
 
@@ -19,6 +19,7 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
   const { mostrar } = useToast();
   const [texto, setTexto] = useState("");
   const [exemplos, setExemplos] = useState(false);
+  const [usarRegras, setUsarRegras] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [gravando, setGravando] = useState(false);
   const arquivo = useRef<HTMLInputElement>(null);
@@ -32,7 +33,22 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
       erroPrevia = e instanceof Error ? e.message : "Não deu para ler esse texto.";
     }
   }
-  const nada = previa && previa.registros.length === 0 && previa.lancamentos.length === 0;
+  let regras: ReturnType<typeof aplicarRegrasAntigas> | null = null;
+  if (previa?.regras && estado.perfil) {
+    try {
+      regras = aplicarRegrasAntigas(estado.perfil, previa.regras);
+    } catch (e) {
+      erroPrevia = e instanceof Error ? e.message : "Não deu para ler as regras do app antigo.";
+    }
+  }
+  const comRegras = !!regras && usarRegras && regras.mudancas.length > 0;
+  const semDados = !!previa && previa.registros.length === 0 && previa.lancamentos.length === 0;
+  const nada = semDados && !comRegras;
+  const rotulo = !previa || nada
+    ? "Trazer meus dados"
+    : semDados
+      ? "Usar as regras do app antigo"
+      : `Trazer ${pl(previa.registros.length, "dia", "dias")} e ${pl(previa.lancamentos.length, "lançamento", "lançamentos")}`;
 
   async function colar() {
     try {
@@ -47,13 +63,18 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
     if (!previa) return;
     setGravando(true);
     try {
+      if (comRegras && regras) await salvarPerfil(regras.perfil);
       for (const i of previa.itensNovos) await salvarItem(i);
       await salvarVariosRegistros(previa.registros);
       for (const l of previa.lancamentos) await lancarProducao(l);
       const p = estado.pessoal;
       const novo = { ...p, nome: p.nome || previa.pessoal.nome, empresa: p.empresa || previa.pessoal.empresa, cargo: p.cargo || previa.pessoal.cargo };
       if (novo.nome !== p.nome || novo.empresa !== p.empresa || novo.cargo !== p.cargo) await salvarPessoal(novo);
-      mostrar({ texto: `Pronto: ${pl(previa.registros.length, "dia", "dias")} e ${pl(previa.lancamentos.length, "lançamento", "lançamentos")} vieram do Ponto Pro antigo.` });
+      mostrar({
+        texto: semDados
+          ? "Pronto: o Pingou agora calcula com as regras do app antigo."
+          : `Pronto: ${pl(previa.registros.length, "dia", "dias")} e ${pl(previa.lancamentos.length, "lançamento", "lançamentos")} vieram do Ponto Pro antigo${comRegras ? ", com as regras dele" : ""}.`,
+      });
       setTexto("");
       onFechar();
     } catch {
@@ -71,7 +92,7 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
       subtitulo="Seus dias, sua produção e seu nome vêm junto. Nada aqui é apagado."
       rodape={
         <BotaoPrincipal tamanho="g" icone={Import} onClick={importar} carregando={gravando} disabled={!previa || !!nada}>
-          {previa && !nada ? `Trazer ${pl(previa.registros.length, "dia", "dias")} e ${pl(previa.lancamentos.length, "lançamento", "lançamentos")}` : "Trazer meus dados"}
+          {rotulo}
         </BotaoPrincipal>
       }
     >
@@ -116,7 +137,7 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
         {previa && (
           <section aria-label="O que vai entrar" className="flex flex-col gap-2 rounded-2xl bg-superficie-2 p-4 text-17">
             <p className="font-bold">
-              {nada ? "Não há nada novo para trazer." : `Vai entrar: ${pl(previa.registros.length, "dia de ponto", "dias de ponto")} e ${pl(previa.lancamentos.length, "lançamento de produção", "lançamentos de produção")}.`}
+              {semDados ? "Não há dias novos para trazer." : `Vai entrar: ${pl(previa.registros.length, "dia de ponto", "dias de ponto")} e ${pl(previa.lancamentos.length, "lançamento de produção", "lançamentos de produção")}.`}
             </p>
             {previa.resumo.primeiro && previa.resumo.ultimo && (
               <p className="numeros text-15 text-texto-2">De {dataCurta(previa.resumo.primeiro)} a {dataCurta(previa.resumo.ultimo)}.</p>
@@ -131,6 +152,20 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
                 <b>Trazer também os dias de exemplo.</b> O app antigo criava sozinho {previa.resumo.exemplos > 0 ? pl(previa.resumo.exemplos, "dia de exemplo", "dias de exemplo") : "alguns dias de exemplo"} em outubro e novembro. Marque só se você trabalhou exatamente nesses horários.
               </Caixa>
             )}
+          </section>
+        )}
+
+        {regras && regras.mudancas.length > 0 && (
+          <section aria-label="Regras de cálculo" className="flex flex-col gap-3 rounded-2xl border-2 border-primaria p-4">
+            <Caixa marcado={usarRegras} onChange={setUsarRegras}>
+              <b>Calcular igual ao app antigo.</b> Os valores e os dias trabalhados batem com o que você via lá. Muda isto nas suas regras:
+            </Caixa>
+            <ul className="flex list-disc flex-col gap-1 pl-5 text-15">
+              {regras.mudancas.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+            <p className="text-13 text-texto-2">Dá para mudar tudo depois em Conta e regras.</p>
           </section>
         )}
       </div>
