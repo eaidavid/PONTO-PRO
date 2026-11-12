@@ -49,6 +49,7 @@ import {
   Trash2,
   Upload,
   Wallet,
+  History,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,6 +57,7 @@ import { type ReactNode, useRef, useState } from "react";
 import { apagarTudo, exportarDados, novoId, salvarFeriadosLocais, salvarPerfil, salvarPessoal, salvarPreferencias } from "../../../lib/acoes";
 import type { DadosPessoais } from "../../../lib/db";
 import { useEstado } from "../../../lib/estado";
+import { ImportarAntigo } from "./importar-antigo";
 import {
   almocoAtual,
   centavosParaTexto,
@@ -101,6 +103,7 @@ export default function Conta() {
   const router = useRouter();
   const { mostrar } = useToast();
   const [painel, setPainel] = useState<Painel>(null);
+  const [importarAntigo, setImportarAntigo] = useState(false);
   const [novoFeriado, setNovoFeriado] = useState({ nome: "", dia: "", todoAno: true });
   const arquivo = useRef<HTMLInputElement>(null);
   const [rascunho, setRascunho] = useState<PerfilTrabalho | null>(null);
@@ -255,6 +258,7 @@ export default function Conta() {
             URL.revokeObjectURL(a.href);
           }}
         />
+        <LinhaAjuste icone={History} rotulo="Trazer do Ponto Pro antigo" valor="Dias e produção do app antigo" onClick={() => setImportarAntigo(true)} />
         <LinhaAjuste icone={Upload} rotulo="Restaurar um backup" valor="Volta os dados de um arquivo baixado antes" onClick={() => arquivo.current?.click()} />
         <LinhaAjuste icone={Trash2} rotulo="Apagar todos os meus dados" perigo onClick={() => setPainel("apagar")} />
         <input
@@ -308,6 +312,8 @@ export default function Conta() {
       </p>
 
       {/* ---------- painéis ---------- */}
+
+      <ImportarAntigo aberto={importarAntigo} onFechar={() => setImportarAntigo(false)} estado={estado} />
 
       <BottomSheet
         aberto={painel === "pagamento"}

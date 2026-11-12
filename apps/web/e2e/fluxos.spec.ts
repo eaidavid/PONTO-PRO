@@ -410,3 +410,36 @@ test("tabela de preços: muda vários preços de uma vez e mostra o total por á
   await tabela.getByRole("button", { name: "Salvar 2 preços" }).click();
   await expect(page.getByText("2 preços salvos")).toBeVisible();
 });
+
+test("trazer os dados do Ponto Pro antigo, sem os dias de exemplo", async ({ page }) => {
+  await fazerOnboarding(page);
+  const antigo = {
+    app: "Ponto Pro antigo",
+    versao: 2,
+    estado: {
+      cfg: { nome: "José", empresa: "Construtora Sol", cargo: "Pedreiro" },
+      days: {
+        "2026-10-20": { t: ["07:00", "12:00", "13:00", "17:00"], type: "normal" }, // exemplo do app antigo
+        "2026-11-06": { t: ["06:50", "12:00", "13:00", "17:10"], type: "normal" },
+        "2026-11-07": { t: ["07:00", "", "", "12:00"], type: "normal" },
+      },
+      prod: [{ d: "2026-11-06", id: "mur", q: 10, t: "fundos" }],
+      precos: { mur: 40 },
+      custom: [],
+      uni: {},
+    },
+  };
+  await page.goto("/conta");
+  await page.getByRole("button", { name: /Trazer do Ponto Pro antigo/ }).click();
+  const painel = page.getByRole("dialog", { name: "Trazer do Ponto Pro antigo" });
+  await painel.getByLabel("Dados copiados").fill(JSON.stringify(antigo));
+  await expect(painel.getByText("Vai entrar: 2 dias de ponto e 1 lançamento de produção.")).toBeVisible();
+  await expect(painel.getByText(/1 dia de exemplo/)).toBeVisible();
+  await painel.getByRole("button", { name: "Trazer 2 dias e 1 lançamento" }).click();
+  await expect(page.getByText("Pronto: 2 dias e 1 lançamento vieram do Ponto Pro antigo.")).toBeVisible();
+
+  await page.goto("/historico?p=2026-10-21");
+  await expect(page.getByRole("button", { name: /^sex 06/ })).toContainText("06:50");
+  await page.goto("/historico?aba=producao");
+  await expect(page.getByText("Muro de fechamento")).toBeVisible();
+});
