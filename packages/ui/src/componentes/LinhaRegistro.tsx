@@ -88,7 +88,7 @@ export function LinhaRegistro({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         {principal}
-        {apoio.length > 0 && <span className="numeros truncate text-15 text-texto-2">{apoio.join(" · ")}</span>}
+        {apoio.length > 0 && <span className="numeros line-clamp-2 text-15 text-texto-2">{apoio.join(" · ")}</span>}
       </span>
       {(() => {
         const etiqueta =

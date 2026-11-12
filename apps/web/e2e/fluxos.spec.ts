@@ -540,3 +540,26 @@ test("resumo do dia: o que fez, quanto deu, alterações e atalhos para ajustar"
   await expect(page).toHaveURL(/producao\?dia=2026-11-05/);
   await expect(page.getByRole("button", { name: /05\/11/ })).toBeVisible();
 });
+
+test("histórico com resumo do período, produção editável e conta organizada", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/historico");
+  const resumo = page.getByRole("region", { name: "Resumo do período" });
+  await expect(resumo).toContainText("Ganho até hoje");
+  await expect(resumo).toContainText("trabalhadas");
+
+  await page.goto("/historico?aba=producao");
+  await expect(page.getByRole("region", { name: "Resumo da produção" })).toContainText("R$ 600,00");
+  await page.getByRole("button", { name: /^Editar Assentar meio-fio/ }).click();
+  await page.getByRole("dialog", { name: "Assentar meio-fio" }).getByRole("button", { name: "Apagar lançamento" }).click();
+  await expect(page.getByText("Lançamento apagado")).toBeVisible();
+  await page.getByRole("button", { name: "Desfazer" }).click();
+  await expect(page.getByRole("button", { name: /^Editar Assentar meio-fio/ })).toBeVisible();
+
+  await page.goto("/conta");
+  await page.getByRole("button", { name: /Tamanho, aparência e som/ }).click();
+  await page.getByRole("dialog", { name: "Tamanho, aparência e som" }).getByRole("radio", { name: /Grande/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-tamanho", "grande");
+  await expect(page.getByRole("link", { name: "Termos de uso" })).toBeAttached();
+});
