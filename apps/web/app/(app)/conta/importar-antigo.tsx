@@ -3,8 +3,10 @@
 import { dataCurta } from "@ponto-pro/core";
 import { BotaoPrincipal, BottomSheet, Caixa, useToast } from "@ponto-pro/ui";
 import { ClipboardPaste, FileUp, Import } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useRef, useState } from "react";
 import { lancarProducao, salvarItem, salvarPerfil, salvarPessoal, salvarVariosRegistros } from "../../../lib/acoes";
+import { db } from "../../../lib/db";
 import type { Estado } from "../../../lib/estado";
 import { aplicarRegrasAntigas, converterPontoAntigo, type ImportacaoAntiga } from "../../../lib/importar-antigo";
 
@@ -23,12 +25,17 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
   const [erro, setErro] = useState<string | null>(null);
   const [gravando, setGravando] = useState(false);
   const arquivo = useRef<HTMLInputElement>(null);
+  // o estado do app só carrega os últimos períodos: para não pisar em dia antigo, olha o banco inteiro
+  const existentes = useLiveQuery(async () => ({
+    datas: (await db.registros.toCollection().primaryKeys()) as string[],
+    ids: (await db.lancamentos.toCollection().primaryKeys()) as string[],
+  }));
 
   let previa: ImportacaoAntiga | null = null;
   let erroPrevia: string | null = null;
-  if (texto.trim()) {
+  if (texto.trim() && existentes) {
     try {
-      previa = converterPontoAntigo(texto, { itens: estado.itens, datasComRegistro: estado.registros.map((r) => r.data) }, { incluirExemplos: exemplos });
+      previa = converterPontoAntigo(texto, { itens: estado.itens, datasComRegistro: existentes.datas, idsLancamentos: existentes.ids }, { incluirExemplos: exemplos });
     } catch (e) {
       erroPrevia = e instanceof Error ? e.message : "Não deu para ler esse texto.";
     }
@@ -137,7 +144,7 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
         {previa && (
           <section aria-label="O que vai entrar" className="flex flex-col gap-2 rounded-2xl bg-superficie-2 p-4 text-17">
             <p className="font-bold">
-              {semDados ? "Não há dias novos para trazer." : `Vai entrar: ${pl(previa.registros.length, "dia de ponto", "dias de ponto")} e ${pl(previa.lancamentos.length, "lançamento de produção", "lançamentos de produção")}.`}
+              {semDados ? "Não há dias nem lançamentos novos para trazer." : `Vai entrar: ${pl(previa.registros.length, "dia de ponto", "dias de ponto")} e ${pl(previa.lancamentos.length, "lançamento de produção", "lançamentos de produção")}.`}
             </p>
             {previa.resumo.primeiro && previa.resumo.ultimo && (
               <p className="numeros text-15 text-texto-2">De {dataCurta(previa.resumo.primeiro)} a {dataCurta(previa.resumo.ultimo)}.</p>
@@ -145,6 +152,9 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
             {previa.itensNovos.length > 0 && <p className="text-15 text-texto-2">{pl(previa.itensNovos.length, "serviço novo entra", "serviços novos entram")} na sua lista.</p>}
             {previa.resumo.jaExistem > 0 && (
               <p className="text-15 text-texto-2">{pl(previa.resumo.jaExistem, "dia já está", "dias já estão")} no Pingou e {previa.resumo.jaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.jaExistem === 1 ? "está" : "estão"}.</p>
+            )}
+            {previa.resumo.lancamentosJaExistem > 0 && (
+              <p className="text-15 text-texto-2">{pl(previa.resumo.lancamentosJaExistem, "lançamento já está", "lançamentos já estão")} no Pingou e {previa.resumo.lancamentosJaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.lancamentosJaExistem === 1 ? "está" : "estão"}.</p>
             )}
             {previa.resumo.ignorados > 0 && <p className="text-15 text-texto-2">{pl(previa.resumo.ignorados, "linha com erro fica", "linhas com erro ficam")} de fora.</p>}
             {(previa.resumo.exemplos > 0 || exemplos) && (

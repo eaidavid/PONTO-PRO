@@ -98,6 +98,8 @@ export interface ImportacaoAntiga {
     /** Dias de exemplo do app antigo deixados de fora. */
     exemplos: number;
     lancamentos: number;
+    /** Lançamentos que já vieram numa importação anterior (ficam como estão). */
+    lancamentosJaExistem: number;
     /** Linhas que não deu para entender. */
     ignorados: number;
     primeiro: string | null;
@@ -108,7 +110,7 @@ export interface ImportacaoAntiga {
 /** Lê o texto colado (o "pacote" exportado pelo app antigo ou o estado puro) e converte. */
 export function converterPontoAntigo(
   texto: string,
-  atual: { itens: ItemProducao[]; datasComRegistro: Iterable<string> },
+  atual: { itens: ItemProducao[]; datasComRegistro: Iterable<string>; idsLancamentos?: Iterable<string> },
   opcoes: { incluirExemplos?: boolean } = {},
 ): ImportacaoAntiga {
   let bruto: unknown;
@@ -189,6 +191,8 @@ export function converterPontoAntigo(
 
   // ---------- produção ----------
   const lancamentos: LancamentoProducao[] = [];
+  const idsExistentes = new Set(atual.idsLancamentos ?? []);
+  let lancamentosJaExistem = 0;
   (estado.prod ?? []).forEach((p, n) => {
     const item = p && typeof p.id === "string" ? itemDe(p.id) : null;
     const qtd = typeof p?.q === "number" ? Math.round(p.q * 1000) / 1000 : NaN;
@@ -196,9 +200,14 @@ export function converterPontoAntigo(
       ignorados++;
       return;
     }
+    const id = `antigo-${p.d}-${n}`;
+    if (idsExistentes.has(id)) {
+      lancamentosJaExistem++;
+      return;
+    }
     const preco = Math.round(precoReais(p.id!, CATALOGO_ANTIGO[p.id!]?.[3] ?? 0) * 100);
     lancamentos.push({
-      id: `antigo-${p.d}-${n}`,
+      id,
       data: p.d,
       itemId: item.id,
       quantidade: qtd,
@@ -245,6 +254,7 @@ export function converterPontoAntigo(
       jaExistem,
       exemplos,
       lancamentos: lancamentos.length,
+      lancamentosJaExistem,
       ignorados,
       primeiro: datas[0] ?? null,
       ultimo: datas.at(-1) ?? null,

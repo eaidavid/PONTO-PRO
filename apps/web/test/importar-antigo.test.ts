@@ -40,7 +40,7 @@ describe("importar do Ponto Pro antigo", () => {
     expect(r.registros[4]!.tipo).toBe("normal");
     for (const x of r.registros) expect(DiaRegistro.safeParse(x).success).toBe(true);
 
-    expect(r.resumo).toEqual({ dias: 5, jaExistem: 0, exemplos: 2, lancamentos: 3, ignorados: 3, primeiro: "2026-10-21", ultimo: "2026-11-14" });
+    expect(r.resumo).toEqual({ dias: 5, jaExistem: 0, exemplos: 2, lancamentos: 3, lancamentosJaExistem: 0, ignorados: 3, primeiro: "2026-10-21", ultimo: "2026-11-14" });
     expect(r.pessoal).toEqual({ nome: "Ana", empresa: "Construtora Sol" });
   });
 
@@ -65,6 +65,10 @@ describe("importar do Ponto Pro antigo", () => {
     // mesmos ids nos lançamentos: importar de novo substitui em vez de duplicar
     const outra = converterPontoAntigo(JSON.stringify(estado), { itens: [], datasComRegistro: [] });
     expect(outra.lancamentos.map((l) => l.id)).toEqual(r.lancamentos.map((l) => l.id));
+    // e quem já importou vê que os lançamentos já estão lá
+    const de_novo = converterPontoAntigo(JSON.stringify(estado), { itens: [], datasComRegistro: [], idsLancamentos: r.lancamentos.map((l) => l.id) });
+    expect(de_novo.lancamentos).toEqual([]);
+    expect(de_novo.resumo.lancamentosJaExistem).toBe(3);
   });
 
   it("pode incluir os dias de exemplo, se a pessoa quiser", () => {
