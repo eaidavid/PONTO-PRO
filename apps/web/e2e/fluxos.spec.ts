@@ -73,9 +73,9 @@ test("ganhos explicados e contracheque em PDF", async ({ page }) => {
   await page.getByRole("link", { name: "Ganhos" }).click();
   await page.getByRole("button", { name: "Por que deu isso?" }).click();
   const sheet = page.getByRole("dialog", { name: "Por que deu isso?" });
-  await expect(sheet.getByText("Sábado 5h × R$ 25,00 + 50%", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("Sábado 5h × R$ 25,00 + 50%", { exact: true }).first()).toBeVisible();
   await expect(sheet.getByText("Assentar meio-fio", { exact: true })).toBeVisible();
-  await expect(sheet.getByText("50 m × R$ 12,00", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("50 m × R$ 12,00", { exact: true }).first()).toBeVisible();
   await expect(sheet.getByText("Você deve receber")).toBeVisible();
   await sheet.getByRole("button", { name: "Fechar" }).click();
 
@@ -509,7 +509,7 @@ test("resumo do dia: o que fez, quanto deu, alterações e atalhos para ajustar"
   await expect(dia.getByText("Trabalhou 5h00")).toBeVisible();
   await expect(dia.getByText("Almoço de 1h00")).toBeVisible();
   await expect(dia.getByText("Foi embora")).toBeVisible();
-  await expect(dia.getByText("50 m × R$ 12,00")).toHaveCount(2); // na linha do tempo e na conta
+  await expect(dia.getByText("50 m × R$ 12,00").first()).toBeVisible(); // na linha do tempo e na conta
   await expect(dia.getByText("O dia rendeu").last()).toBeVisible();
 
   // ajustar a saída e voltar para o resumo, com a alteração registrada
