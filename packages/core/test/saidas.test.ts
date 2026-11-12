@@ -193,3 +193,15 @@ describe("modelos por área", () => {
     expect(PerfilTrabalho.safeParse(p).success).toBe(false);
   });
 });
+
+describe("já ganhou não conta feriado que ainda não chegou", () => {
+  it("feriado depois de hoje fica de fora do realizado e entra no previsto", () => {
+    const perfil = perfilJose();
+    // 20/11/2026 (sexta) é Dia da Consciência Negra; hoje é 12/11
+    const r = calcularPrevisao({ perfil, periodo: PERIODO, hoje: "2026-11-12", registros: [] });
+    const abonoReal = r.realizado.dias.filter((d) => d.data > "2026-11-12").reduce((t, d) => t + d.abonoMin, 0);
+    expect(abonoReal).toBe(0);
+    expect(r.realizado.dias.find((d) => d.data === "2026-11-02")!.abonoMin).toBeGreaterThan(0); // Finados já passou
+    expect(r.previsto.dias.find((d) => d.data === "2026-11-20")!.abonoMin).toBeGreaterThan(0);
+  });
+});
