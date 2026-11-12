@@ -342,6 +342,7 @@ function Ganhos() {
   const [porQue, setPorQue] = useState(false);
   const [grupo, setGrupo] = useState<Grupo | null>(null);
   const [termo, setTermo] = useState<string | null>(null);
+  const [ccModo, setCcModo] = useState<"mes" | "hoje">("mes");
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
@@ -417,7 +418,33 @@ function Ganhos() {
           </Link>
         </div>
       )}
-      {aba === "contracheque" && <Contracheque r={previsto} estado={estado} onTermo={setTermo} />}
+      {aba === "contracheque" && (
+        <div className="flex flex-col gap-3">
+          <div role="radiogroup" aria-label="Qual contracheque" className="grid grid-cols-2 gap-1 rounded-full bg-superficie-2 p-1">
+            {([
+              ["mes", `Previsto até ${dataCurta(periodo.fim)}`],
+              ["hoje", "Só o que já fiz"],
+            ] as const).map(([id, rotulo]) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={ccModo === id}
+                onClick={() => setCcModo(id)}
+                className={cx("min-h-12 rounded-full px-3 text-15 font-bold", ccModo === id ? "bg-superficie text-texto shadow-min" : "text-texto-2")}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          <p className="px-1 text-15 text-texto-2">
+            {ccModo === "mes"
+              ? `Conta o que você já fez e os dias que faltam pela sua escala, até o fechamento em ${dataCurta(periodo.fim)}.`
+              : `Só os dias e a produção registrados até hoje (${dataCurta(agora.data)}), sem prever o resto do período.`}
+          </p>
+          <Contracheque r={ccModo === "mes" ? previsto : realizado} estado={estado} onTermo={setTermo} />
+        </div>
+      )}
       {aba === "periodos" &&
         (situacaoAtual(estado).pode("conferencia") ? (
           <Periodos estado={estado} agora={agora.data} />

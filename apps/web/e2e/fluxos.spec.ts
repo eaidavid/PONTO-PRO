@@ -563,3 +563,16 @@ test("histórico com resumo do período, produção editável e conta organizada
   await expect(page.locator("html")).toHaveAttribute("data-tamanho", "grande");
   await expect(page.getByRole("link", { name: "Termos de uso" })).toBeAttached();
 });
+
+test("contracheque: previsto até o fechamento ou só o que já foi feito", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/ganhos?aba=contracheque");
+  const escolha = page.getByRole("radiogroup", { name: "Qual contracheque" });
+  await expect(escolha.getByRole("radio", { name: "Previsto até 20/11" })).toHaveAttribute("aria-checked", "true");
+  const liquido = page.getByRole("article", { name: "Contracheque estimado" }).locator("dd").last();
+  const previsto = await liquido.innerText();
+  await escolha.getByRole("radio", { name: "Só o que já fiz" }).click();
+  await expect(page.getByText(/Só os dias e a produção registrados até hoje/)).toBeVisible();
+  await expect(liquido).not.toHaveText(previsto);
+});

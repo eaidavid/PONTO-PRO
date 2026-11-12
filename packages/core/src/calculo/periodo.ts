@@ -162,6 +162,11 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
   const dias: DiaResultado[] = datas.map((data) => {
     const agoraMin = e.agora && e.agora.data === data ? e.agora.minutos : undefined;
     const a = analisarDia(perfil, data, regs.get(data), feriados.get(data), { agoraMin });
+    // "Já ganhou": feriado ou atestado que ainda não chegou não conta como pago
+    if (e.proporcionalAte && data > e.proporcionalAte && a.abonoMin > 0) {
+      a.abonoMin = 0;
+      delete a.motivoAbono;
+    }
     return { ...a, extraMin: 0, compensadoMin: 0 };
   });
 
