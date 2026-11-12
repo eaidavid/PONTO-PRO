@@ -23,9 +23,9 @@ import type { ReactNode } from "react";
 import { DEPOIMENTOS } from "../lib/depoimentos";
 import { MARCA } from "../lib/marca";
 import { Animacoes } from "./_vendas/animacoes";
+import { BotaoCabecalho } from "./_vendas/botao-cabecalho";
 import { CalculadoraExtra } from "./_vendas/calculadora-extra";
 import { DemoPonto } from "./_vendas/demo-ponto";
-import { IrParaOApp } from "./_vendas/ir-para-o-app";
 
 const TITULO = `${MARCA.nome}: bateu o ponto, pingou.`;
 const DESCRICAO =
@@ -196,7 +196,6 @@ const LARGURA = "mx-auto w-full max-w-[1080px] px-5 sm:px-8";
 export default function Vendas() {
   return (
     <>
-      <IrParaOApp />
       <Animacoes />
 
       <header className="sticky top-0 z-20 bg-[color:var(--marca)] text-sobre-marca">
@@ -212,9 +211,7 @@ export default function Vendas() {
             <Link href="/entrar" className="hidden min-h-12 items-center rounded-full px-4 active:bg-white/10 sm:inline-flex">
               Entrar
             </Link>
-            <Link href="/comecar" className="inline-flex min-h-12 items-center rounded-full bg-white px-5 whitespace-nowrap text-[color:var(--marca)]">
-              Começar
-            </Link>
+            <BotaoCabecalho />
           </nav>
         </div>
       </header>
@@ -256,7 +253,7 @@ export default function Vendas() {
               Hora extra que ninguém anota é dinheiro que não pinga.
             </h2>
             <p data-revelar className="max-w-[40ch] text-20 text-texto-2">
-              Ficou 20 minutos a mais hoje? Parece pouco. Mexa nos números e veja quanto isso dá no fim do mês.
+              Meia hora a mais na semana parece pouco. Mexa nos números e veja quanto isso dá no fim do mês.
             </p>
           </div>
           <div data-revelar>

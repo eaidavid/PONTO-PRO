@@ -19,7 +19,7 @@ Severidade: **P0** impede vender · **P1** derruba conversão ou retenção · *
 | 3 | **Termos de uso e Política de privacidade (LGPD)**, com aceite no início | P0 | Obrigatório para cobrar e para publicar na Play Store. Já existe "baixar" e "apagar" dados; faltam os textos e o aceite |
 | 4 | **Marca registrada e domínio** (INPI classe 9, domínio .com.br ou .app) | P0 | "Pingou" ainda não está protegido |
 | 5 | **Regras de salário CLT completas**: tabela progressiva do INSS (hoje 9% fixo), IRRF, folga remunerada (DSR) sobre hora extra, vale-transporte de 6% | P0 para quem é CLT | O app se posiciona em salário e CLT. Sem isso, o "Conferir pagamento" aponta diferenças falsas e a confiança cai. Exige atualização anual das tabelas |
-| 6 | ~~**Página de vendas**~~ **Feito**: fica em `/`, com demonstração do ponto, preços e "Começar grátis". Quem já usa o app vai direto para Hoje | P1 | O endereço caía direto no app. Quem chegava por indicação ou anúncio não entendia o que era |
+| 6 | ~~**Página de vendas**~~ **Feito**: fica em `/`, com demonstração do ponto, preços e "Começar grátis". Quem já usa o app vê o botão "Abrir o app" | P1 | O endereço caía direto no app. Quem chegava por indicação ou anúncio não entendia o que era |
 | 7 | **Play Store** (PWA empacotado como app Android, TWA) | P1 | O público procura app na loja, não no navegador. Estar na loja passa confiança |
 | 8 | **Notificações**: "Bateu a saída?" e "Pingou! Seu salário cai hoje" | P1 | É o maior motivo para voltar ao app todo dia. No Android, o PWA já aceita notificação |
 | 9 | **Medição**: funil do onboarding, 1º ponto batido, uso no 7º e no 30º dia, mais monitor de erros | P1 | Sem números, não dá para saber o que vende nem o que trava |
