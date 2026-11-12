@@ -1,6 +1,6 @@
 import { DIAS_TESTE, formatarReais, type LinhaExtrato, PLANOS, type Plano } from "@ponto-pro/core";
 import { CartaoDinheiro, cx, ListaExtrato } from "@ponto-pro/ui";
-import { Calculator, Check, ChevronDown, type LucideIcon, Pointer, Sun, WifiOff } from "lucide-react";
+import { Calculator, Check, ChevronDown, type LucideIcon, Pointer, Sun, WifiOff, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -52,6 +52,20 @@ const PASSOS = [
   { titulo: "Diga como você trabalha", texto: "Sua área, sua escala e quanto ganha. Leva 1 minuto e não pede senha nem cartão." },
   { titulo: "Bata o ponto todo dia", texto: "Entrada, almoço, volta e saída, um toque cada. Esqueceu? Dá para corrigir depois." },
   { titulo: "Veja quanto vai pingar", texto: "O valor do mês sobe a cada dia trabalhado, com a data em que o dinheiro cai." },
+];
+
+const SEM_PINGOU = [
+  "Hora extra anotada de cabeça, ou num papel que some",
+  "Só descobre o valor quando o dinheiro cai",
+  "Recebeu a menos e não sabe dizer onde",
+  "No fim do mês, não lembra em que dia ficou até mais tarde",
+];
+
+const COM_PINGOU = [
+  "Cada entrada e saída registrada na hora, com um toque",
+  "O valor do mês na tela, todo dia",
+  "A conta aberta linha por linha, para comparar com o contracheque",
+  "O histórico de cada dia guardado para consultar",
 ];
 
 const PROFISSOES = [
@@ -237,6 +251,36 @@ export default function Vendas() {
           </div>
           <div data-revelar>
             <CalculadoraExtra />
+          </div>
+        </section>
+
+        <section aria-labelledby="t-compara" className={cx(LARGURA, "flex flex-col gap-8 pt-16 md:pt-24")}>
+          <h2 id="t-compara" data-titulo="secao" className={cx(TITULO_SECAO, "max-w-[18ch]")}>
+            O mês de quem anota e o mês de quem não anota.
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div data-lado="sem" className="flex flex-col gap-4 rounded-[28px] bg-superficie-2 p-6 md:p-8">
+              <h3 className="text-20 font-bold text-texto-2">Sem o Pingou</h3>
+              <ul className="flex flex-col gap-3 text-17 text-texto-2">
+                {SEM_PINGOU.map((t) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <X aria-hidden className="mt-0.5 size-5 shrink-0 text-erro-texto" strokeWidth={3} />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div data-lado="com" className="flex flex-col gap-4 rounded-[28px] bg-primaria-suave p-6 md:p-8">
+              <h3 className="display text-24">Com o Pingou</h3>
+              <ul className="flex flex-col gap-3 text-17 font-bold">
+                {COM_PINGOU.map((t) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-sucesso-texto" strokeWidth={3} />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
