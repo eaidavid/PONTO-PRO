@@ -197,18 +197,18 @@ export default function Vendas() {
 
       <main className="overflow-x-clip">
         <section data-heroi className="fundo-marca overflow-hidden">
-          <div className={cx(LARGURA, "grid items-center gap-8 pt-5 pb-12 md:grid-cols-[1.15fr_1fr] md:gap-8 md:pt-14 md:pb-20")}>
-            <div className="flex flex-col gap-4 md:gap-5">
-              <p className="display text-24 leading-none md:text-32">
+          <div className={cx(LARGURA, "grid items-center gap-7 pt-6 pb-10 md:grid-cols-[1.2fr_1fr] md:gap-10 md:pt-12 md:pb-16")}>
+            <div className="flex flex-col gap-3.5 md:gap-5">
+              <p className="display text-20 leading-none md:text-24">
                 <span aria-hidden data-assinatura>
                   Bateu o ponto, <span data-gota className="text-marca-destaque">pingou.</span>
                 </span>
                 <span className="sr-only">{MARCA.slogan}</span>
               </p>
-              <h1 data-titulo="heroi" className="display text-[clamp(2.5rem,10.6vw,3.9rem)] leading-[0.96]">
+              <h1 data-titulo="heroi" className="display text-[clamp(2rem,8.7vw,3.3rem)] leading-[1]">
                 Saiba quanto vai cair antes do dia do pagamento.
               </h1>
-              <p data-heroi-item className="max-w-[34ch] text-[clamp(1.12rem,4.4vw,1.4rem)] leading-snug text-sobre-marca-2">
+              <p data-heroi-item className="max-w-[38ch] text-17 leading-snug text-sobre-marca-2 md:text-20">
                 Bata o ponto no celular. O Pingou soma suas horas, extras e descontos e mostra o valor do mês, todo dia.
               </p>
               <div data-heroi-item className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
@@ -217,7 +217,7 @@ export default function Vendas() {
                   Ver os planos
                 </a>
               </div>
-              <p data-heroi-item className="text-17 text-sobre-marca-2">
+              <p data-heroi-item className="text-15 text-sobre-marca-2">
                 Leva 1 minuto. Não pede cartão nem senha.{" "}
                 <Link href="/entrar" className="font-bold whitespace-nowrap text-sobre-marca underline decoration-white/50 underline-offset-4 sm:hidden">
                   Já tenho conta
@@ -233,7 +233,7 @@ export default function Vendas() {
               </ul>
             </div>
             <div data-heroi-demo>
-              <div data-heroi-paralaxe>
+              <div data-heroi-paralaxe className="[zoom:0.84] md:[zoom:0.92]">
                 <DemoPonto />
               </div>
             </div>
