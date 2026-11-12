@@ -41,34 +41,47 @@ function NumeroAnimado({ centavos, className }: { centavos: number; className?: 
   );
 }
 
+function minutosPorExtenso(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
 /**
- * A prova que o visitante confere sozinho: quanto valem as horas extras dele.
- * É conta simples e declarada (hora × 1,5 × horas por semana × 4 semanas), não promessa de ganho.
+ * A prova que o visitante confere sozinho: quanto valem os minutos a mais de cada dia.
+ * Em minutos por dia (e não horas por semana) porque é assim que a hora extra costuma acontecer:
+ * um pouco depois do horário, quase todo dia.
+ * É conta simples e declarada (hora × 1,5 × minutos × dias × 4 semanas), não promessa de ganho.
  */
 export function CalculadoraExtra() {
   const [hora, setHora] = useState(2500);
-  const [extras, setExtras] = useState(2);
+  const [minutos, setMinutos] = useState(20);
+  const [dias, setDias] = useState(5);
   const idHora = useId();
-  const idExtras = useId();
+  const idMinutos = useId();
 
   const umaExtra = Math.round(hora * ADICIONAL);
-  const porMes = umaExtra * extras * SEMANAS_NO_MES;
+  const porMes = Math.round((umaExtra * minutos * dias * SEMANAS_NO_MES) / 60);
   const porAno = porMes * 12;
   const plano = PLANOS.individual.preco;
+  /** Minutos de hora extra que pagam a mensalidade. */
+  const paga = Math.ceil((plano / umaExtra) * 60);
 
   const faixa = "h-12 w-full cursor-pointer accent-[color:var(--extra)]";
+  const valor = "numeros text-20 whitespace-nowrap";
 
   return (
     <div className="flex flex-col gap-6 rounded-[28px] bg-superficie-2 p-5 sm:p-7">
       <div className="flex flex-col gap-1">
         <label htmlFor={idHora} className="flex items-baseline justify-between gap-3 text-17 font-bold">
           Seu ganho por hora
-          <span className="numeros text-20 whitespace-nowrap">{formatarReais(hora)}</span>
+          <span className={valor}>{formatarReais(hora)}</span>
         </label>
         <input
           id={idHora}
           type="range"
-          min={800}
+          min={700}
           max={8000}
           step={50}
           value={hora}
@@ -80,34 +93,55 @@ export function CalculadoraExtra() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor={idExtras} className="flex items-baseline justify-between gap-3 text-17 font-bold">
-          Horas extras por semana
-          <span className="numeros text-20 whitespace-nowrap">{extras}h</span>
+        <label htmlFor={idMinutos} className="flex items-baseline justify-between gap-3 text-17 font-bold">
+          Tempo a mais por dia
+          <span className={valor}>{minutosPorExtenso(minutos)}</span>
         </label>
         <input
-          id={idExtras}
+          id={idMinutos}
           type="range"
-          min={1}
-          max={15}
-          step={1}
-          value={extras}
-          onChange={(e) => setExtras(Number(e.target.value))}
-          aria-valuetext={`${extras} horas`}
+          min={5}
+          max={180}
+          step={5}
+          value={minutos}
+          onChange={(e) => setMinutos(Number(e.target.value))}
+          aria-valuetext={minutosPorExtenso(minutos)}
           className={faixa}
         />
       </div>
 
+      <div role="group" aria-label="Dias de trabalho por semana" className="flex items-center justify-between gap-3">
+        <span className="text-17 font-bold">Dias por semana</span>
+        <span className="flex gap-2">
+          {[5, 6].map((d) => (
+            <button
+              key={d}
+              type="button"
+              aria-pressed={dias === d}
+              onClick={() => setDias(d)}
+              className={
+                dias === d
+                  ? "numeros min-h-12 min-w-14 rounded-full bg-texto px-4 text-17 font-bold text-fundo"
+                  : "numeros borda min-h-12 min-w-14 rounded-full border-borda-forte! bg-superficie px-4 text-17 font-bold"
+              }
+            >
+              {d}
+            </button>
+          ))}
+        </span>
+      </div>
+
       <div className="flex flex-col gap-4 border-t border-borda-forte pt-5">
         <p className="flex flex-col">
-          <span className="text-17 font-bold">Suas horas extras valem, por mês</span>
+          <span className="text-17 font-bold">Esse tempo a mais vale, por mês</span>
           <NumeroAnimado centavos={porMes} className="display text-[clamp(2.6rem,12vw,4rem)] leading-none text-extra-texto" />
         </p>
         <p className="numeros text-20">
           Em um ano são <b><NumeroAnimado centavos={porAno} /></b>.
         </p>
         <p className="numeros rounded-2xl bg-superficie px-4 py-3 text-17">
-          Uma hora extra sua vale <b><NumeroAnimado centavos={umaExtra} /></b>. O Pingou Individual custa{" "}
-          <b>{formatarReais(plano)}</b> por mês.
+          O Pingou Individual custa <b>{formatarReais(plano)}</b> por mês. Na sua conta, ele se paga com{" "}
+          <b>{minutosPorExtenso(paga)}</b> de hora extra.
         </p>
         <p className="text-15 text-texto-2">
           Conta com o adicional mínimo de 50% e {SEMANAS_NO_MES} semanas por mês. É uma estimativa: o seu acordo pode pagar mais.

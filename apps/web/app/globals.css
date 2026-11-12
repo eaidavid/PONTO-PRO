@@ -4,11 +4,11 @@
 @source "../../../packages/ui/src";
 
 /*
- * Página de vendas: o título principal espera a animação das letras para aparecer.
- * Se o JavaScript não rodar, ele aparece sozinho depois de 2s (nunca fica escondido).
+ * Página de vendas: a abertura espera a animação de entrada para aparecer.
+ * Se o JavaScript não rodar, ela aparece sozinha depois de 2s (nunca fica escondida).
  */
 @keyframes titulo-espera {
   from { visibility: hidden; }
   to { visibility: visible; }
 }
-[data-titulo="heroi"]:not([data-pronto]) { animation: titulo-espera 2s step-end both; }
+[data-heroi]:not([data-pronto]) :is([data-titulo="heroi"], [data-heroi-item], [data-heroi-demo]) { animation: titulo-espera 2s step-end both; }

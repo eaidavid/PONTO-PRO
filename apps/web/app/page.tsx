@@ -15,6 +15,7 @@ import {
   Sun,
   Truck,
   WifiOff,
+  X,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -71,11 +72,29 @@ const PASSOS = [
   { titulo: "Veja quanto vai pingar", texto: "O valor do mês sobe a cada dia trabalhado, com a data em que o dinheiro cai." },
 ];
 
-const O_QUE_GANHA = [
-  { titulo: "Sabe o valor antes do dia do pagamento", texto: "Sem susto no dia 5. O número do mês está na tela todo dia." },
-  { titulo: "Tem cada dia anotado para conferir", texto: "Entrada, saída, extra e falta ficam guardados, dia por dia, para comparar com o contracheque." },
-  { titulo: "Vê o que falta para ganhar mais", texto: "Diga quanto quer receber e o Pingou mostra quantas horas extras, sábados ou serviços faltam." },
+const SEM_PINGOU = [
+  "Hora extra anotada de cabeça, ou num papel que some",
+  "Só descobre o valor quando o dinheiro cai",
+  "Recebeu a menos e não sabe dizer onde",
+  "No fim do mês, não lembra em que dia ficou até mais tarde",
 ];
+
+const COM_PINGOU = [
+  "Cada entrada e saída registrada na hora, com um toque",
+  "O valor do mês na tela, todo dia",
+  "A conta aberta linha por linha, para comparar com o contracheque",
+  "O histórico de cada dia guardado para consultar",
+];
+
+const PROFISSOES = [
+  ["Pedreiro", "Servente", "Eletricista", "Pintor", "Caixa", "Vendedora", "Repositor", "Enfermeira", "Cuidadora"],
+  ["Motorista", "Motoboy", "Entregador", "Diarista", "Porteiro", "Vigilante", "Garçom", "Cozinheira", "Autônomo"],
+];
+
+const PRECO = PLANOS.individual.preco;
+const PRECO_ANO = PRECO * 12;
+/** Centavos por dia, arredondado para cima: "menos de 50 centavos". */
+const CENTAVOS_DIA = Math.ceil(PRECO / 30);
 
 const SEM_RISCO = [
   `${DIAS_TESTE} dias com tudo liberado`,
@@ -163,11 +182,11 @@ function BotaoComecar({ children = "Começar grátis", sobreMarca, className }: 
 function Recurso({ titulo, children, visual, invertido }: { titulo: string; children: ReactNode; visual: ReactNode; invertido?: boolean }) {
   return (
     <div className="grid items-center gap-6 md:grid-cols-2 md:gap-14">
-      <div className={cx("flex flex-col gap-3", invertido && "md:order-2")}>
+      <div data-revelar className={cx("flex flex-col gap-3", invertido && "md:order-2")}>
         <h3 className="display text-24 md:text-32">{titulo}</h3>
         <div className="flex flex-col gap-3 text-20 text-texto-2">{children}</div>
       </div>
-      <div className="mx-auto w-full max-w-[420px]">{visual}</div>
+      <div data-revelar data-barra className="mx-auto w-full max-w-[420px]">{visual}</div>
     </div>
   );
 }
@@ -200,53 +219,79 @@ export default function Vendas() {
         </div>
       </header>
 
-      <main>
-        <section className="fundo-marca overflow-hidden">
+      <main className="overflow-x-clip">
+        <section data-heroi className="fundo-marca overflow-hidden">
           <div className={cx(LARGURA, "grid items-center gap-8 pt-6 pb-12 md:grid-cols-[1.1fr_1fr] md:gap-8 md:pt-14 md:pb-20")}>
             <div className="flex flex-col gap-5">
               <h1 data-titulo="heroi" className="display text-[clamp(3rem,13vw,5.6rem)] leading-[0.92]">
                 Bateu o ponto, <span data-gota className="text-marca-destaque">pingou.</span>
               </h1>
-              <p className="max-w-[30ch] text-[clamp(1.18rem,4.6vw,1.5rem)] leading-snug text-sobre-marca-2">
+              <p data-heroi-item className="max-w-[30ch] text-[clamp(1.18rem,4.6vw,1.5rem)] leading-snug text-sobre-marca-2">
                 Bata o ponto no celular e veja na hora quanto vai cair no seu pagamento, e quanto ainda falta.
               </p>
-              <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+              <div data-heroi-item className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
                 <BotaoComecar sobreMarca />
                 <a href="#planos" className="hidden min-h-12 items-center justify-center rounded-full px-4 text-17 font-bold underline decoration-white/50 underline-offset-4 active:bg-white/10 sm:inline-flex">
                   Ver os planos
                 </a>
               </div>
-              <p className="text-17 text-sobre-marca-2">
+              <p data-heroi-item className="text-17 text-sobre-marca-2">
                 {DIAS_TESTE} dias com tudo liberado. Não pede cartão nem senha.{" "}
                 <Link href="/entrar" className="font-bold whitespace-nowrap text-sobre-marca underline decoration-white/50 underline-offset-4 sm:hidden">
                   Já tenho conta
                 </Link>
               </p>
             </div>
-            <DemoPonto />
+            <div data-heroi-demo>
+              <div data-heroi-paralaxe>
+                <DemoPonto />
+              </div>
+            </div>
           </div>
         </section>
 
-        <section aria-labelledby="t-extra" className={cx(LARGURA, "flex flex-col gap-10 pt-16 md:pt-24")}>
-          <div className="grid items-start gap-8 md:grid-cols-2 md:gap-14">
-            <div className="flex flex-col gap-4 md:sticky md:top-24">
-              <h2 id="t-extra" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
-                Hora extra que ninguém anota é dinheiro que não pinga.
-              </h2>
-              <p className="max-w-[40ch] text-20 text-texto-2">
-                Mexa nos números e veja quanto valem as suas. Com o Pingou, cada minuto a mais fica registrado e entra na conta do mês.
-              </p>
-            </div>
+        <section aria-labelledby="t-extra" className={cx(LARGURA, "grid items-start gap-8 pt-16 md:grid-cols-2 md:gap-14 md:pt-24")}>
+          <div className="flex flex-col gap-4 md:sticky md:top-24">
+            <h2 id="t-extra" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+              Hora extra que ninguém anota é dinheiro que não pinga.
+            </h2>
+            <p data-revelar className="max-w-[40ch] text-20 text-texto-2">
+              Ficou 20 minutos a mais hoje? Parece pouco. Mexa nos números e veja quanto isso dá no fim do mês.
+            </p>
+          </div>
+          <div data-revelar>
             <CalculadoraExtra />
           </div>
-          <ul className="grid gap-x-10 md:grid-cols-3">
-            {O_QUE_GANHA.map((g) => (
-              <li key={g.titulo} className="flex flex-col gap-1 border-t border-borda-forte py-5">
-                <h3 className="text-20 font-bold">{g.titulo}</h3>
-                <p className="text-17 text-texto-2">{g.texto}</p>
-              </li>
-            ))}
-          </ul>
+        </section>
+
+        <section aria-labelledby="t-compara" className={cx(LARGURA, "flex flex-col gap-8 pt-16 md:pt-24")}>
+          <h2 id="t-compara" data-titulo="secao" className="display max-w-[18ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+            O mês de quem anota e o mês de quem não anota.
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div data-lado="sem" className="flex flex-col gap-4 rounded-[28px] bg-superficie-2 p-6 md:p-8">
+              <h3 className="text-20 font-bold text-texto-2">Sem o Pingou</h3>
+              <ul className="flex flex-col gap-3 text-17 text-texto-2">
+                {SEM_PINGOU.map((t) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <X aria-hidden className="mt-0.5 size-5 shrink-0 text-erro-texto" strokeWidth={3} />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div data-lado="com" className="flex flex-col gap-4 rounded-[28px] bg-primaria-suave p-6 md:p-8">
+              <h3 className="display text-24">Com o Pingou</h3>
+              <ul className="flex flex-col gap-3 text-17 font-bold">
+                {COM_PINGOU.map((t) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-sucesso-texto" strokeWidth={3} />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </section>
 
         <section aria-labelledby="t-recursos" className={cx(LARGURA, "flex flex-col gap-14 py-16 md:gap-24 md:py-24")}>
@@ -304,20 +349,20 @@ export default function Vendas() {
           </Recurso>
         </section>
 
-        <section aria-labelledby="t-dia" className="bg-superficie-2">
+        <section aria-labelledby="t-dia" className="fundo-marca">
           <div className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
             <h2 id="t-dia" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Feito para o trabalho de verdade.
             </h2>
-            <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            <ul data-revelar-grupo className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
               {DIA_A_DIA.map(({ icone: Icone, titulo, texto }) => (
                 <li key={titulo} className="flex gap-4">
-                  <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primaria text-sobre-primaria">
-                    <Icone className="size-6" strokeWidth={2.25} />
+                  <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-white/14 text-marca-destaque">
+                    <Icone className="size-7" strokeWidth={2.25} />
                   </span>
                   <div className="flex flex-col gap-1">
                     <h3 className="text-20 font-bold">{titulo}</h3>
-                    <p className="text-17 text-texto-2">{texto}</p>
+                    <p className="text-17 text-sobre-marca-2">{texto}</p>
                   </div>
                 </li>
               ))}
@@ -325,24 +370,38 @@ export default function Vendas() {
           </div>
         </section>
 
-        <section aria-labelledby="t-quem" className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
-          <h2 id="t-quem" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
-            Serve para o seu jeito de trabalhar.
-          </h2>
-          <ul className="grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
-            {PARA_QUEM.map(({ icone: Icone, titulo, texto }) => (
-              <li key={titulo} className="flex items-center gap-4 border-t border-borda py-4">
-                <Icone aria-hidden className="size-7 shrink-0 text-primaria" strokeWidth={2} />
-                <div>
-                  <h3 className="text-17 font-bold">{titulo}</h3>
-                  <p className="text-15 text-texto-2">{texto}</p>
-                </div>
-              </li>
+        <section aria-labelledby="t-quem" className="flex flex-col gap-10 py-16 md:py-24">
+          <div className={LARGURA}>
+            <h2 id="t-quem" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+              Serve para o seu jeito de trabalhar.
+            </h2>
+          </div>
+          <div aria-hidden className="flex flex-col gap-2 overflow-hidden">
+            {PROFISSOES.map((linha, n) => (
+              <div key={n} data-faixa={n ? "direita" : "esquerda"} className="display flex w-max gap-x-8 text-[clamp(2.2rem,8vw,4rem)] leading-tight whitespace-nowrap">
+                {[...linha, ...linha].map((nome, k) => (
+                  <span key={k} className={((k % linha.length) + n) % 2 ? "text-primaria" : "text-texto"}>{nome}</span>
+                ))}
+                <span />
+              </div>
             ))}
-          </ul>
-          <p className="max-w-[52ch] text-20 text-texto-2">
-            Por hora, por mês, por diária, por produção ou tudo junto. Você escolhe um modelo pronto e ajusta o que for diferente no seu serviço.
-          </p>
+          </div>
+          <div className={cx(LARGURA, "flex flex-col gap-8")}>
+            <ul data-revelar-grupo className="grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
+              {PARA_QUEM.map(({ icone: Icone, titulo, texto }) => (
+                <li key={titulo} className="flex items-center gap-4 border-t border-borda py-4">
+                  <Icone aria-hidden className="size-7 shrink-0 text-primaria" strokeWidth={2} />
+                  <div>
+                    <h3 className="text-17 font-bold">{titulo}</h3>
+                    <p className="text-15 text-texto-2">{texto}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p data-revelar className="max-w-[52ch] text-20 text-texto-2">
+              Por hora, por mês, por diária, por produção ou tudo junto. Você escolhe um modelo pronto e ajusta o que for diferente no seu serviço.
+            </p>
+          </div>
         </section>
 
         <section aria-labelledby="t-passos" className="bg-superficie-2">
@@ -350,10 +409,10 @@ export default function Vendas() {
             <h2 id="t-passos" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Começa em 1 minuto.
             </h2>
-            <ol className="grid gap-8 md:grid-cols-3 md:gap-10">
+            <ol data-revelar-grupo className="grid gap-8 md:grid-cols-3 md:gap-10">
               {PASSOS.map((p, i) => (
                 <li key={p.titulo} className="flex gap-4 md:flex-col">
-                  <span aria-hidden className="display text-56 leading-none text-primaria">{i + 1}</span>
+                  <span aria-hidden className="display text-[5.5rem] leading-[0.8] text-primaria">{i + 1}</span>
                   <div className="flex flex-col gap-1">
                     <h3 className="text-20 font-bold">{p.titulo}</h3>
                     <p className="text-17 text-texto-2">{p.texto}</p>
@@ -370,7 +429,7 @@ export default function Vendas() {
             <h2 id="t-depoimentos" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Quem já usa conta como é.
             </h2>
-            <ul className="grid gap-x-10 gap-y-8 md:grid-cols-3">
+            <ul data-revelar-grupo className="grid gap-x-10 gap-y-8 md:grid-cols-3">
               {DEPOIMENTOS.map((d) => (
                 <li key={d.nome + d.texto}>
                   <figure className="flex flex-col gap-3 border-t border-borda-forte pt-5">
@@ -386,6 +445,29 @@ export default function Vendas() {
           </section>
         )}
 
+        <section aria-labelledby="t-porque" className="bg-texto text-fundo">
+          <div className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
+            <h2 id="t-porque" data-titulo="secao" className="display max-w-[20ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+              Menos de {CENTAVOS_DIA} centavos por dia para nunca mais receber no escuro.
+            </h2>
+            <ul data-revelar-grupo className="grid gap-x-10 gap-y-8 md:grid-cols-3">
+              <li className="flex flex-col gap-2">
+                <span data-contar={PRECO} className="display numeros text-[clamp(2.6rem,10vw,3.6rem)] leading-none">{formatarReais(PRECO)}</span>
+                <p className="text-17 opacity-85">por mês no plano Individual. Dá menos de {CENTAVOS_DIA} centavos por dia.</p>
+              </li>
+              <li className="flex flex-col gap-2">
+                <span data-contar={PRECO_ANO} className="display numeros text-[clamp(2.6rem,10vw,3.6rem)] leading-none">{formatarReais(PRECO_ANO)}</span>
+                <p className="text-17 opacity-85">é o ano inteiro. Um único erro de pagamento desse tamanho, achado com a ajuda do Pingou, já paga os 12 meses.</p>
+              </li>
+              <li className="flex flex-col gap-2">
+                <span className="display numeros text-[clamp(2.6rem,10vw,3.6rem)] leading-none">{DIAS_TESTE} dias</span>
+                <p className="text-17 opacity-85">para testar tudo sem pagar e sem informar cartão. Não gostou? Continua no Grátis e não deve nada.</p>
+              </li>
+            </ul>
+            <BotaoComecar className="self-start">Testar {DIAS_TESTE} dias grátis</BotaoComecar>
+          </div>
+        </section>
+
         <section id="planos" aria-labelledby="t-planos" className={cx(LARGURA, "flex scroll-mt-16 flex-col gap-8 py-16 md:py-24")}>
           <div className="flex flex-col gap-3">
             <h2 id="t-planos" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
@@ -395,7 +477,7 @@ export default function Vendas() {
               Todo mundo começa com {DIAS_TESTE} dias do plano Individual liberado. Depois você decide: assina ou continua no Grátis.
             </p>
           </div>
-          <div className="grid items-start gap-4 md:grid-cols-3">
+          <div data-revelar-grupo className="grid items-start gap-4 md:grid-cols-3">
             {ORDEM_PLANOS.map((id) => {
               const p = PLANOS[id];
               const destaque = id === "individual";
@@ -435,7 +517,7 @@ export default function Vendas() {
               );
             })}
           </div>
-          <ul className="grid gap-x-8 gap-y-2 text-17 font-bold sm:grid-cols-2 lg:grid-cols-4">
+          <ul data-revelar-grupo className="grid gap-x-8 gap-y-2 text-17 font-bold sm:grid-cols-2 lg:grid-cols-4">
             {SEM_RISCO.map((r) => (
               <li key={r} className="flex items-start gap-2">
                 <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-sucesso-texto" strokeWidth={3} />
@@ -450,7 +532,7 @@ export default function Vendas() {
             <h2 id="t-duvidas" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Dúvidas de quem está chegando.
             </h2>
-            <div className="divide-y divide-borda-forte border-y border-borda-forte">
+            <div data-revelar-grupo className="divide-y divide-borda-forte border-y border-borda-forte">
               {DUVIDAS.map((d) => (
                 <details key={d.pergunta} className="group">
                   <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-3 text-20 font-bold [&::-webkit-details-marker]:hidden">
@@ -469,7 +551,7 @@ export default function Vendas() {
             <h2 id="t-final" data-titulo="secao" className="display max-w-[14ch] text-[clamp(2.4rem,10vw,4.4rem)] leading-[0.95]">
               Quanto vai pingar este mês?
             </h2>
-            <p className="max-w-[40ch] text-20 text-sobre-marca-2">Bata o primeiro ponto hoje e descubra antes do dia do pagamento.</p>
+            <p data-revelar className="max-w-[40ch] text-20 text-sobre-marca-2">Bata o primeiro ponto hoje e descubra antes do dia do pagamento.</p>
             <BotaoComecar sobreMarca />
           </div>
         </section>
