@@ -350,7 +350,7 @@ test("sem servidor configurado, conta e assinatura avisam e o app segue no celul
 
 test("página de vendas: demonstração do ponto, planos e botão que leva ao começo", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Bateu o ponto, pingou." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Saiba quanto vai cair antes do dia do pagamento." })).toBeVisible();
 
   // a demonstração bate as 4 etapas e o ganho do dia sobe
   const demo = page.getByRole("group", { name: "Demonstração do Pingou" });
@@ -370,6 +370,11 @@ test("página de vendas: demonstração do ponto, planos e botão que leva ao co
   await page.getByLabel("Horas extras por semana").fill("1");
   await expect(page.getByText("30 min", { exact: true })).toBeVisible();
   await expect(page.getByText("R$ 75,00").first()).toBeAttached();
+  await expect(page.getByRole("link", { name: "Anotar meus R$ 75,00" })).toBeVisible();
+
+  // o que tira o medo de começar aparece no corpo da página, não só nas dúvidas
+  await expect(page.getByRole("heading", { name: "É seu. O patrão não vê." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Caiu diferente? Ache onde" })).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Individual" })).toBeVisible();
   await page.getByText("O teste grátis cobra alguma coisa?").click();
@@ -384,7 +389,7 @@ test("página de vendas: quem já usa o app continua vendo a página e tem o bot
   await preparar(page);
   await fazerOnboarding(page);
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Bateu o ponto, pingou." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Saiba quanto vai cair antes do dia do pagamento." })).toBeVisible();
   await page.getByRole("link", { name: "Abrir o app" }).click();
   await expect(page).toHaveURL(/\/hoje$/);
 });

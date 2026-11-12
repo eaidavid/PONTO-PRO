@@ -9,7 +9,7 @@ import { useEffect } from "react";
 /**
  * Movimento da página de vendas (GSAP + SplitText + ScrollTrigger).
  * Tudo é ligado por atributos data-*, para a página continuar sendo HTML pronto do servidor:
- * - data-heroi / data-heroi-item / data-heroi-demo: entrada da abertura (as letras sobem e "pingou." cai como gota)
+ * - data-heroi / data-assinatura / data-heroi-item / data-heroi-demo: entrada da abertura ("pingou." cai como gota e o título sobe)
  * - data-titulo="secao": as palavras do título sobem ao entrar na tela
  * - data-revelar: o bloco sobe e aparece; data-revelar-grupo: os filhos (ou o seletor informado) em sequência
  * - data-lado: colunas que entram pelos lados; data-barra: barra de progresso que enche
@@ -31,18 +31,30 @@ export function Animacoes() {
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       if (heroi) {
         heroi.setAttribute("data-pronto", "");
-        const titulo = heroi.querySelector<HTMLElement>("[data-titulo='heroi']");
-        if (titulo) {
-          SplitText.create(titulo, {
+        // a assinatura "Bateu o ponto, pingou." entra letra por letra e o "pingou." cai como gota
+        const assinatura = heroi.querySelector<HTMLElement>("[data-assinatura]");
+        if (assinatura) {
+          SplitText.create(assinatura, {
             type: "words,chars",
+            aria: "none",
             autoSplit: true,
             onSplit(self) {
               const gota = self.chars.filter((c) => c.closest("[data-gota]"));
               const resto = self.chars.filter((c) => !c.closest("[data-gota]"));
               return gsap
                 .timeline()
-                .from(resto, { yPercent: 70, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.022 })
-                .from(gota, { yPercent: -160, opacity: 0, duration: 0.75, ease: "bounce.out", stagger: 0.045 }, "-=0.25");
+                .from(resto, { yPercent: 70, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.02 })
+                .from(gota, { yPercent: -160, opacity: 0, duration: 0.75, ease: "bounce.out", stagger: 0.045 }, "-=0.2");
+            },
+          });
+        }
+        const titulo = heroi.querySelector<HTMLElement>("[data-titulo='heroi']");
+        if (titulo) {
+          SplitText.create(titulo, {
+            type: "words",
+            autoSplit: true,
+            onSplit(self) {
+              return gsap.from(self.words, { yPercent: 60, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.05, delay: 0.2 });
             },
           });
         }

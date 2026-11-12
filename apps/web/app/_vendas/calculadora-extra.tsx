@@ -3,6 +3,7 @@
 import { formatarReais, PLANOS } from "@ponto-pro/core";
 import gsap from "gsap";
 import { useEffect, useId, useRef, useState } from "react";
+import { BotaoComecar } from "./link-medido";
 
 /** Adicional mínimo de hora extra em dia comum (Constituição, art. 7º, XVI). */
 const ADICIONAL = 1.5;
@@ -122,6 +123,7 @@ export function CalculadoraExtra() {
         <p className="numeros text-20">
           Em um ano são <b><NumeroAnimado centavos={porAno} /></b>.
         </p>
+        <BotaoComecar secao="calculadora" className="numeros w-full">Anotar meus {formatarReais(porMes)}</BotaoComecar>
         <p className="numeros rounded-2xl bg-superficie px-4 py-3 text-17">
           O Pingou Individual custa <b>{formatarReais(plano)}</b> por mês. Na sua conta, ele se paga com{" "}
           <b>{minutosPorExtenso(paga)}</b> de hora extra.

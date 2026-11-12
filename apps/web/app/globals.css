@@ -11,4 +11,4 @@
   from { visibility: hidden; }
   to { visibility: visible; }
 }
-[data-heroi]:not([data-pronto]) :is([data-titulo="heroi"], [data-heroi-item], [data-heroi-demo]) { animation: titulo-espera 2s step-end both; }
+[data-heroi]:not([data-pronto]) :is([data-assinatura], [data-titulo="heroi"], [data-heroi-item], [data-heroi-demo]) { animation: titulo-espera 2s step-end both; }

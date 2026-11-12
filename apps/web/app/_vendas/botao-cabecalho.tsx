@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEstado } from "../../lib/estado";
+import { medir } from "../../lib/medir";
 
 /**
  * Botão do cabeçalho da página de vendas.
@@ -13,6 +14,7 @@ export function BotaoCabecalho() {
   return (
     <Link
       href={jaUsa ? "/hoje" : "/comecar"}
+      onClick={() => medir("clique_comecar", { secao: "cabecalho" })}
       className="inline-flex min-h-12 items-center rounded-full bg-white px-5 whitespace-nowrap text-[color:var(--marca)]"
     >
       {jaUsa ? "Abrir o app" : "Começar"}
