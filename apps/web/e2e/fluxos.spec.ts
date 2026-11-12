@@ -35,11 +35,23 @@ test("lançar produção criando um serviço novo", async ({ page }) => {
   await page.getByRole("button", { name: "m²" }).click();
   await page.getByLabel("Preço por m²").fill("8,50");
   await page.getByLabel("Quantidade").fill("20");
+  await page.getByLabel(/Observação/).fill("banheiro social");
   await expect(page.getByText("20 m² × R$ 8,50 = R$ 170,00")).toBeVisible();
   await page.getByRole("button", { name: "Lançar produção" }).click();
   await expect(page.getByText("Serviço criado. 20 m² · R$ 170,00")).toBeVisible();
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("Rejunte de pastilha")).toBeVisible();
+  await expect(page.getByText("banheiro social")).toBeVisible();
+
+  // corrigir quantidade e observação depois
+  await page.getByRole("button", { name: /^Editar Rejunte de pastilha/ }).click();
+  const ed = page.getByRole("dialog", { name: "Rejunte de pastilha" });
+  await ed.getByLabel("Quantidade").fill("22");
+  await ed.getByLabel("Observação").fill("banheiro da suíte");
+  await expect(ed.getByText("22 m² × R$ 8,50 = R$ 187,00")).toBeVisible();
+  await ed.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("banheiro da suíte")).toBeVisible();
+  await expect(page.getByText("R$ 187,00").first()).toBeVisible();
 });
 
 test("editar um dia em Registros", async ({ page }) => {
@@ -47,7 +59,8 @@ test("editar um dia em Registros", async ({ page }) => {
   await semearHistorico(page);
   await page.getByRole("link", { name: "Histórico" }).click();
   await page.getByRole("button", { name: /^qui 05/ }).click();
-  const sheet = page.getByRole("dialog");
+  await page.getByRole("dialog", { name: /Quinta, 05 de novembro/ }).getByRole("button", { name: "Ajustar o dia" }).click();
+  const sheet = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
   await sheet.getByRole("button", { name: "Falta" }).click();
   await sheet.getByRole("button", { name: "Salvar dia" }).click();
   await expect(page.getByText("Dia 05/11 salvo")).toBeVisible();
@@ -60,8 +73,10 @@ test("ganhos explicados e contracheque em PDF", async ({ page }) => {
   await page.getByRole("link", { name: "Ganhos" }).click();
   await page.getByRole("button", { name: "Por que deu isso?" }).click();
   const sheet = page.getByRole("dialog", { name: "Por que deu isso?" });
-  await expect(sheet.getByText("Sábado 5h × R$ 25,00 + 50% =")).toBeVisible();
-  await expect(sheet.getByText("Assentar meio-fio 50 m × R$ 12,00 =")).toBeVisible();
+  await expect(sheet.getByText("Sábado 5h × R$ 25,00 + 50%", { exact: true }).first()).toBeVisible();
+  await expect(sheet.getByText("Assentar meio-fio", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("50 m × R$ 12,00", { exact: true }).first()).toBeVisible();
+  await expect(sheet.getByText("Você deve receber")).toBeVisible();
   await sheet.getByRole("button", { name: "Fechar" }).click();
 
   // resumo: copiar em texto
@@ -147,7 +162,8 @@ test("registros mostram se está tudo certo e restauração de backup", async ({
   await page.getByRole("link", { name: "Histórico" }).click();
   await expect(page.getByRole("status").filter({ hasText: "tudo certo" })).toBeVisible();
   await page.getByRole("button", { name: /^qui 05/ }).click();
-  const sheet = page.getByRole("dialog");
+  await page.getByRole("dialog", { name: /Quinta, 05 de novembro/ }).getByRole("button", { name: "Ajustar o dia" }).click();
+  const sheet = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
   await sheet.getByRole("button", { name: /^Saída/ }).click();
   await sheet.getByRole("button", { name: "Limpar este horário" }).click();
   await sheet.getByRole("button", { name: "Salvar dia" }).click();
@@ -442,6 +458,7 @@ test("trazer os dados do Ponto Pro antigo, sem os dias de exemplo", async ({ pag
   await expect(page.getByRole("button", { name: /^sex 06/ })).toContainText("06:50");
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("Muro de fechamento")).toBeVisible();
+  await expect(page.getByText("fundos")).toBeVisible(); // a observação do app antigo vem junto
 });
 
 test("trazer só as regras do app antigo depois de já ter importado, e ver quanto deu cada dia", async ({ page }) => {
@@ -478,4 +495,41 @@ test("trazer só as regras do app antigo depois de já ter importado, e ver quan
   // histórico mostra quanto deu o dia: 8h × 30 + 1h × 30 × 1,5 = 285,00
   await page.goto("/historico");
   await expect(page.getByRole("button", { name: /^sex 06/ })).toContainText("R$ 285,00");
+});
+
+test("resumo do dia: o que fez, quanto deu, alterações e atalhos para ajustar", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/historico");
+  await expect(page.getByRole("button", { name: /^qui 05/ })).toContainText("produção R$ 600");
+  await page.getByRole("button", { name: /^qui 05/ }).click();
+  const dia = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
+  await expect(dia.getByRole("region", { name: "Quanto o dia rendeu" })).toContainText("R$ 825,00");
+  await expect(dia.getByText("Começou a trabalhar")).toBeVisible();
+  await expect(dia.getByText("Trabalhou 5h00")).toBeVisible();
+  await expect(dia.getByText("Almoço de 1h00")).toBeVisible();
+  await expect(dia.getByText("Foi embora")).toBeVisible();
+  await expect(dia.getByText("50 m × R$ 12,00").first()).toBeVisible(); // na linha do tempo e na conta
+  await expect(dia.getByText("O dia rendeu").last()).toBeVisible();
+
+  // ajustar a saída e voltar para o resumo, com a alteração registrada
+  await dia.getByRole("button", { name: "Ajustar o dia" }).click();
+  const editor = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
+  await editor.getByRole("button", { name: /^Saída/ }).click();
+  await editor.getByRole("button", { name: "5 min" }).first().click();
+  await editor.getByRole("button", { name: "Salvar dia" }).click();
+  await expect(page).toHaveURL(/dia=2026-11-05/);
+  await dia.getByText(/Alterações \(\d+\)/).click();
+  await expect(dia.getByText("Saída: 17:00 → 16:55")).toBeVisible();
+
+  // apagar a produção pelo resumo, com desfazer
+  await dia.getByRole("button", { name: "Apagar Assentar meio-fio" }).click();
+  await expect(dia.getByText("Lançamento apagado")).toBeVisible();
+  await dia.getByRole("button", { name: "Desfazer" }).click();
+  await expect(dia.getByRole("button", { name: "Apagar Assentar meio-fio" })).toBeVisible();
+
+  // lançar produção nesse dia
+  await dia.getByRole("link", { name: "Produção" }).click();
+  await expect(page).toHaveURL(/producao\?dia=2026-11-05/);
+  await expect(page.getByRole("button", { name: /05\/11/ })).toBeVisible();
 });

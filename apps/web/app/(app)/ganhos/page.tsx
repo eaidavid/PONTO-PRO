@@ -37,7 +37,7 @@ import {
   CartaoDinheiro,
   cx,
   GraficoDias,
-  ListaExtrato,
+  ExplicacaoConta,
   TituloSecao,
   ValorDinheiro,
 } from "@ponto-pro/ui";
@@ -407,7 +407,7 @@ function Ganhos() {
         ))}
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo={`Previsão até ${periodo.fim.slice(8, 10)}/${periodo.fim.slice(5, 7)}`}>
-        <ListaExtrato linhas={previsao.extrato} />
+        <ExplicacaoConta r={previsto} contexto={`Conta até o fechamento (${dataCurta(periodo.fim)}): o que você já fez mais os dias que faltam pela sua escala.`} />
       </BottomSheet>
       <BottomSheet aberto={!!grupo} onFechar={() => setGrupo(null)} titulo={grupo?.rotulo ?? ""} subtitulo="Conta de cada linha">
         {grupo && (

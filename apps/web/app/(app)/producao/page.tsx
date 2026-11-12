@@ -2,6 +2,7 @@
 
 import {
   categoriasDe,
+  dataCurta,
   formatarQuantidade,
   formatarReais,
   type ItemProducao,
@@ -28,7 +29,8 @@ import {
 } from "@ponto-pro/ui";
 import { ChevronDown, ChevronLeft, HardHat, Pencil, Save, Search, Tags, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
 import { situacaoAtual } from "../../../lib/plano";
@@ -38,12 +40,16 @@ const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]
 const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2";
 
 /** Tela de lançar produção: favoritos primeiro, categorias, obra e dia. */
-export default function LancarProducao() {
+function LancarProducao() {
   const estado = useEstado();
   const agora = useAgora();
   const { mostrar } = useToast();
   const [chave, setChave] = useState(0);
+  const params = useSearchParams();
+  const diaUrl = params.get("dia");
   const [quando, setQuando] = useState<0 | -1 | -2>(0);
+  /** Dia escolhido fora de hoje/ontem/anteontem (vem do resumo de um dia no Histórico). */
+  const [diaFixo, setDiaFixo] = useState<string | null>(diaUrl && /^\d{4}-\d{2}-\d{2}$/.test(diaUrl) ? diaUrl : null);
   const [area, setArea] = useState<string | null>(null);
   const [precos, setPrecos] = useState(false);
   const [escolherObra, setEscolherObra] = useState(false);
@@ -70,7 +76,7 @@ export default function LancarProducao() {
   const { itens, lancamentos, obrasAtivas, preferencias } = estado;
   const { total, ordenados, porArea } = calc;
   const porId = new Map(itens.map((i) => [i.id, i]));
-  const data = somarDias(agora.data, quando);
+  const data = diaFixo && diaFixo <= agora.data ? diaFixo : somarDias(agora.data, quando);
   const obraAtual = obrasAtivas.find((o) => o.id === preferencias.obraAtual)?.id;
   const visiveis = area ? ordenados.filter((i) => i.area === area) : ordenados;
 
@@ -78,11 +84,11 @@ export default function LancarProducao() {
   const noPeriodo = lancamentos.filter((l) => l.data >= periodoAtual.inicio && l.data <= periodoAtual.fim).length;
   const noLimite = !situacaoAtual(estado).pode("producao-ilimitada") && noPeriodo >= LIMITE_PRODUCAO_GRATIS;
 
-  async function lancar({ item, novo, quantidade }: { item: ItemProducao; novo: boolean; quantidade: number }) {
+  async function lancar({ item, novo, quantidade, descricao }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string }) {
     if (noLimite) return;
     if (novo) await salvarItem(item);
     const id = novoId("l");
-    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(obraAtual ? { obraId: obraAtual } : {}) });
+    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(descricao ? { descricao } : {}), ...(obraAtual ? { obraId: obraAtual } : {}) });
     setChave((k) => k + 1);
     mostrar({
       texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, item.preco))}`,
@@ -145,7 +151,7 @@ export default function LancarProducao() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-15 font-bold text-texto-2">Para</span>
         <button type="button" onClick={() => setEscolherDia(true)} className={pilula}>
-          {ROTULO_DIA[quando]} <ChevronDown aria-hidden className="size-4" />
+          {diaFixo && diaFixo <= agora.data ? dataCurta(diaFixo) : ROTULO_DIA[quando]} <ChevronDown aria-hidden className="size-4" />
         </button>
         {obrasAtivas.length > 0 && (
           <button type="button" onClick={() => setEscolherObra(true)} className={pilula}>
@@ -208,7 +214,7 @@ export default function LancarProducao() {
       <BottomSheet aberto={escolherDia} onFechar={() => setEscolherDia(false)} titulo="Dia do serviço">
         <div className="flex flex-wrap gap-2 pb-4">
           {([0, -1, -2] as const).map((d) => (
-            <Chip key={d} selecionado={quando === d} onClick={() => { setQuando(d); setEscolherDia(false); }}>
+            <Chip key={d} selecionado={!diaFixo && quando === d} onClick={() => { setQuando(d); setDiaFixo(null); setEscolherDia(false); }}>
               {ROTULO_DIA[d]}
             </Chip>
           ))}
@@ -320,5 +326,13 @@ export default function LancarProducao() {
         )}
       </BottomSheet>
     </main>
+  );
+}
+
+export default function PaginaProducao() {
+  return (
+    <Suspense fallback={<Carregando />}>
+      <LancarProducao />
+    </Suspense>
   );
 }

@@ -4,6 +4,7 @@ import {
   agruparPorSemana,
   agruparPorSemanaGenerico,
   calcularPeriodo,
+  type LancamentoProducao,
   ganhosPorDia,
   categoriasDe,
   completarComEscala,
@@ -65,6 +66,8 @@ import { useAgora, useEstado, useHistoricoLongo, useLancamentosDoPeriodo, useReg
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { EditorDia } from "../editor-dia";
+import { ResumoDia } from "../resumo-dia";
+import { EditarLancamento } from "../editar-lancamento";
 
 type Aba = "ponto" | "producao";
 
@@ -96,6 +99,9 @@ function Historico() {
   const obraId = params.get("obra");
   const area = params.get("cat");
   const editar = params.get("editar");
+  const diaAberto = params.get("dia");
+  const focoNota = params.get("nota") === "1";
+  const [editLanc, setEditLanc] = useState<LancamentoProducao | null>(null);
   const ref = params.get("p");
   // O endereço demora um instante para atualizar; guardamos a última versão pedida
   // para que toques seguidos (filtro + busca) não se desfaçam.
@@ -136,6 +142,7 @@ function Historico() {
     return {
       r,
       valores,
+      producaoDia: (lancs ?? []).reduce((m, l) => m.set(l.data, (m.get(l.data) ?? 0) + valorProducao(l.quantidade, l.precoUnitario)), new Map<string, number>()),
       semanas: agruparPorSemana(filtrarDias([...ateHoje].reverse(), { filtro, busca, obraId, registros: regs, obras: estado.obras })),
       pendencias: pendenciasDoPeriodo(r.dias, agora.data),
       completar: completarComEscala(estado.perfil, r.dias, agora.data),
@@ -156,7 +163,7 @@ function Historico() {
   if (!estado?.perfil || !agora || !periodo || !calc || !regs || !lancs) return <Carregando />;
   const { perfil, itens, obras, obrasAtivas } = estado;
   const plano = situacaoAtual(estado);
-  const { r, semanas, pendencias, completar, valores } = calc;
+  const { r, semanas, pendencias, completar, valores, producaoDia } = calc;
   const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
   const porData = new Map(regs.map((x) => [x.data, x]));
   const nomeObra = new Map(obras.map((o) => [o.id, o.nome]));
@@ -331,22 +338,21 @@ function Historico() {
           ) : (
             semanas.map((s) => (
               <section key={s.inicio} aria-label={s.rotulo} className="flex flex-col gap-2">
-                <TituloSecao
-                  acao={
-                    <span className="numeros text-13 font-bold text-texto-2">
-                      {(() => {
-                        const v = s.itens.reduce((t, d) => t + (valores.get(d.data) ?? 0), 0);
-                        return v > 0 ? `${formatarReais(v)} · ` : "";
-                      })()}
-                      {formatarDuracao(s.trabalhadoMin)}
+                <div className="flex items-end justify-between gap-3 px-1">
+                  <span className="flex flex-col">
+                    <h2 className="text-15 font-bold text-texto-2">{s.rotulo}</h2>
+                    <span className="numeros text-13 text-texto-2">
+                      {formatarDuracao(s.trabalhadoMin)} trabalhadas
                       {s.saldoMin !== 0 && (
-                        <span className={s.saldoMin > 0 ? "text-extra-texto" : "text-erro-texto"}> · {formatarDuracao(s.saldoMin, { sinal: true })}</span>
+                        <b className={s.saldoMin > 0 ? "text-extra-texto" : "text-erro-texto"}> · {formatarDuracao(s.saldoMin, { sinal: true })}</b>
                       )}
                     </span>
-                  }
-                >
-                  {s.rotulo}
-                </TituloSecao>
+                  </span>
+                  {(() => {
+                    const v = s.itens.reduce((t, d) => t + (valores.get(d.data) ?? 0), 0);
+                    return v > 0 ? <span className="numeros text-17 font-bold">{formatarReais(v)}</span> : null;
+                  })()}
+                </div>
                 <ul className="cartao divide-y divide-borda overflow-hidden">
                   {s.itens.map((d) => {
                     const reg = porData.get(d.data);
@@ -366,7 +372,8 @@ function Historico() {
                           nota={reg?.observacao}
                           obra={reg?.obraId ? nomeObra.get(reg.obraId) : undefined}
                           valor={valores.get(d.data)}
-                          onClick={() => definir({ editar: d.data })}
+                          producao={producaoDia.get(d.data)}
+                          onClick={() => definir({ dia: d.data })}
                         />
                       </li>
                     );
@@ -401,7 +408,8 @@ function Historico() {
                   {g.itens.map((l) => {
                     const item = porItem.get(l.itemId);
                     return (
-                      <li key={l.id} className="flex min-h-16 items-center gap-3 py-2 pr-1 pl-4">
+                      <li key={l.id} className="flex min-h-16 items-center gap-1 py-2 pr-1 pl-4">
+                        <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left active:bg-superficie-2">
                         <span className="flex w-11 shrink-0 flex-col items-center">
                           <span className="text-13 font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
                           <span className="numeros text-20 font-bold leading-none">{l.data.slice(8, 10)}</span>
@@ -412,8 +420,10 @@ function Historico() {
                             {formatarQuantidade(l.quantidade)} {rotuloUnidade(item?.unidade ?? "un")} × {formatarReais(l.precoUnitario)}
                             {l.obraId && nomeObra.get(l.obraId) ? ` · ${nomeObra.get(l.obraId)}` : ""}
                           </span>
+                          {l.descricao && <span className="text-15 text-texto">{l.descricao}</span>}
                         </span>
                         <span className="numeros text-17 font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => apagarLanc(l.id)}
@@ -515,7 +525,21 @@ function Historico() {
         registro={editar ? (porData.get(editar) ?? null) : null}
         perfil={perfil}
         obras={obrasAtivas}
-        onFechar={() => definir({ editar: null })}
+        focoNota={focoNota}
+        onFechar={() => {
+          // o painel pode avisar que fechou mais de uma vez: só a primeira conta, e ela volta para o resumo do dia
+          const aberto = new URLSearchParams(consulta.current).get("editar");
+          if (aberto) definir({ editar: null, nota: null, dia: aberto });
+        }}
+      />
+
+      <EditarLancamento lancamento={editLanc} item={editLanc ? porItem.get(editLanc.itemId) : undefined} onFechar={() => setEditLanc(null)} />
+
+      <ResumoDia
+        data={editar ? null : diaAberto}
+        estado={{ ...estado, perfil }}
+        onFechar={() => definir({ dia: null })}
+        onAjustar={(data, nota) => definir({ dia: null, editar: data, nota: nota ? "1" : null })}
       />
 
       <BottomSheet aberto={periodos} onFechar={() => setPeriodos(false)} titulo="Períodos" subtitulo="Últimos 12 períodos. Toque para abrir.">
