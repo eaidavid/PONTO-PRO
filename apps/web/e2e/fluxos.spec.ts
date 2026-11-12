@@ -471,7 +471,7 @@ test("trazer só as regras do app antigo depois de já ter importado, e ver quan
 
   // 2ª vez: o dia já existe, mas dá para trazer as regras
   painel = await colar();
-  await expect(painel.getByText("Não há dias novos para trazer.")).toBeVisible();
+  await expect(painel.getByText("Não há dias nem lançamentos novos para trazer.")).toBeVisible();
   await painel.getByRole("button", { name: "Usar as regras do app antigo" }).click();
   await expect(page.getByText("Pronto: o Pingou agora calcula com as regras do app antigo.")).toBeVisible();
 
