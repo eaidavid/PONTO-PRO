@@ -19,7 +19,10 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { DEPOIMENTOS } from "../lib/depoimentos";
 import { MARCA } from "../lib/marca";
+import { Animacoes } from "./_vendas/animacoes";
+import { CalculadoraExtra } from "./_vendas/calculadora-extra";
 import { DemoPonto } from "./_vendas/demo-ponto";
 import { IrParaOApp } from "./_vendas/ir-para-o-app";
 
@@ -68,9 +71,32 @@ const PASSOS = [
   { titulo: "Veja quanto vai pingar", texto: "O valor do mês sobe a cada dia trabalhado, com a data em que o dinheiro cai." },
 ];
 
+const O_QUE_GANHA = [
+  { titulo: "Sabe o valor antes do dia do pagamento", texto: "Sem susto no dia 5. O número do mês está na tela todo dia." },
+  { titulo: "Tem cada dia anotado para conferir", texto: "Entrada, saída, extra e falta ficam guardados, dia por dia, para comparar com o contracheque." },
+  { titulo: "Vê o que falta para ganhar mais", texto: "Diga quanto quer receber e o Pingou mostra quantas horas extras, sábados ou serviços faltam." },
+];
+
+const SEM_RISCO = [
+  `${DIAS_TESTE} dias com tudo liberado`,
+  "Não pede cartão para testar",
+  "Cancela quando quiser",
+  "O plano Grátis é grátis para sempre",
+];
+
 const ORDEM_PLANOS: Plano[] = ["gratis", "individual", "equipe"];
 
 const DUVIDAS: { pergunta: string; resposta: string }[] = [
+  {
+    pergunta: "Meu patrão vê o que eu anoto?",
+    resposta:
+      "Não. No Grátis e no Individual, só você vê os seus registros. Eles ficam no seu celular e, se você criar uma conta, guardados na sua conta.",
+  },
+  {
+    pergunta: "Não sou bom de celular. Vou conseguir usar?",
+    resposta:
+      "Vai. Para bater o ponto é um botão grande, um toque por vez, sem digitar nada. A configuração leva 1 minuto e já vem com modelos prontos para a sua área.",
+  },
   {
     pergunta: "O Pingou é o ponto oficial da empresa?",
     resposta:
@@ -152,6 +178,7 @@ export default function Vendas() {
   return (
     <>
       <IrParaOApp />
+      <Animacoes />
 
       <header className="sticky top-0 z-20 bg-[color:var(--marca)] text-sobre-marca">
         <div className={cx(LARGURA, "flex min-h-16 items-center justify-between gap-3")}>
@@ -176,9 +203,9 @@ export default function Vendas() {
       <main>
         <section className="fundo-marca overflow-hidden">
           <div className={cx(LARGURA, "grid items-center gap-8 pt-6 pb-12 md:grid-cols-[1.1fr_1fr] md:gap-8 md:pt-14 md:pb-20")}>
-            <div className="entrada-escalonada flex flex-col gap-5">
-              <h1 className="display text-[clamp(3rem,13vw,5.6rem)] leading-[0.92]">
-                Bateu o ponto, <span className="text-marca-destaque">pingou.</span>
+            <div className="flex flex-col gap-5">
+              <h1 data-titulo="heroi" className="display text-[clamp(3rem,13vw,5.6rem)] leading-[0.92]">
+                Bateu o ponto, <span data-gota className="text-marca-destaque">pingou.</span>
               </h1>
               <p className="max-w-[30ch] text-[clamp(1.18rem,4.6vw,1.5rem)] leading-snug text-sobre-marca-2">
                 Bata o ponto no celular e veja na hora quanto vai cair no seu pagamento, e quanto ainda falta.
@@ -200,8 +227,30 @@ export default function Vendas() {
           </div>
         </section>
 
+        <section aria-labelledby="t-extra" className={cx(LARGURA, "flex flex-col gap-10 pt-16 md:pt-24")}>
+          <div className="grid items-start gap-8 md:grid-cols-2 md:gap-14">
+            <div className="flex flex-col gap-4 md:sticky md:top-24">
+              <h2 id="t-extra" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+                Hora extra que ninguém anota é dinheiro que não pinga.
+              </h2>
+              <p className="max-w-[40ch] text-20 text-texto-2">
+                Mexa nos números e veja quanto valem as suas. Com o Pingou, cada minuto a mais fica registrado e entra na conta do mês.
+              </p>
+            </div>
+            <CalculadoraExtra />
+          </div>
+          <ul className="grid gap-x-10 md:grid-cols-3">
+            {O_QUE_GANHA.map((g) => (
+              <li key={g.titulo} className="flex flex-col gap-1 border-t border-borda-forte py-5">
+                <h3 className="text-20 font-bold">{g.titulo}</h3>
+                <p className="text-17 text-texto-2">{g.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section aria-labelledby="t-recursos" className={cx(LARGURA, "flex flex-col gap-14 py-16 md:gap-24 md:py-24")}>
-          <h2 id="t-recursos" className="display max-w-[18ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+          <h2 id="t-recursos" data-titulo="secao" className="display max-w-[18ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
             Chega de fazer conta de cabeça no fim do mês.
           </h2>
 
@@ -257,7 +306,7 @@ export default function Vendas() {
 
         <section aria-labelledby="t-dia" className="bg-superficie-2">
           <div className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
-            <h2 id="t-dia" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+            <h2 id="t-dia" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Feito para o trabalho de verdade.
             </h2>
             <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
@@ -277,7 +326,7 @@ export default function Vendas() {
         </section>
 
         <section aria-labelledby="t-quem" className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
-          <h2 id="t-quem" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+          <h2 id="t-quem" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
             Serve para o seu jeito de trabalhar.
           </h2>
           <ul className="grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -298,7 +347,7 @@ export default function Vendas() {
 
         <section aria-labelledby="t-passos" className="bg-superficie-2">
           <div className={cx(LARGURA, "flex flex-col gap-10 py-16 md:py-24")}>
-            <h2 id="t-passos" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+            <h2 id="t-passos" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Começa em 1 minuto.
             </h2>
             <ol className="grid gap-8 md:grid-cols-3 md:gap-10">
@@ -316,9 +365,30 @@ export default function Vendas() {
           </div>
         </section>
 
+        {DEPOIMENTOS.length > 0 && (
+          <section aria-labelledby="t-depoimentos" className={cx(LARGURA, "flex flex-col gap-10 pt-16 md:pt-24")}>
+            <h2 id="t-depoimentos" data-titulo="secao" className="display max-w-[16ch] text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+              Quem já usa conta como é.
+            </h2>
+            <ul className="grid gap-x-10 gap-y-8 md:grid-cols-3">
+              {DEPOIMENTOS.map((d) => (
+                <li key={d.nome + d.texto}>
+                  <figure className="flex flex-col gap-3 border-t border-borda-forte pt-5">
+                    <blockquote className="text-20">“{d.texto}”</blockquote>
+                    <figcaption className="text-15 text-texto-2">
+                      <b className="text-texto">{d.nome}</b>, {d.funcao}
+                      {d.cidade ? `, ${d.cidade}` : ""}
+                    </figcaption>
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section id="planos" aria-labelledby="t-planos" className={cx(LARGURA, "flex scroll-mt-16 flex-col gap-8 py-16 md:py-24")}>
           <div className="flex flex-col gap-3">
-            <h2 id="t-planos" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+            <h2 id="t-planos" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Comece de graça. Assine se valer a pena.
             </h2>
             <p className="max-w-[52ch] text-20 text-texto-2">
@@ -365,11 +435,19 @@ export default function Vendas() {
               );
             })}
           </div>
+          <ul className="grid gap-x-8 gap-y-2 text-17 font-bold sm:grid-cols-2 lg:grid-cols-4">
+            {SEM_RISCO.map((r) => (
+              <li key={r} className="flex items-start gap-2">
+                <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-sucesso-texto" strokeWidth={3} />
+                {r}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section aria-labelledby="t-duvidas" className="bg-superficie-2">
           <div className={cx(LARGURA, "grid gap-8 py-16 md:grid-cols-[1fr_1.6fr] md:gap-14 md:py-24")}>
-            <h2 id="t-duvidas" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
+            <h2 id="t-duvidas" data-titulo="secao" className="display text-[clamp(2rem,7.5vw,3.3rem)] leading-[1.02]">
               Dúvidas de quem está chegando.
             </h2>
             <div className="divide-y divide-borda-forte border-y border-borda-forte">
@@ -388,7 +466,7 @@ export default function Vendas() {
 
         <section aria-labelledby="t-final" className="fundo-marca">
           <div className={cx(LARGURA, "flex flex-col items-start gap-6 py-16 md:py-24")}>
-            <h2 id="t-final" className="display max-w-[14ch] text-[clamp(2.4rem,10vw,4.4rem)] leading-[0.95]">
+            <h2 id="t-final" data-titulo="secao" className="display max-w-[14ch] text-[clamp(2.4rem,10vw,4.4rem)] leading-[0.95]">
               Quanto vai pingar este mês?
             </h2>
             <p className="max-w-[40ch] text-20 text-sobre-marca-2">Bata o primeiro ponto hoje e descubra antes do dia do pagamento.</p>

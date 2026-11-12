@@ -320,6 +320,12 @@ test("página de vendas: demonstração do ponto, planos e botão que leva ao co
   await page.getByRole("button", { name: /Ver de novo/ }).click();
   await expect(demo.getByRole("button", { name: "Bater entrada às 07:00" })).toBeVisible();
 
+  // calculadora: 2h extras por semana a R$ 25,00 = R$ 37,50 × 2 × 4
+  await expect(page.getByText("R$ 300,00").first()).toBeAttached();
+  await expect(page.getByText("R$ 3.600,00").first()).toBeAttached();
+  await page.getByLabel("Horas extras por semana").fill("4");
+  await expect(page.getByText("R$ 600,00").first()).toBeAttached();
+
   await expect(page.getByRole("heading", { name: "Individual" })).toBeVisible();
   await page.getByText("O teste grátis cobra alguma coisa?").click();
   await expect(page.getByText(/Só paga se decidir assinar/)).toBeVisible();
