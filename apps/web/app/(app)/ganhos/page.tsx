@@ -11,6 +11,8 @@ import {
   formatarReais,
   ganhosPorDia,
   gerarContracheque,
+  nomeArquivoContracheque,
+  pdfContracheque,
   GLOSSARIO,
   type Linha,
   lerReais,
@@ -21,6 +23,8 @@ import {
   type ResultadoPeriodo,
   rotuloPeriodo,
   somarDias,
+  textoContracheque,
+  textoResumo,
 } from "@ponto-pro/core";
 import {
   Abas,
@@ -37,7 +41,7 @@ import {
   TituloSecao,
   ValorDinheiro,
 } from "@ponto-pro/ui";
-import { ChartColumn, ChevronRight, CircleCheck, Download, FileText, MessageCircle, Scale, Target, TriangleAlert } from "lucide-react";
+import { ChartColumn, ChevronRight, CircleCheck, Download, FileText, Scale, Target, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -47,6 +51,7 @@ import { type Estado, useAgora, useEstado, useHistoricoLongo } from "../../../li
 import { MARCA } from "../../../lib/marca";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
+import { baixarArquivo, Compartilhar } from "../compartilhar";
 
 type Aba = "resumo" | "contracheque" | "periodos";
 
@@ -114,21 +119,6 @@ function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) =
 
 function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Estado; onTermo: (t: string) => void }) {
   const cc = gerarContracheque(r, estado.pessoal);
-  function compartilhar() {
-    const linhas = [
-      `*Contracheque estimado — ${cc.referencia}*`,
-      `${cc.funcionario}${cc.cargo ? ` · ${cc.cargo}` : ""}`,
-      "",
-      ...cc.itens.map((i) => `${i.descricao} (${i.referencia}): ${i.desconto ? "−" : ""}${formatarReais(i.provento ?? i.desconto ?? 0)}`),
-      "",
-      `Ganhos: ${formatarReais(cc.totalProventos)}`,
-      `Descontos: −${formatarReais(cc.totalDescontos)}`,
-      `*Líquido: ${formatarReais(cc.liquido)}*`,
-      "",
-      `_${cc.rodape} · ${MARCA.nome}_`,
-    ];
-    window.open(`https://wa.me/?text=${encodeURIComponent(linhas.join("\n"))}`, "_blank", "noopener");
-  }
   return (
     <div className="entrada-escalonada flex flex-col gap-4">
       <article aria-label="Contracheque estimado" className="cartao overflow-hidden print:shadow-none">
@@ -199,13 +189,13 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
       </article>
       <div className="flex flex-col gap-3 pb-2 print:hidden">
         {situacaoAtual(estado).pode("pdf") ? (
-          <BotaoPrincipal tamanho="g" icone={Download} onClick={() => window.print()}>Baixar PDF</BotaoPrincipal>
+          <BotaoPrincipal tamanho="g" icone={Download} onClick={() => baixarArquivo(pdfContracheque(cc, MARCA.nome), nomeArquivoContracheque(cc))}>Baixar PDF</BotaoPrincipal>
         ) : (
           <Link href="/planos" className="inline-flex min-h-16 items-center justify-center gap-3 rounded-full border-2 border-primaria px-6 text-17 font-bold text-primaria">
             <Download aria-hidden className="size-6" /> PDF no plano Individual
           </Link>
         )}
-        <BotaoPrincipal variante="secundaria" icone={MessageCircle} onClick={compartilhar}>Enviar no WhatsApp</BotaoPrincipal>
+        <Compartilhar texto={textoContracheque(cc, MARCA.nome)} oque="contracheque" />
         <p className="text-13 text-texto-2">Calculado pela sua escala até o fechamento. Horas: {formatarDuracao(r.horas.trabalhadoMin)}.</p>
       </div>
     </div>
@@ -388,6 +378,17 @@ function Ganhos() {
               <GraficoDias dias={grafico} hoje={agora.data} />
             </div>
           </details>
+          <Compartilhar
+            oque="resumo"
+            texto={textoResumo({
+              referencia: rotuloPeriodo(periodo),
+              previsto: previsto.liquido,
+              jaGanhou: realizado.liquido,
+              quando: quandoCai,
+              grupos: agrupar(previsto).map((g) => ({ rotulo: g.rotulo, valor: g.valor, desconto: g.id === "descontos" })),
+              marca: MARCA.nome,
+            })}
+          />
           <Link href="/metas" className="mb-2 inline-flex min-h-12 items-center gap-2 self-center rounded-full px-3 text-17 font-bold text-primaria-forte underline underline-offset-4">
             <Target aria-hidden className="size-5" /> Quero receber mais
           </Link>

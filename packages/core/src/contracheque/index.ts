@@ -75,3 +75,6 @@ export function gerarContracheque(r: ResultadoPeriodo, dados: DadosContracheque 
   if (dados.logoUrl) c.logoUrl = dados.logoUrl;
   return c;
 }
+
+export * from "./texto";
+export * from "./pdf";

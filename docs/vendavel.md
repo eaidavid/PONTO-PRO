@@ -23,7 +23,7 @@ Severidade: **P0** impede vender · **P1** derruba conversão ou retenção · *
 | 7 | **Play Store** (PWA empacotado como app Android, TWA) | P1 | O público procura app na loja, não no navegador. Estar na loja passa confiança |
 | 8 | **Notificações**: "Bateu a saída?" e "Pingou! Seu salário cai hoje" | P1 | É o maior motivo para voltar ao app todo dia. No Android, o PWA já aceita notificação |
 | 9 | **Medição**: funil do onboarding, 1º ponto batido, uso no 7º e no 30º dia, mais monitor de erros | P1 | Sem números, não dá para saber o que vende nem o que trava |
-| 10 | **PDF de verdade** (contracheque e histórico gerados no app) | P1 | A impressão do navegador no celular é confusa para o público |
+| 10 | ~~**PDF de verdade**~~ **Feito para o contracheque** (gerado no aparelho, sem internet). Falta o do histórico | P1 | A impressão do navegador no celular é confusa para o público |
 | 11 | **Suporte por WhatsApp e perguntas frequentes** | P1 | O público resolve tudo no WhatsApp |
 | 12 | **Plano Equipe** (empreiteiro: convite, aprovação, folha) | P1 | É a venda de ticket mais alto. Depende do item 1 |
 

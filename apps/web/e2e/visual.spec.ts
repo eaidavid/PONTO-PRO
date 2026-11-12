@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { fazerOnboarding, preparar, semearHistorico } from "./ajuda";
 
 const TEMAS = ["claro", "escuro", "sol"] as const;
-const TELAS = ["hoje", "historico", "producao", "ganhos", "metas", "conta", "obras"] as const;
+const TELAS = ["hoje", "historico", "producao", "ganhos", "metas", "conta", "obras", "calculadora"] as const;
 
 for (const tema of TEMAS) {
   test(`acessibilidade das telas (${tema})`, async ({ page }) => {

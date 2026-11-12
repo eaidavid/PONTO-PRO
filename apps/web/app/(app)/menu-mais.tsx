@@ -1,7 +1,7 @@
 "use client";
 
 import { BottomSheet } from "@ponto-pro/ui";
-import { ChevronRight, Gem, HardHat, type LucideIcon, Smartphone, Tags, User } from "lucide-react";
+import { Calculator, ChevronRight, Gem, HardHat, type LucideIcon, Smartphone, Tags, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Preferencias } from "../../lib/db";
 import { instalarApp, usePodeInstalar } from "../../lib/instalar";
@@ -35,6 +35,7 @@ export function MenuMais({
   const atalhos: Atalho[] = [
     { href: "/obras", rotulo: "Obras", descricao: "Separar horas e produção por lugar", icone: HardHat },
     ...(usaProducao ? [{ href: "/producao", rotulo: "Catálogo de serviços", descricao: "Favoritos, categorias e preços", icone: Tags }] : []),
+    { href: "/calculadora", rotulo: "Calculadora", descricao: "Salário em valor da hora e conta de um dia", icone: Calculator },
     { href: "/planos", rotulo: "Planos", descricao: "Teste grátis, assinatura e preços", icone: Gem },
     { href: "/conta", rotulo: "Conta e regras", descricao: "Valor, semana, feriados, descontos", icone: User },
   ];
