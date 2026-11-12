@@ -21,6 +21,18 @@ for (const tema of TEMAS) {
   });
 }
 
+for (const tema of TEMAS) {
+  test(`acessibilidade da página de vendas (${tema})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await preparar(page, tema);
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(", ")}`)).toEqual([]);
+  });
+}
+
 test.describe("prints", () => {
   test.skip(!process.env.PRINTS, "rode com PRINTS=1 para gerar as imagens");
   for (const tema of TEMAS) {
@@ -30,7 +42,7 @@ test.describe("prints", () => {
         await page.setViewportSize({ width: largura, height: 844 });
         await preparar(page, tema);
         const pasta = "../../docs/prints/produto";
-        await page.goto("/");
+        await page.goto("/comecar");
         await page.getByRole("heading", { name: "Em que você trabalha?" }).waitFor();
         if (largura === 390) await page.screenshot({ path: `${pasta}/comecar-${tema}-${largura}.png` });
         await fazerOnboarding(page);

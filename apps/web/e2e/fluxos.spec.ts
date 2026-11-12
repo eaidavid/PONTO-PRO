@@ -234,7 +234,7 @@ test("feriado local muda o dia; conferir pagamento", async ({ page }) => {
 });
 
 test("termos e privacidade: aceite obrigatório e nova versão pede aceite de novo", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/comecar");
   await page.getByRole("radio", { name: /Construção civil/ }).click();
   await page.getByRole("button", { name: "Pular" }).click();
   await expect(page.getByRole("button", { name: "Começar a usar" })).toBeDisabled();
@@ -302,4 +302,36 @@ test("sem servidor configurado, conta e assinatura avisam e o app segue no celul
   await expect(page.getByText("As contas ainda não estão disponíveis")).toBeVisible();
   await page.goto("/hoje");
   await expect(page.getByRole("status").filter({ hasText: "Salvo no celular" })).toBeVisible();
+});
+
+test("página de vendas: demonstração do ponto, planos e botão que leva ao começo", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1, name: "Bateu o ponto, pingou." })).toBeVisible();
+
+  // a demonstração bate as 4 etapas e o ganho do dia sobe
+  const demo = page.getByRole("group", { name: "Demonstração do Pingou" });
+  await expect(demo.getByText("R$ 0,00")).toBeAttached();
+  await demo.getByRole("button", { name: "Bater entrada às 07:00" }).click();
+  await expect(demo.getByText("R$ 125,00")).toBeAttached();
+  await demo.getByRole("button", { name: /Sair para o almoço/ }).click();
+  await demo.getByRole("button", { name: /Voltar do almoço/ }).click();
+  await demo.getByRole("button", { name: "Bater saída às 17:00" }).click();
+  await expect(demo.getByText("R$ 225,00")).toBeAttached();
+  await page.getByRole("button", { name: /Ver de novo/ }).click();
+  await expect(demo.getByRole("button", { name: "Bater entrada às 07:00" })).toBeVisible();
+
+  await expect(page.getByRole("heading", { name: "Individual" })).toBeVisible();
+  await page.getByText("O teste grátis cobra alguma coisa?").click();
+  await expect(page.getByText(/Só paga se decidir assinar/)).toBeVisible();
+
+  await page.getByRole("link", { name: "Começar grátis" }).first().click();
+  await expect(page).toHaveURL(/\/comecar$/);
+  await expect(page.getByRole("heading", { name: "Em que você trabalha?" })).toBeVisible();
+});
+
+test("página de vendas: quem já usa o app vai direto para Hoje", async ({ page }) => {
+  await preparar(page);
+  await fazerOnboarding(page);
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/hoje$/);
 });

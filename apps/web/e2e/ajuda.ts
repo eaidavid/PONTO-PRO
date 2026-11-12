@@ -10,7 +10,7 @@ export async function preparar(page: Page, tema: "claro" | "escuro" | "sol" = "c
 
 /** Faz o onboarding como o José: construção, por hora, R$ 25,00. */
 export async function fazerOnboarding(page: Page, nome = "José") {
-  await page.goto("/");
+  await page.goto("/comecar");
   await expect(page.getByRole("heading", { name: "Em que você trabalha?" })).toBeVisible();
   await page.getByRole("radio", { name: /Construção civil/ }).click();
   await page.getByRole("button", { name: "Continuar" }).click();
