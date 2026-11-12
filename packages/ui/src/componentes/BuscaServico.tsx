@@ -20,6 +20,8 @@ export interface LancamentoNovo {
   /** true quando o serviço foi criado agora. */
   novo: boolean;
   quantidade: number;
+  /** Observação do lançamento (ex.: "lado da portaria", "2º andar"). */
+  descricao?: string;
 }
 
 export interface BuscaServicoProps {
@@ -52,6 +54,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
   const [outra, setOutra] = useState("");
   const [preco, setPreco] = useState("");
   const [quantidade, setQuantidade] = useState(quantidadeInicial);
+  const [observacao, setObservacao] = useState("");
   const [tentou, setTentou] = useState(false);
 
   const resultado = useMemo(() => buscarItens(itens, texto, texto.trim() ? 8 : sugestoes), [itens, texto, sugestoes]);
@@ -72,7 +75,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
         preco: precoCentavos,
         exemplo: false,
       };
-    onLancar({ item, novo: !escolhido, quantidade: qtd });
+    onLancar({ item, novo: !escolhido, quantidade: qtd, ...(observacao.trim() ? { descricao: observacao.trim().slice(0, 200) } : {}) });
   }
 
   function recomecar() {
@@ -142,6 +145,16 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           placeholder="0"
           erro={tentou && !qtd ? "Digite quanto você fez. Ex.: 50" : undefined}
         />
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-17 font-bold">Observação <span className="font-normal text-texto-2">(opcional)</span></span>
+          <input
+            value={observacao}
+            onChange={(e) => setObservacao(e.target.value.slice(0, 200))}
+            placeholder="Ex.: lado da portaria, 2º andar"
+            className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-17 outline-none focus:border-primaria"
+          />
+        </label>
 
         <p aria-live="polite" className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-20 font-bold">
           {previa ? previa.texto : `0 ${un} × ${precoCentavos !== null ? formatarReais(precoCentavos) : "R$ 0,00"} = R$ 0,00`}

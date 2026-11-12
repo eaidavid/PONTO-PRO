@@ -35,11 +35,23 @@ test("lançar produção criando um serviço novo", async ({ page }) => {
   await page.getByRole("button", { name: "m²" }).click();
   await page.getByLabel("Preço por m²").fill("8,50");
   await page.getByLabel("Quantidade").fill("20");
+  await page.getByLabel(/Observação/).fill("banheiro social");
   await expect(page.getByText("20 m² × R$ 8,50 = R$ 170,00")).toBeVisible();
   await page.getByRole("button", { name: "Lançar produção" }).click();
   await expect(page.getByText("Serviço criado. 20 m² · R$ 170,00")).toBeVisible();
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("Rejunte de pastilha")).toBeVisible();
+  await expect(page.getByText("banheiro social")).toBeVisible();
+
+  // corrigir quantidade e observação depois
+  await page.getByRole("button", { name: /^Editar Rejunte de pastilha/ }).click();
+  const ed = page.getByRole("dialog", { name: "Rejunte de pastilha" });
+  await ed.getByLabel("Quantidade").fill("22");
+  await ed.getByLabel("Observação").fill("banheiro da suíte");
+  await expect(ed.getByText("22 m² × R$ 8,50 = R$ 187,00")).toBeVisible();
+  await ed.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("banheiro da suíte")).toBeVisible();
+  await expect(page.getByText("R$ 187,00").first()).toBeVisible();
 });
 
 test("editar um dia em Registros", async ({ page }) => {
@@ -446,6 +458,7 @@ test("trazer os dados do Ponto Pro antigo, sem os dias de exemplo", async ({ pag
   await expect(page.getByRole("button", { name: /^sex 06/ })).toContainText("06:50");
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("Muro de fechamento")).toBeVisible();
+  await expect(page.getByText("fundos")).toBeVisible(); // a observação do app antigo vem junto
 });
 
 test("trazer só as regras do app antigo depois de já ter importado, e ver quanto deu cada dia", async ({ page }) => {

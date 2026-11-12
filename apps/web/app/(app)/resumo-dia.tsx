@@ -19,6 +19,7 @@ import { apagarLancamento, lancarProducao } from "../../lib/acoes";
 import type { LancamentoProducao } from "@ponto-pro/core";
 import { db } from "../../lib/db";
 import type { Estado } from "../../lib/estado";
+import { EditarLancamento } from "./editar-lancamento";
 import { alteracoesDaProducao, alteracoesDoDia, linhaDoTempo, type VersaoSalva } from "../../lib/historico-dia";
 
 const ICONE = { entrada: LogIn, almoco: Utensils, volta: Hammer, saida: LogOut } as const;
@@ -39,6 +40,7 @@ export interface ResumoDiaProps {
 export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps) {
   // o painel aberto bloqueia o resto da tela: o "Desfazer" fica dentro dele
   const [apagado, setApagado] = useState<LancamentoProducao | null>(null);
+  const [editLanc, setEditLanc] = useState<LancamentoProducao | null>(null);
   useEffect(() => setApagado(null), [data]);
   const { perfil, itens, feriadosLocais, obras } = estado;
 
@@ -78,8 +80,9 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
   const tituloSecao = "text-15 font-bold text-texto-2";
 
   return (
+    <>
     <BottomSheet
-      aberto={aberto}
+      aberto={aberto && !editLanc}
       onFechar={onFechar}
       titulo={data ? dataPorExtenso(data).replace(/^./, (c) => c.toUpperCase()) : ""}
       subtitulo={[etiqueta, registro?.obraId ? nomeObra(registro.obraId) : null].filter(Boolean).join(" · ") || undefined}
@@ -149,7 +152,7 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                       <span aria-hidden className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-full bg-extra-suave text-extra-texto">
                         <PackagePlus className="size-5" strokeWidth={2.25} />
                       </span>
-                      <span className="flex min-w-0 flex-1 flex-col pt-1">
+                      <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"}`} className="flex min-w-0 flex-1 flex-col rounded-xl pt-1 text-left active:bg-superficie-2">
                         <span className="text-17 font-bold">{item?.nome ?? "Serviço"}</span>
                         <span className="flex items-baseline justify-between gap-2">
                           <span className="numeros text-15 whitespace-nowrap text-texto-2">
@@ -157,8 +160,12 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                           </span>
                           <span className="numeros text-17 font-bold whitespace-nowrap">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
                         </span>
-                        {l.descricao && <span className="text-15 text-texto-2">{l.descricao}</span>}
-                      </span>
+                        {l.descricao ? (
+                          <span className="text-15 text-texto">{l.descricao}</span>
+                        ) : (
+                          <span className="text-13 font-bold text-primaria-forte">+ observação</span>
+                        )}
+                      </button>
                       <button type="button" onClick={() => apagar(l.id)} aria-label={`Apagar ${item?.nome ?? "lançamento"}`} className="-mr-2 flex size-12 shrink-0 items-center justify-center rounded-full text-texto-2 active:bg-superficie-2">
                         <Trash2 aria-hidden className="size-5" />
                       </button>
@@ -234,5 +241,7 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
         </div>
       )}
     </BottomSheet>
+    <EditarLancamento lancamento={editLanc} item={editLanc ? porId.get(editLanc.itemId) : undefined} onFechar={() => setEditLanc(null)} comDesfazer={false} />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import {
   agruparPorSemana,
   agruparPorSemanaGenerico,
   calcularPeriodo,
+  type LancamentoProducao,
   ganhosPorDia,
   categoriasDe,
   completarComEscala,
@@ -66,6 +67,7 @@ import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { EditorDia } from "../editor-dia";
 import { ResumoDia } from "../resumo-dia";
+import { EditarLancamento } from "../editar-lancamento";
 
 type Aba = "ponto" | "producao";
 
@@ -99,6 +101,7 @@ function Historico() {
   const editar = params.get("editar");
   const diaAberto = params.get("dia");
   const focoNota = params.get("nota") === "1";
+  const [editLanc, setEditLanc] = useState<LancamentoProducao | null>(null);
   const ref = params.get("p");
   // O endereço demora um instante para atualizar; guardamos a última versão pedida
   // para que toques seguidos (filtro + busca) não se desfaçam.
@@ -405,7 +408,8 @@ function Historico() {
                   {g.itens.map((l) => {
                     const item = porItem.get(l.itemId);
                     return (
-                      <li key={l.id} className="flex min-h-16 items-center gap-3 py-2 pr-1 pl-4">
+                      <li key={l.id} className="flex min-h-16 items-center gap-1 py-2 pr-1 pl-4">
+                        <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left active:bg-superficie-2">
                         <span className="flex w-11 shrink-0 flex-col items-center">
                           <span className="text-13 font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
                           <span className="numeros text-20 font-bold leading-none">{l.data.slice(8, 10)}</span>
@@ -416,8 +420,10 @@ function Historico() {
                             {formatarQuantidade(l.quantidade)} {rotuloUnidade(item?.unidade ?? "un")} × {formatarReais(l.precoUnitario)}
                             {l.obraId && nomeObra.get(l.obraId) ? ` · ${nomeObra.get(l.obraId)}` : ""}
                           </span>
+                          {l.descricao && <span className="text-15 text-texto">{l.descricao}</span>}
                         </span>
                         <span className="numeros text-17 font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => apagarLanc(l.id)}
@@ -526,6 +532,8 @@ function Historico() {
           if (aberto) definir({ editar: null, nota: null, dia: aberto });
         }}
       />
+
+      <EditarLancamento lancamento={editLanc} item={editLanc ? porItem.get(editLanc.itemId) : undefined} onFechar={() => setEditLanc(null)} />
 
       <ResumoDia
         data={editar ? null : diaAberto}

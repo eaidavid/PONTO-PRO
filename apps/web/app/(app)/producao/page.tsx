@@ -84,11 +84,11 @@ function LancarProducao() {
   const noPeriodo = lancamentos.filter((l) => l.data >= periodoAtual.inicio && l.data <= periodoAtual.fim).length;
   const noLimite = !situacaoAtual(estado).pode("producao-ilimitada") && noPeriodo >= LIMITE_PRODUCAO_GRATIS;
 
-  async function lancar({ item, novo, quantidade }: { item: ItemProducao; novo: boolean; quantidade: number }) {
+  async function lancar({ item, novo, quantidade, descricao }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string }) {
     if (noLimite) return;
     if (novo) await salvarItem(item);
     const id = novoId("l");
-    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(obraAtual ? { obraId: obraAtual } : {}) });
+    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(descricao ? { descricao } : {}), ...(obraAtual ? { obraId: obraAtual } : {}) });
     setChave((k) => k + 1);
     mostrar({
       texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, item.preco))}`,
