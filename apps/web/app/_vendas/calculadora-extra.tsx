@@ -48,21 +48,24 @@ function minutosPorExtenso(min: number): string {
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
+function horasPorExtenso(meiasHoras: number): string {
+  return minutosPorExtenso(meiasHoras * 30);
+}
+
 /**
- * A prova que o visitante confere sozinho: quanto valem os minutos a mais de cada dia.
- * Em minutos por dia (e não horas por semana) porque é assim que a hora extra costuma acontecer:
- * um pouco depois do horário, quase todo dia.
- * É conta simples e declarada (hora × 1,5 × minutos × dias × 4 semanas), não promessa de ganho.
+ * A prova que o visitante confere sozinho: quanto valem as horas extras dele.
+ * Por semana, de meia em meia hora, a partir de 30 minutos (muita gente faz pouca hora extra).
+ * É conta simples e declarada (hora × 1,5 × horas por semana × 4 semanas), não promessa de ganho.
  */
 export function CalculadoraExtra() {
   const [hora, setHora] = useState(2500);
-  const [minutos, setMinutos] = useState(20);
-  const [dias, setDias] = useState(5);
+  /** Horas extras por semana, em meias horas (4 = 2h). */
+  const [meias, setMeias] = useState(4);
   const idHora = useId();
-  const idMinutos = useId();
+  const idExtras = useId();
 
   const umaExtra = Math.round(hora * ADICIONAL);
-  const porMes = Math.round((umaExtra * minutos * dias * SEMANAS_NO_MES) / 60);
+  const porMes = Math.round((umaExtra * meias * SEMANAS_NO_MES) / 2);
   const porAno = porMes * 12;
   const plano = PLANOS.individual.preco;
   /** Minutos de hora extra que pagam a mensalidade. */
@@ -93,47 +96,27 @@ export function CalculadoraExtra() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor={idMinutos} className="flex items-baseline justify-between gap-3 text-17 font-bold">
-          Tempo a mais por dia
-          <span className={valor}>{minutosPorExtenso(minutos)}</span>
+        <label htmlFor={idExtras} className="flex items-baseline justify-between gap-3 text-17 font-bold">
+          Horas extras por semana
+          <span className={valor}>{horasPorExtenso(meias)}</span>
         </label>
         <input
-          id={idMinutos}
+          id={idExtras}
           type="range"
-          min={5}
-          max={180}
-          step={5}
-          value={minutos}
-          onChange={(e) => setMinutos(Number(e.target.value))}
-          aria-valuetext={minutosPorExtenso(minutos)}
+          min={1}
+          max={30}
+          step={1}
+          value={meias}
+          onChange={(e) => setMeias(Number(e.target.value))}
+          aria-valuetext={horasPorExtenso(meias)}
           className={faixa}
         />
-      </div>
-
-      <div role="group" aria-label="Dias de trabalho por semana" className="flex items-center justify-between gap-3">
-        <span className="text-17 font-bold">Dias por semana</span>
-        <span className="flex gap-2">
-          {[5, 6].map((d) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={dias === d}
-              onClick={() => setDias(d)}
-              className={
-                dias === d
-                  ? "numeros min-h-12 min-w-14 rounded-full bg-texto px-4 text-17 font-bold text-fundo"
-                  : "numeros borda min-h-12 min-w-14 rounded-full border-borda-forte! bg-superficie px-4 text-17 font-bold"
-              }
-            >
-              {d}
-            </button>
-          ))}
-        </span>
+        <p className="text-15 text-texto-2">De meia em meia hora, a partir de 30 minutos.</p>
       </div>
 
       <div className="flex flex-col gap-4 border-t border-borda-forte pt-5">
         <p className="flex flex-col">
-          <span className="text-17 font-bold">Esse tempo a mais vale, por mês</span>
+          <span className="text-17 font-bold">Suas horas extras valem, por mês</span>
           <NumeroAnimado centavos={porMes} className="display text-[clamp(2.6rem,12vw,4rem)] leading-none text-extra-texto" />
         </p>
         <p className="numeros text-20">

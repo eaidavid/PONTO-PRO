@@ -320,13 +320,12 @@ test("página de vendas: demonstração do ponto, planos e botão que leva ao co
   await page.getByRole("button", { name: /Ver de novo/ }).click();
   await expect(demo.getByRole("button", { name: "Bater entrada às 07:00" })).toBeVisible();
 
-  // calculadora: 20 min a mais por dia, 5 dias, a R$ 25,00 a hora = R$ 37,50 × (20/60) × 5 × 4
-  await expect(page.getByText("R$ 250,00").first()).toBeAttached();
-  await expect(page.getByText("R$ 3.000,00").first()).toBeAttached();
-  await page.getByLabel("Tempo a mais por dia").fill("60");
-  await expect(page.getByText("R$ 750,00").first()).toBeAttached();
-  await page.getByRole("button", { name: "6", exact: true }).click();
-  await expect(page.getByText("R$ 900,00").first()).toBeAttached();
+  // calculadora: 2h extras por semana a R$ 25,00 = R$ 37,50 × 2 × 4; o mínimo é meia hora
+  await expect(page.getByText("R$ 300,00").first()).toBeAttached();
+  await expect(page.getByText("R$ 3.600,00").first()).toBeAttached();
+  await page.getByLabel("Horas extras por semana").fill("1");
+  await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+  await expect(page.getByText("R$ 75,00").first()).toBeAttached();
 
   await expect(page.getByRole("heading", { name: "Individual" })).toBeVisible();
   await page.getByText("O teste grátis cobra alguma coisa?").click();
@@ -337,9 +336,11 @@ test("página de vendas: demonstração do ponto, planos e botão que leva ao co
   await expect(page.getByRole("heading", { name: "Em que você trabalha?" })).toBeVisible();
 });
 
-test("página de vendas: quem já usa o app vai direto para Hoje", async ({ page }) => {
+test("página de vendas: quem já usa o app continua vendo a página e tem o botão Abrir o app", async ({ page }) => {
   await preparar(page);
   await fazerOnboarding(page);
   await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1, name: "Bateu o ponto, pingou." })).toBeVisible();
+  await page.getByRole("link", { name: "Abrir o app" }).click();
   await expect(page).toHaveURL(/\/hoje$/);
 });
