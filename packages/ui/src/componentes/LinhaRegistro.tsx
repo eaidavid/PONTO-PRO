@@ -1,4 +1,4 @@
-import { formatarDuracao, formatarReais, type Marcacoes, seloDia, type TipoDia } from "@ponto-pro/core";
+import { formatarDuracao, formatarReais, formatarReaisCurto, type Marcacoes, seloDia, type TipoDia } from "@ponto-pro/core";
 import { cx } from "../cx";
 import { TIPOS_DIA } from "./TipoDia";
 
@@ -18,6 +18,8 @@ export interface LinhaRegistroProps {
   obra?: string;
   /** Quanto o dia rendeu (bruto, em centavos). Mostrado à direita quando maior que zero. */
   valor?: number;
+  /** Quanto da produção entrou no dia (centavos). */
+  producao?: number;
   onClick?: () => void;
 }
 
@@ -39,12 +41,13 @@ export function LinhaRegistro({
   nota,
   obra,
   valor,
+  producao,
   onClick,
 }: LinhaRegistroProps) {
   const [dia, num] = seloDia(data).split(" ");
   const horarios = marcacoes.entrada ? `${marcacoes.entrada} – ${marcacoes.saida ?? "agora"}` : null;
   const especial = tipo !== "normal" ? TIPOS_DIA[tipo] : feriado && !horarios ? TIPOS_DIA.feriado : null;
-  const discreto = !horarios && !especial && !hoje;
+  const discreto = !horarios && !especial && !hoje && !producao;
 
   const principal = especial ? (
     <span className={cx("inline-flex items-center gap-1.5 text-17 font-bold", tipo === "falta" ? "text-erro-texto" : "text-texto")}>
@@ -53,6 +56,8 @@ export function LinhaRegistro({
     </span>
   ) : horarios ? (
     <span className="numeros text-17 font-bold">{horarios}</span>
+  ) : producao ? (
+    <span className="text-17 font-bold">Só produção</span>
   ) : (
     <span className="text-15 text-texto-2">{folgaDaEscala ? "Folga" : "Sem registro"}</span>
   );
@@ -60,6 +65,7 @@ export function LinhaRegistro({
   const apoio = [
     horarios && especial ? horarios : null,
     trabalhadoMin > 0 && !emAndamento ? formatarDuracao(trabalhadoMin) : null,
+    producao ? `produção ${formatarReaisCurto(producao)}` : null,
     feriado && tipo !== "normal" ? feriado : null,
     obra,
     nota,

@@ -3,7 +3,6 @@
 import {
   dataPorExtenso,
   type Etapa,
-  extratoDoPeriodo,
   feriadosDoIntervalo,
   formatarHorasCurto,
   ganhoDoDia,
@@ -22,7 +21,7 @@ import {
   BottomSheet,
   Chip,
   EtapasDoDia,
-  ListaExtrato,
+  ExplicacaoConta,
   StatusSync,
   useToast,
   ValorDinheiro,
@@ -259,13 +258,16 @@ export default function Hoje() {
                 const tipo = u.reg && u.reg.tipo !== "normal" ? u.reg.tipo : null;
                 const horario = m.entrada ? `${m.entrada} às ${m.saida ?? m.almoco ?? "…"}` : null;
                 return (
-                  <li key={u.data} className="flex min-h-16 items-center gap-3 px-4 py-2">
+                  <li key={u.data}>
+                    <Link href={`/historico?dia=${u.data}`} className="flex min-h-16 items-center gap-3 px-4 py-2 active:bg-superficie-2">
                     <span className="numeros w-14 shrink-0 text-15 font-bold capitalize">{seloDia(u.data)}</span>
                     <span className="min-w-0 flex-1">
                       <span className="numeros block text-17">{tipo ? tipo[0]!.toUpperCase() + tipo.slice(1) : (horario ?? "Só produção")}</span>
                       {u.trabalhadoMin > 0 && <span className="numeros block text-13 text-texto-2">{formatarHorasCurto(u.trabalhadoMin)} trabalhadas</span>}
                     </span>
                     <ValorDinheiro centavos={u.bruto} />
+                    <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
+                    </Link>
                   </li>
                 );
               })}
@@ -275,7 +277,7 @@ export default function Hoje() {
       </div>
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo="Conta de hoje, passo a passo">
-        <ListaExtrato linhas={extratoDoPeriodo(r).filter((l) => l.tipo !== "titulo")} />
+        <ExplicacaoConta r={r} modo="dia" contexto="Conta de hoje até agora." />
         <BotaoPrincipal variante="fantasma" onClick={() => setPorQue(false)}>Entendi</BotaoPrincipal>
       </BottomSheet>
 

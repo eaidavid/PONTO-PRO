@@ -63,6 +63,9 @@ test.describe("prints", () => {
           await page.goto("/historico");
           await page.getByRole("button", { name: /^qua 04/ }).click();
           await page.waitForTimeout(300);
+          await page.screenshot({ path: `${pasta}/resumo-dia-${tema}-390.png` });
+          await page.getByRole("button", { name: "Ajustar o dia" }).click();
+          await page.waitForTimeout(300);
           await page.screenshot({ path: `${pasta}/editar-dia-${tema}-390.png` });
         }
       });

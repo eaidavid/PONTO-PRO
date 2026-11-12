@@ -35,3 +35,4 @@ export * from "./componentes/ResumoNumeros";
 export * from "./componentes/TituloSecao";
 export * from "./componentes/Caixa";
 export * from "./componentes/Bloqueio";
+export * from "./componentes/ExplicacaoConta";
