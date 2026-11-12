@@ -122,3 +122,18 @@ describe("regras de cálculo do app antigo", () => {
     expect(aplicarRegrasAntigas(uma, conv.regras!).mudancas).toEqual([]);
   });
 });
+
+describe("dias de exemplo de versões anteriores do app antigo", () => {
+  it("reconhece exemplos com outra saída redonda e mantém os dias reais com minutos quebrados", () => {
+    const dias = {
+      "2026-10-21": { t: ["07:00", "12:00", "13:00", "18:00"], type: "normal" }, // exemplo antigo (saída 18:00)
+      "2026-10-22": { t: ["07:00", "12:00", "13:00", "18:00"], type: "normal" },
+      "2026-11-02": { t: ["07:00", "", "", "12:00"], type: "feriado" },
+      "2026-11-03": { t: ["06:58", "12:00", "13:00", "17:00"], type: "normal" }, // real
+      "2026-11-04": { t: ["06:54", "11:56", "12:59", "18:02"], type: "normal" }, // real
+    };
+    const r = converterPontoAntigo(JSON.stringify({ days: dias }), { itens: [], datasComRegistro: [] });
+    expect(r.resumo.exemplos).toBe(3);
+    expect(r.registros.map((x) => x.data)).toEqual(["2026-11-03", "2026-11-04"]);
+  });
+});

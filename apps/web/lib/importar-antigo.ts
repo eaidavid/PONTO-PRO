@@ -60,6 +60,20 @@ const EXEMPLOS: Record<string, { t: string[]; tipo: string }> = {
   "2026-10-23": { t: S, tipo: "normal" }, "2026-10-30": { t: S, tipo: "normal" }, "2026-11-04": { t: F, tipo: "normal" }, "2026-11-05": { t: F, tipo: "normal" },
 };
 
+/** Horários redondos usados nos exemplos (houve mais de uma versão, com saídas diferentes). */
+const HORAS_EXEMPLO = new Set(["", "07:00", "12:00", "13:00", "16:00", "17:00", "18:00"]);
+
+/**
+ * Dia de exemplo: data da lista de exemplos, entrada às 07:00 e só horários redondos de exemplo.
+ * Um dia real nessas datas quase sempre tem minutos quebrados (06:54, 17:12...) e entra normalmente.
+ */
+function ehExemplo(data: string, tipo: TipoDia, t: string[]): boolean {
+  const ex = EXEMPLOS[data];
+  if (!ex || ex.tipo !== tipo) return false;
+  if (t[0] !== "07:00") return false;
+  return t.every((h) => HORAS_EXEMPLO.has(h ?? ""));
+}
+
 const TIPOS: Record<string, TipoDia> = { normal: "normal", falta: "falta", atestado: "atestado", feriado: "feriado", folga: "folga" };
 const UNIDADES: Record<string, string> = { "m²": "m2", "m³": "m3", "peça": "peca" };
 const HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -123,8 +137,7 @@ export function converterPontoAntigo(
     }
     const t = Array.isArray(dia.t) ? dia.t.map((h) => (typeof h === "string" && HORA.test(h) ? h : "")) : ["", "", "", ""];
     const tipo = TIPOS[dia.type ?? "normal"] ?? "normal";
-    const ex = EXEMPLOS[data];
-    if (!opcoes.incluirExemplos && ex && ex.tipo === tipo && ex.t.every((h, i) => (t[i] ?? "") === h)) {
+    if (!opcoes.incluirExemplos && ehExemplo(data, tipo, t)) {
       exemplos++;
       continue;
     }
