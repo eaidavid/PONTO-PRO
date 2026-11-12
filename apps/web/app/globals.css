@@ -2,3 +2,13 @@
 @import "@ponto-pro/ui/estilos.css";
 
 @source "../../../packages/ui/src";
+
+/*
+ * Página de vendas: a abertura espera a animação de entrada para aparecer.
+ * Se o JavaScript não rodar, ela aparece sozinha depois de 2s (nunca fica escondida).
+ */
+@keyframes titulo-espera {
+  from { visibility: hidden; }
+  to { visibility: visible; }
+}
+[data-heroi]:not([data-pronto]) :is([data-titulo="heroi"], [data-heroi-item], [data-heroi-demo]) { animation: titulo-espera 2s step-end both; }
