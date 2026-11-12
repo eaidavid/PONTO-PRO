@@ -443,3 +443,39 @@ test("trazer os dados do Ponto Pro antigo, sem os dias de exemplo", async ({ pag
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("Muro de fechamento")).toBeVisible();
 });
+
+test("trazer só as regras do app antigo depois de já ter importado, e ver quanto deu cada dia", async ({ page }) => {
+  await fazerOnboarding(page);
+  const antigo = {
+    app: "Ponto Pro antigo",
+    versao: 2,
+    estado: {
+      cfg: { nome: "José", rate: 30, jornada: 8, almoco: 60, fecha: 20, x50: 50, x100: 100, inss: 8, outros: 0 },
+      days: { "2026-11-06": { t: ["07:00", "12:00", "13:00", "17:00"], type: "normal" } }, // sex: 9h → 8h + 1h extra
+      prod: [],
+    },
+  };
+  const colar = async () => {
+    await page.goto("/conta");
+    await page.getByRole("button", { name: /Trazer do Ponto Pro antigo/ }).click();
+    const painel = page.getByRole("dialog", { name: "Trazer do Ponto Pro antigo" });
+    await painel.getByLabel("Dados copiados").fill(JSON.stringify(antigo));
+    return painel;
+  };
+  // 1ª vez: só os dias (sem as regras)
+  let painel = await colar();
+  await expect(painel.getByText("Valor da hora: R$ 25,00 → R$ 30,00")).toBeVisible();
+  await painel.getByRole("checkbox", { name: /Calcular igual ao app antigo/ }).click();
+  await painel.getByRole("button", { name: "Trazer 1 dia e 0 lançamentos" }).click();
+  await expect(page.getByText("Pronto: 1 dia e 0 lançamentos vieram do Ponto Pro antigo.")).toBeVisible();
+
+  // 2ª vez: o dia já existe, mas dá para trazer as regras
+  painel = await colar();
+  await expect(painel.getByText("Não há dias novos para trazer.")).toBeVisible();
+  await painel.getByRole("button", { name: "Usar as regras do app antigo" }).click();
+  await expect(page.getByText("Pronto: o Pingou agora calcula com as regras do app antigo.")).toBeVisible();
+
+  // histórico mostra quanto deu o dia: 8h × 30 + 1h × 30 × 1,5 = 285,00
+  await page.goto("/historico");
+  await expect(page.getByRole("button", { name: /^sex 06/ })).toContainText("R$ 285,00");
+});

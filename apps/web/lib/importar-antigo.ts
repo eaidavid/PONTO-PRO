@@ -1,4 +1,4 @@
-import type { DiaRegistro, ItemProducao, LancamentoProducao, Marcacoes, TipoDia } from "@ponto-pro/core";
+import { type DiaEscala, type DiaRegistro, formatarHorasCurto, formatarReais, type ItemProducao, type LancamentoProducao, type Marcacoes, minParaHora, horaParaMin, PerfilTrabalho, type TipoDia } from "@ponto-pro/core";
 
 /*
  * Importação do "Ponto Pro" antigo (o protótipo de uma página só, que guardava tudo no navegador
@@ -8,7 +8,7 @@ import type { DiaRegistro, ItemProducao, LancamentoProducao, Marcacoes, TipoDia 
 
 /** Formato salvo pelo app antigo. */
 interface EstadoAntigo {
-  cfg?: { nome?: string; empresa?: string; cargo?: string };
+  cfg?: { nome?: string; empresa?: string; cargo?: string; fecha?: number; rate?: number; jornada?: number; almoco?: number; x50?: number; x100?: number; inss?: number; outros?: number };
   days?: Record<string, { t?: string[]; type?: string }>;
   prod?: { d?: string; id?: string; q?: number; t?: string }[];
   precos?: Record<string, number>;
@@ -74,6 +74,8 @@ export interface ImportacaoAntiga {
   itensNovos: ItemProducao[];
   lancamentos: LancamentoProducao[];
   pessoal: { nome?: string; empresa?: string; cargo?: string };
+  /** Regras de cálculo do app antigo (valor da hora, jornada, adicionais, descontos). */
+  regras: RegrasAntigas | null;
   resumo: {
     /** Dias que entram. */
     dias: number;
@@ -200,12 +202,31 @@ export function converterPontoAntigo(
     ...(limpa(estado.cfg?.cargo) ? { cargo: limpa(estado.cfg?.cargo) } : {}),
   };
 
+  const num = (v: unknown, min: number, max: number) => (typeof v === "number" && Number.isFinite(v) && v >= min && v <= max ? v : null);
+  const c = estado.cfg ?? {};
+  const rate = num(c.rate, 0.01, 10_000);
+  const jornada = num(c.jornada, 0.5, 24);
+  const regras: RegrasAntigas | null =
+    rate && jornada
+      ? {
+          valorHora: Math.round(rate * 100),
+          jornadaMin: Math.round(jornada * 60),
+          almocoMin: Math.round(num(c.almoco, 0, 240) ?? 60),
+          diaFechamento: Math.round(num(c.fecha, 1, 28) ?? 20),
+          extraDiaUtil: num(c.x50, 0, 300) ?? 50,
+          extraFimDeSemana: num(c.x100, 0, 300) ?? 100,
+          descontoPct: num(c.inss, 0, 100) ?? 0,
+          outrosDescontos: Math.round((num(c.outros, 0, 1_000_000) ?? 0) * 100),
+        }
+      : null;
+
   const datas = [...registros.map((r) => r.data), ...lancamentos.map((l) => l.data)].sort();
   return {
     registros,
     itensNovos,
     lancamentos,
     pessoal,
+    regras,
     resumo: {
       dias: registros.length,
       jaExistem,
@@ -216,4 +237,104 @@ export function converterPontoAntigo(
       ultimo: datas.at(-1) ?? null,
     },
   };
+}
+
+// ---------- regras de cálculo ----------
+
+export interface RegrasAntigas {
+  valorHora: number;
+  jornadaMin: number;
+  almocoMin: number;
+  diaFechamento: number;
+  /** % da hora extra em dia útil. */
+  extraDiaUtil: number;
+  /** % de sábado, domingo e feriado (o app antigo usava um só). */
+  extraFimDeSemana: number;
+  /** % fixo de desconto (o app antigo chamava de "INSS/IR"). */
+  descontoPct: number;
+  /** Outros descontos fixos (centavos). */
+  outrosDescontos: number;
+}
+
+const DIAS_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
+function resumoEscala(p: PerfilTrabalho): string {
+  if (p.escala.tipo !== "semanal") return "escala de revezamento";
+  const dias = p.escala.dias;
+  const total = dias.reduce((t, d) => t + (d.trabalha ? d.horasLiquidasMin : 0), 0);
+  const trabalha = dias.map((d, i) => (d.trabalha ? `${DIAS_SEMANA[i]!.slice(0, 3)} ${formatarHorasCurto(d.horasLiquidasMin)}` : null)).filter(Boolean);
+  return `${formatarHorasCurto(total)} por semana (${trabalha.join(", ")})`;
+}
+
+function resumoDescontos(p: PerfilTrabalho): string {
+  if (p.descontos.length === 0) return "nenhum";
+  return p.descontos
+    .map((d) =>
+      d.tipo === "percentual" ? `${d.nome} ${d.valor}%` : d.tipo === "fixo" ? `${d.nome} ${formatarReais(d.valor)}` : d.tipo === "inss" ? "INSS pela tabela" : d.tipo === "irrf" ? "imposto de renda pela tabela" : d.nome,
+    )
+    .join(", ");
+}
+
+/**
+ * Perfil do Pingou ajustado para calcular como o app antigo:
+ * pagamento por hora, segunda a sexta com a mesma jornada, sábado e domingo inteiros como extra,
+ * o mesmo adicional para fim de semana e feriado, desconto em % fixo e sem folga remunerada sobre extra.
+ * Devolve também a lista de mudanças em português, para a pessoa conferir antes.
+ */
+export function aplicarRegrasAntigas(atual: PerfilTrabalho, r: RegrasAntigas): { perfil: PerfilTrabalho; mudancas: string[] } {
+  const p = structuredClone(atual);
+  const mudancas: string[] = [];
+
+  // pagamento
+  const pg = atual.pagamento;
+  if (pg.forma !== "hora") mudancas.push(`Forma de pagamento: passa a ser por hora, ${formatarReais(r.valorHora)}`);
+  else if (pg.valorHora !== r.valorHora) mudancas.push(`Valor da hora: ${formatarReais(pg.valorHora)} → ${formatarReais(r.valorHora)}`);
+  p.pagamento = { forma: "hora", valorHora: r.valorHora };
+
+  // período
+  if (atual.ciclo.diaFechamento !== r.diaFechamento) mudancas.push(`O período fecha no dia ${atual.ciclo.diaFechamento} → dia ${r.diaFechamento}`);
+  p.ciclo = { diaFechamento: r.diaFechamento };
+
+  // escala: segunda a sexta com a jornada; sábado e domingo de folga (trabalho neles vira extra)
+  const antigaEscala = atual.escala.tipo === "semanal" ? atual.escala.dias : null;
+  const dias: DiaEscala[] = Array.from({ length: 7 }, (_, i) => {
+    if (i === 0 || i === 6) return { trabalha: false, almocoMin: 0, horasLiquidasMin: 0 };
+    const inicio = antigaEscala?.[i]?.inicio ?? "07:00";
+    return { trabalha: true, inicio, fim: minParaHora((horaParaMin(inicio) + r.jornadaMin + r.almocoMin) % 1440), almocoMin: r.almocoMin, horasLiquidasMin: r.jornadaMin };
+  });
+  p.escala = { tipo: "semanal", preset: "personalizada", dias };
+  const antes = resumoEscala(atual);
+  const depois = resumoEscala(p);
+  if (antes !== depois) mudancas.push(`Sua semana: ${antes} → ${depois}; sábado e domingo contam como hora extra`);
+  p.jornada = { limiteDiarioMin: r.jornadaMin, limiteSemanalMin: r.jornadaMin * 5, compensacaoSemanal: false };
+
+  // adicionais
+  const a = atual.adicionais;
+  if (a.extraDiaUtil !== r.extraDiaUtil || a.extraSabado !== r.extraFimDeSemana || a.extraDomingo !== r.extraFimDeSemana || a.extraFeriado !== r.extraFimDeSemana) {
+    mudancas.push(`Hora extra: +${r.extraDiaUtil}% em dia útil e +${r.extraFimDeSemana}% em sábado, domingo e feriado`);
+  }
+  p.adicionais = { ...a, extraDiaUtil: r.extraDiaUtil, extraSabado: r.extraFimDeSemana, extraDomingo: r.extraFimDeSemana, extraFeriado: r.extraFimDeSemana, feriadoTrabalhado: { abonaDia: true } };
+
+  // descontos
+  const descontos: PerfilTrabalho["descontos"] = [];
+  if (r.descontoPct > 0) descontos.push({ id: "antigo-desconto", nome: "INSS/IR (app antigo)", tipo: "percentual", valor: r.descontoPct });
+  if (r.outrosDescontos > 0) descontos.push({ id: "antigo-outros", nome: "Outros descontos", tipo: "fixo", valor: r.outrosDescontos });
+  const descAntes = resumoDescontos(atual);
+  p.descontos = descontos;
+  const descDepois = resumoDescontos(p);
+  if (descAntes !== descDepois) mudancas.push(`Descontos: ${descAntes} → ${descDepois}`);
+
+  // o app antigo não tinha folga remunerada sobre extra nem saldo de horas
+  if (atual.clt?.dsrSobreExtras) mudancas.push("Folga remunerada sobre hora extra: desligada (o app antigo não calculava)");
+  p.clt = { dsrSobreExtras: false };
+  if (atual.bancoHoras.ativo) mudancas.push("Saldo de horas: desligado (no app antigo, toda hora extra era paga)");
+  p.bancoHoras = { ...atual.bancoHoras, ativo: false };
+
+  // o que veio do app antigo deixa de ser "sugestão"
+  const mexidos = ["pagamento", "ciclo", "escala", "jornada", "adicionais", "descontos", "clt", "bancoHoras"];
+  p.sugestoes = atual.sugestoes.filter((c) => !mexidos.some((m) => c === m || c.startsWith(`${m}.`)));
+
+  const ok = PerfilTrabalho.safeParse(p);
+  if (!ok.success) throw new Error("As regras do app antigo têm algum valor fora do normal. Ajuste em Conta no app antigo e copie de novo.");
+  return { perfil: ok.data, mudancas };
 }
