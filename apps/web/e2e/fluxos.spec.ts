@@ -64,11 +64,26 @@ test("ganhos explicados e contracheque em PDF", async ({ page }) => {
   await expect(sheet.getByText("Assentar meio-fio 50 m × R$ 12,00 =")).toBeVisible();
   await sheet.getByRole("button", { name: "Fechar" }).click();
 
+  // resumo: copiar em texto
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("button", { name: "Copiar resumo" }).click();
+  await expect(page.getByText("Resumo copiado. É só colar.")).toBeVisible();
+  const resumo = await page.evaluate(() => navigator.clipboard.readText());
+  expect(resumo).toContain("*Meus ganhos — período 21/10 a 20/11*");
+  expect(resumo).toMatch(/Vai pingar: \*R\$ [\d.,]+\*/);
+
   await page.getByRole("tab", { name: "Contracheque" }).click();
   await expect(page.getByText("Estimativa — sem validade legal")).toBeVisible();
-  await page.emulateMedia({ media: "print" });
-  await page.pdf({ path: "../../docs/prints/contracheque-estimado.pdf", format: "A4", printBackground: true });
-  await page.emulateMedia({ media: "screen" });
+  await page.getByRole("button", { name: "Copiar contracheque" }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("*Contracheque estimado — 21/10 a 20/11*");
+
+  // PDF gerado no aparelho (sem a impressão do navegador)
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Baixar PDF" }).click()]);
+  expect(download.suggestedFilename()).toBe("contracheque-21-10-a-20-11.pdf");
+  const caminho = await download.path();
+  const bytes = (await import("node:fs")).readFileSync(caminho);
+  expect(bytes.subarray(0, 8).toString("latin1")).toBe("%PDF-1.4");
+  expect(bytes.toString("latin1")).toContain("(Jos\\351)");
 });
 
 test("menu Mais: tamanho compacto e atalhos", async ({ page }) => {
@@ -91,7 +106,13 @@ test("ponto esquecido: corrige em um toque e o status responde na hora", async (
   await page.getByRole("button", { name: "Bater entrada às 07:00" }).click();
   await expect(page.getByText("Ponto corrigido")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Trabalhando" })).toBeVisible();
-  await expect(page.getByText("2h41 de 9h · sai às 17:00")).toBeVisible();
+  const linha = page.getByRole("region", { name: "Linha do dia" });
+  await expect(linha.getByText("Trabalhado")).toBeVisible();
+  await expect(linha.getByText("2h41")).toBeVisible();
+  await expect(linha.getByText("Falta", { exact: true })).toBeVisible();
+  await expect(linha.getByText("6h19")).toBeVisible();
+  await expect(linha.getByText("Saída prevista")).toBeVisible();
+  await expect(linha.getByText("17:00")).toBeVisible();
 });
 
 test("toque duplo pede confirmação", async ({ page }) => {
@@ -343,4 +364,49 @@ test("página de vendas: quem já usa o app continua vendo a página e tem o bot
   await expect(page.getByRole("heading", { level: 1, name: "Bateu o ponto, pingou." })).toBeVisible();
   await page.getByRole("link", { name: "Abrir o app" }).click();
   await expect(page).toHaveURL(/\/hoje$/);
+});
+
+test("Hoje mostra os últimos dias com horário e valor", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/hoje");
+  const ultimos = page.getByRole("region", { name: "Últimos dias" });
+  await expect(ultimos.getByRole("listitem")).toHaveCount(3);
+  await expect(ultimos.getByRole("listitem").first()).toContainText("07:00 às 16:00");
+  await expect(ultimos.getByRole("listitem").nth(1)).toContainText("R$ 825,00"); // 9h × R$ 25,00 + 50 m de meio-fio
+  await ultimos.getByRole("link", { name: "Ver tudo" }).click();
+  await expect(page).toHaveURL(/\/historico$/);
+});
+
+test("calculadora: salário vira valor da hora e dá para usar no perfil", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/calculadora");
+  await page.getByLabel("Salário mensal").fill("2.200,00");
+  await expect(page.getByText("R$ 10,00", { exact: true })).toBeVisible();
+  await expect(page.getByText("R$ 15,00", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "40h" }).click();
+  await expect(page.getByText("R$ 11,00", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Usar R$ 11,00 como meu valor da hora" }).click();
+  await expect(page.getByText("Valor da hora agora é R$ 11,00")).toBeVisible();
+
+  // conta de um dia: 07:00 às 18:00 com 1h de almoço e jornada de 8h48 = 10h, 1h12 de extra
+  for (let i = 0; i < 4; i++) await page.getByRole("button", { name: "Saída: 15 minutos depois" }).click();
+  await expect(page.getByLabel("Saída", { exact: true })).toHaveText("18:00");
+  await expect(page.getByText("10h", { exact: true })).toBeVisible();
+  await expect(page.getByText("1h12", { exact: true })).toBeVisible();
+});
+
+test("tabela de preços: muda vários preços de uma vez e mostra o total por área", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/producao");
+  await expect(page.getByRole("region", { name: "No período, por área" })).toContainText("R$ 600,00");
+  await page.getByRole("button", { name: "Preços" }).click();
+  const tabela = page.getByRole("dialog", { name: "Tabela de preços" });
+  await expect(tabela.getByRole("button", { name: "Nenhum preço mudou" })).toBeDisabled();
+  const campos = tabela.getByRole("textbox", { name: /^Preço de / });
+  await campos.nth(0).fill("10,00");
+  await campos.nth(1).fill("20,00");
+  await tabela.getByRole("button", { name: "Salvar 2 preços" }).click();
+  await expect(page.getByText("2 preços salvos")).toBeVisible();
 });

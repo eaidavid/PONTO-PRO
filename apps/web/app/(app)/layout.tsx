@@ -25,6 +25,7 @@ const GRUPO: Record<string, string> = {
   metas: "mais",
   conta: "mais",
   obras: "mais",
+  calculadora: "mais",
 };
 
 export default function LayoutApp({ children }: { children: ReactNode }) {

@@ -18,3 +18,4 @@ export * from "./historico";
 export * from "./pagamento";
 export * from "./clt";
 export * from "./planos";
+export * from "./calculadora";

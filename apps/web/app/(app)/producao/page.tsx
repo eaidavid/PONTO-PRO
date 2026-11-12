@@ -11,6 +11,8 @@ import {
   periodoDaData,
   rotuloUnidade,
   somarDias,
+  totaisPorArea,
+  UNIDADES_CHIPS,
   valorProducao,
 } from "@ponto-pro/core";
 import {
@@ -24,7 +26,7 @@ import {
   TituloSecao,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronDown, ChevronLeft, HardHat, Save, Search, Tags, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, HardHat, Pencil, Save, Search, Tags, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
@@ -49,6 +51,9 @@ export default function LancarProducao() {
   const [filtro, setFiltro] = useState("");
   const [editandoItem, setEditandoItem] = useState<ItemProducao | null>(null);
   const [precoTxt, setPrecoTxt] = useState("");
+  /** Preços digitados na tabela, ainda não salvos (id → texto). */
+  const [unidade, setUnidade] = useState("");
+  const [rascunho, setRascunho] = useState<Record<string, string>>({});
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
@@ -57,12 +62,13 @@ export default function LancarProducao() {
     return {
       total: doPeriodo.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0),
       ordenados: ordenarPorUso(estado.itens, estado.lancamentos),
+      porArea: totaisPorArea(estado.itens, doPeriodo),
     };
   }, [estado, agora]);
 
   if (!estado?.perfil || !agora || !calc) return <Carregando />;
   const { itens, lancamentos, obrasAtivas, preferencias } = estado;
-  const { total, ordenados } = calc;
+  const { total, ordenados, porArea } = calc;
   const porId = new Map(itens.map((i) => [i.id, i]));
   const data = somarDias(agora.data, quando);
   const obraAtual = obrasAtivas.find((o) => o.id === preferencias.obraAtual)?.id;
@@ -92,9 +98,31 @@ export default function LancarProducao() {
     if (!editandoItem) return;
     const preco = lerReais(precoTxt);
     if (preco === null) return;
-    await salvarItem({ ...editandoItem, preco, exemplo: false });
+    await salvarItem({ ...editandoItem, preco, unidade: unidade || editandoItem.unidade, exemplo: false });
+    setRascunho((r) => {
+      const n = { ...r };
+      delete n[editandoItem.id];
+      return n;
+    });
     setEditandoItem(null);
-    mostrar({ texto: `Preço de ${editandoItem.nome} salvo` });
+    mostrar({ texto: `${editandoItem.nome} salvo` });
+  }
+
+  const paraTexto = (c: number) => (c / 100).toFixed(2).replace(".", ",");
+  /** Preços da tabela que mudaram e são válidos. */
+  const mudados = itens.flatMap((i) => {
+    const t = rascunho[i.id];
+    if (t === undefined) return [];
+    const preco = lerReais(t);
+    return preco !== null && preco !== i.preco ? [{ item: i, preco }] : [];
+  });
+
+  async function salvarTabela() {
+    for (const m of mudados) await salvarItem({ ...m.item, preco: m.preco, exemplo: false });
+    const n = mudados.length;
+    setRascunho({});
+    setPrecos(false);
+    mostrar({ texto: n === 1 ? "1 preço salvo" : `${n} preços salvos` });
   }
 
   const listaPrecos = filtro ? itens.filter((i) => i.nome.toLowerCase().includes(filtro.toLowerCase())) : itens;
@@ -154,6 +182,29 @@ export default function LancarProducao() {
         />
       </section>
 
+      {porArea.length > 0 && (
+        <section aria-labelledby="t-areas" className="flex flex-col gap-2 pb-4">
+          <TituloSecao id="t-areas">No período, por área</TituloSecao>
+          <ul className="cartao divide-y divide-borda overflow-hidden">
+            {porArea.map((a) => (
+              <li key={a.area} className="flex min-h-14 items-center gap-3 px-4 py-2">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-17 font-bold">{a.area}</span>
+                  <span className="block text-13 text-texto-2">{a.lancamentos === 1 ? "1 lançamento" : `${a.lancamentos} lançamentos`}</span>
+                </span>
+                <span className="numeros text-17 font-bold">{formatarReais(a.valor)}</span>
+              </li>
+            ))}
+            {porArea.length > 1 && (
+              <li className="flex min-h-14 items-center justify-between gap-3 bg-superficie-2 px-4">
+                <span className="text-17 font-bold">Total de produção</span>
+                <span className="numeros text-17 font-bold">{formatarReais(total)}</span>
+              </li>
+            )}
+          </ul>
+        </section>
+      )}
+
       <BottomSheet aberto={escolherDia} onFechar={() => setEscolherDia(false)} titulo="Dia do serviço">
         <div className="flex flex-wrap gap-2 pb-4">
           {([0, -1, -2] as const).map((d) => (
@@ -175,7 +226,17 @@ export default function LancarProducao() {
         </div>
       </BottomSheet>
 
-      <BottomSheet aberto={precos && !editandoItem} onFechar={() => setPrecos(false)} titulo="Preços e serviços" subtitulo="Toque num serviço para mudar o preço.">
+      <BottomSheet
+        aberto={precos && !editandoItem}
+        onFechar={() => setPrecos(false)}
+        titulo="Tabela de preços"
+        subtitulo="Mude quantos preços quiser e salve tudo de uma vez."
+        rodape={
+          <BotaoPrincipal tamanho="g" icone={Save} onClick={salvarTabela} disabled={mudados.length === 0}>
+            {mudados.length === 0 ? "Nenhum preço mudou" : mudados.length === 1 ? "Salvar 1 preço" : `Salvar ${mudados.length} preços`}
+          </BotaoPrincipal>
+        }
+      >
         <div className="flex flex-col gap-3 pb-2">
           <label className="flex min-h-14 items-center gap-3 rounded-full border-2 border-borda-forte bg-superficie px-4 focus-within:border-primaria">
             <Search aria-hidden className="size-5 text-texto-2" />
@@ -183,27 +244,42 @@ export default function LancarProducao() {
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar" className="min-w-0 flex-1 bg-transparent text-17 outline-none" />
           </label>
           <ul className="cartao divide-y divide-borda overflow-hidden">
-            {listaPrecos.map((i) => (
-              <li key={i.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditandoItem(i);
-                    setPrecoTxt((i.preco / 100).toFixed(2).replace(".", ","));
-                  }}
-                  className="flex min-h-16 w-full items-center gap-3 px-4 py-2 text-left active:bg-superficie-2"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-17 font-bold">{i.nome}</span>
-                    <span className="block text-13 text-texto-2">{i.area}{i.exemplo ? " · preço de exemplo" : ""}</span>
-                  </span>
-                  <span className="numeros text-right text-17 font-bold">
-                    {formatarReais(i.preco)}
-                    <span className="block text-13 font-normal text-texto-2">por {rotuloUnidade(i.unidade)}</span>
-                  </span>
-                </button>
-              </li>
-            ))}
+            {listaPrecos.map((i) => {
+              const texto = rascunho[i.id] ?? paraTexto(i.preco);
+              const invalido = lerReais(texto) === null;
+              return (
+                <li key={i.id} className="flex min-h-16 items-center gap-2 py-2 pr-3 pl-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditandoItem(i);
+                      setPrecoTxt(texto);
+                      setUnidade(i.unidade);
+                    }}
+                    aria-label={`Mais opções de ${i.nome}`}
+                    className="flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 text-left active:bg-superficie-2"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-17 font-bold">{i.nome}</span>
+                      <span className="block text-13 text-texto-2">{i.area}{i.exemplo ? " · preço de exemplo" : ""}</span>
+                    </span>
+                    <Pencil aria-hidden className="size-4 shrink-0 text-texto-2" />
+                  </button>
+                  <label className={`flex min-h-12 w-32 shrink-0 items-center gap-1 rounded-xl border-2 bg-superficie px-2 focus-within:border-primaria ${invalido ? "border-erro" : rascunho[i.id] !== undefined ? "border-primaria" : "border-borda-forte"}`}>
+                    <span aria-hidden className="text-13 text-texto-2">R$</span>
+                    <input
+                      inputMode="decimal"
+                      value={texto}
+                      onChange={(e) => setRascunho((r) => ({ ...r, [i.id]: e.target.value }))}
+                      aria-label={`Preço de ${i.nome} por ${rotuloUnidade(i.unidade)}`}
+                      aria-invalid={invalido || undefined}
+                      className="numeros w-full min-w-0 bg-transparent text-right text-17 font-bold outline-none"
+                    />
+                    <span aria-hidden className="text-13 whitespace-nowrap text-texto-2">/{rotuloUnidade(i.unidade)}</span>
+                  </label>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </BottomSheet>
@@ -213,12 +289,20 @@ export default function LancarProducao() {
         onFechar={() => setEditandoItem(null)}
         titulo={editandoItem?.nome ?? ""}
         subtitulo={editandoItem?.area}
-        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={salvarPreco} disabled={lerReais(precoTxt) === null}>Salvar preço</BotaoPrincipal>}
+        rodape={<BotaoPrincipal tamanho="g" icone={Save} onClick={salvarPreco} disabled={lerReais(precoTxt) === null}>Salvar</BotaoPrincipal>}
       >
         {editandoItem && (
           <div className="flex flex-col gap-4 pb-2">
             {editandoItem.exemplo && <SeloSugestao texto="Preço de exemplo — confira o valor que você cobra" />}
-            <CampoNumero rotulo={`Preço por ${rotuloUnidade(editandoItem.unidade)}`} prefixo="R$" valor={precoTxt} onChange={setPrecoTxt} />
+            <div className="flex flex-col gap-2">
+              <span className="text-15 font-bold">Unidade</span>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Unidade">
+                {[...new Set([editandoItem.unidade, ...UNIDADES_CHIPS])].map((u) => (
+                  <Chip key={u} selecionado={(unidade || editandoItem.unidade) === u} onClick={() => setUnidade(u)}>{rotuloUnidade(u)}</Chip>
+                ))}
+              </div>
+            </div>
+            <CampoNumero rotulo={`Preço por ${rotuloUnidade(unidade || editandoItem.unidade)}`} prefixo="R$" valor={precoTxt} onChange={setPrecoTxt} />
             <p className="text-15 text-texto-2">Lançamentos antigos mantêm o preço da época.</p>
             <BotaoPrincipal
               variante="perigo"

@@ -11,6 +11,7 @@ import {
   proximaEtapa,
   saidaPrevista as calcularSaidaPrevista,
   saudacao,
+  seloDia,
   somarDias,
   statusDoDia,
 } from "@ponto-pro/core";
@@ -26,7 +27,7 @@ import {
   useToast,
   ValorDinheiro,
 } from "@ponto-pro/ui";
-import { BellRing, ChevronRight, HardHat, PackagePlus, Wallet } from "lucide-react";
+import { BellRing, ChevronRight, HardHat, History, PackagePlus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { baterPonto, completarMarcacoes, restaurarRegistro, salvarPreferencias } from "../../../lib/acoes";
@@ -71,12 +72,24 @@ export default function Hoje() {
     const { perfil, registros, itens, lancamentos, feriadosLocais } = estado;
     const r = ganhoDoDia({ perfil, data: agora.data, registros, itens, lancamentos, feriadosLocais, agora });
     const feriado = feriadosDoIntervalo(agora.data, agora.data, feriadosLocais).get(agora.data);
-    return { r, dia: r.dias[0]!, feriado };
+    // últimos dias com ponto ou produção, antes de hoje (mais recente primeiro)
+    const datas = new Set([...registros.map((x) => x.data), ...lancamentos.map((l) => l.data)]);
+    const ultimos = [...datas]
+      .filter((d) => d < agora.data)
+      .sort()
+      .reverse()
+      .slice(0, 3)
+      .map((data) => {
+        const g = ganhoDoDia({ perfil, data, registros, itens, lancamentos, feriadosLocais });
+        const reg = registros.find((x) => x.data === data);
+        return { data, bruto: g.bruto, trabalhadoMin: g.dias[0]?.trabalhadoMin ?? 0, reg };
+      });
+    return { r, dia: r.dias[0]!, feriado, ultimos };
   }, [estado, agora]);
 
   if (!estado?.perfil || !agora || !calc) return <Carregando />;
   const { perfil, registros, pessoal, preferencias, obrasAtivas } = estado;
-  const { r, dia, feriado } = calc;
+  const { r, dia, feriado, ultimos } = calc;
   const registro = registros.find((x) => x.data === agora.data);
   const marcacoes = registro?.marcacoes ?? {};
   const etapa = registro && (registro.tipo === "falta" || registro.tipo === "atestado") ? null : proximaEtapa(marcacoes);
@@ -168,7 +181,26 @@ export default function Hoje() {
               marcas={Math.round(previstoMin / 60)}
             />
           )}
-          <p className="numeros text-17 font-bold">{apoio}</p>
+          {status.estado === "trabalhando" && previstoMin > 0 ? (
+            <dl className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <dt className="text-13 text-texto-2">Trabalhado</dt>
+                <dd className="numeros text-20 font-bold">{formatarHorasCurto(dia.trabalhadoMin)}</dd>
+              </div>
+              <div>
+                <dt className="text-13 text-texto-2">{dia.trabalhadoMin >= previstoMin ? "Hora extra" : "Falta"}</dt>
+                <dd className={dia.trabalhadoMin >= previstoMin ? "numeros text-20 font-bold text-extra-texto" : "numeros text-20 font-bold"}>
+                  {dia.trabalhadoMin >= previstoMin ? `+${formatarHorasCurto(dia.trabalhadoMin - previstoMin)}` : formatarHorasCurto(previstoMin - dia.trabalhadoMin)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-13 text-texto-2">Saída prevista</dt>
+                <dd className="numeros text-20 font-bold">{saida ?? "--:--"}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="numeros text-17 font-bold">{apoio}</p>
+          )}
         </section>
 
         <BotaoPonto
@@ -212,6 +244,34 @@ export default function Hoje() {
             </li>
           )}
         </ul>
+
+        {ultimos.length > 0 && (
+          <section aria-labelledby="ultimos-dias" className="mb-2 flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2 pl-1">
+              <h2 id="ultimos-dias" className="text-15 font-bold text-texto-2">Últimos dias</h2>
+              <Link href="/historico" className="inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-15 font-bold text-primaria-forte">
+                <History aria-hidden className="size-4" /> Ver tudo
+              </Link>
+            </div>
+            <ul className="cartao divide-y divide-borda overflow-hidden">
+              {ultimos.map((u) => {
+                const m = u.reg?.marcacoes ?? {};
+                const tipo = u.reg && u.reg.tipo !== "normal" ? u.reg.tipo : null;
+                const horario = m.entrada ? `${m.entrada} às ${m.saida ?? m.almoco ?? "…"}` : null;
+                return (
+                  <li key={u.data} className="flex min-h-16 items-center gap-3 px-4 py-2">
+                    <span className="numeros w-14 shrink-0 text-15 font-bold capitalize">{seloDia(u.data)}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="numeros block text-17">{tipo ? tipo[0]!.toUpperCase() + tipo.slice(1) : (horario ?? "Só produção")}</span>
+                      {u.trabalhadoMin > 0 && <span className="numeros block text-13 text-texto-2">{formatarHorasCurto(u.trabalhadoMin)} trabalhadas</span>}
+                    </span>
+                    <ValorDinheiro centavos={u.bruto} />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
       </div>
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo="Conta de hoje, passo a passo">
