@@ -15,7 +15,7 @@ export function BotaoCabecalho() {
     <Link
       href={jaUsa ? "/hoje" : "/comecar"}
       onClick={() => medir("clique_comecar", { secao: "cabecalho" })}
-      className="inline-flex min-h-12 items-center rounded-full bg-white px-5 whitespace-nowrap text-[color:var(--marca)]"
+      className="inline-flex min-h-12 items-center rounded-full bg-white px-5 font-bold whitespace-nowrap text-[color:var(--marca)]"
     >
       {jaUsa ? "Abrir o app" : "Começar"}
     </Link>

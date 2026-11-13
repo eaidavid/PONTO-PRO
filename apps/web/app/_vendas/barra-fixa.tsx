@@ -42,7 +42,7 @@ export function BarraFixa() {
   return (
     <div
       className={cx(
-        "fixed inset-x-0 bottom-0 z-30 border-t border-borda bg-superficie px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.25)] transition-[translate,visibility] duration-200 md:hidden motion-reduce:transition-none",
+        "fixed inset-x-0 bottom-0 z-30 border-t border-borda bg-superficie px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.25)] transition-[translate,visibility] duration-200 md:hidden motion-reduce:transition-none",
         visivel ? "visible translate-y-0" : "invisible translate-y-full",
       )}
     >
@@ -53,7 +53,7 @@ export function BarraFixa() {
         <LinkMedido
           href={jaUsa ? "/hoje" : "/comecar"}
           secao="barra-fixa"
-          className="sombra-botao inline-flex min-h-14 shrink-0 items-center rounded-full bg-primaria px-7 text-17 font-bold text-sobre-primaria"
+          className="sombra-botao inline-flex min-h-12 shrink-0 items-center rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria"
         >
           {jaUsa ? "Abrir o app" : "Começar"}
         </LinkMedido>
