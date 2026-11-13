@@ -209,6 +209,19 @@ describe("formas de pagamento", () => {
     expect(calcularPeriodo({ perfil: m, periodo: SEMANA }).ganhos[0]!.valor).toBe(300_000);
   });
 
+  it("salário fixo + produção: o salário entra inteiro e a produção soma por cima", () => {
+    const p = perfilJose({ pagamento: { forma: "misto", base: "mensal", salario: 300_000, divisorHoras: 220 }, producao: { ativo: false, pacotes: [] } });
+    const r = calcularPeriodo({
+      perfil: p,
+      periodo: SEMANA,
+      registros: semanaJose(),
+      lancamentos: [{ id: "l", data: "2026-10-28", itemId: "x", quantidade: 50, precoUnitario: 1200 }],
+    });
+    expect(r.ganhos.find((l) => l.tipo === "salario")!.valor).toBe(300_000);
+    expect(r.ganhos.filter((l) => l.tipo === "producao").reduce((t, l) => t + l.valor, 0)).toBe(60_000);
+    expect(r.ganhos.reduce((t, l) => t + l.valor, 0)).toBe(360_000);
+  });
+
   it("só produção, sem lançamentos, mostra aviso acolhedor", () => {
     const r = calcularPeriodo({ perfil: perfilJose({ pagamento: { forma: "producao" } }), periodo: SEMANA, registros: semanaJose() });
     expect(r.bruto).toBe(0);

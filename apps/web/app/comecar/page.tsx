@@ -63,8 +63,10 @@ import {
   editar,
   type Forma,
   minutosDaSemana,
+  formaDe,
   NOME_FORMA,
   pagamentoPara,
+  somaProducao,
   valorPrincipal,
 } from "../../lib/perfil";
 import { LEGAL, MARCA } from "../../lib/marca";
@@ -85,7 +87,8 @@ const FORMAS: { id: Forma; icone: LucideIcon; descricao: string }[] = [
   { id: "diaria", icone: CalendarDays, descricao: "Recebo um valor por dia" },
   { id: "mensal", icone: Wallet, descricao: "Recebo um salário todo mês" },
   { id: "producao", icone: Hammer, descricao: "Recebo pelo serviço feito (m², ponto, peça)" },
-  { id: "misto", icone: Layers, descricao: "Hora mais produção" },
+  { id: "misto-mensal", icone: Layers, descricao: "Salário todo mês, mais o serviço que eu lançar" },
+  { id: "misto", icone: Layers, descricao: "Horas trabalhadas, mais o serviço que eu lançar" },
 ];
 
 const PRESETS: { id: PresetId; rotulo: string }[] = [
@@ -148,7 +151,7 @@ export default function Comecar() {
     for (const [k, v] of Object.entries(EXEMPLO)) if (k in pgObj && !pgObj[k]) pgObj[k] = v;
     const novo = editar(p, [], (x) => {
       x.pagamento = pg;
-      x.producao.ativo = f === "producao" || f === "misto" || (x.producao.ativo && f !== "mensal");
+      x.producao.ativo = somaProducao(f) || (x.producao.ativo && f !== "mensal");
       if (x.producao.ativo && x.producao.pacotes.length === 0) x.producao.pacotes = pacotesArea.map((y) => y.id);
     });
     setPerfil(novo);
@@ -222,7 +225,7 @@ export default function Comecar() {
             <h1 className="display text-32">Como você recebe?</h1>
             <div role="radiogroup" aria-label="Como você recebe" className="flex flex-col gap-3">
               {FORMAS.map((f) => (
-                <CartaoOpcao key={f.id} icone={f.icone} titulo={NOME_FORMA[f.id]} descricao={f.descricao} selecionado={p.pagamento.forma === f.id} onClick={() => escolherForma(f.id)} />
+                <CartaoOpcao key={f.id} icone={f.icone} titulo={NOME_FORMA[f.id]} descricao={f.descricao} selecionado={formaDe(p.pagamento) === f.id} onClick={() => escolherForma(f.id)} />
               ))}
             </div>
           </>
@@ -434,7 +437,7 @@ export default function Comecar() {
             <CampoTexto rotulo="Como quer ser chamado?" valor={nome} onChange={setNome} placeholder="Seu nome (opcional)" autoComplete="given-name" maxLength={60} />
             <div className="cartao divide-y divide-borda overflow-hidden">
               <LinhaAjuste icone={HardHat} rotulo="Área" valor={MODELOS[p.area].nome} onClick={() => setPasso(0)} />
-              <LinhaAjuste icone={Wallet} rotulo="Como recebe" valor={`${NOME_FORMA[p.pagamento.forma]}${vp ? ` · ${formatarReais(lerReais(valorTxt) ?? vp.valor)}` : ""}`} onClick={() => setPasso(1)} />
+              <LinhaAjuste icone={Wallet} rotulo="Como recebe" valor={`${NOME_FORMA[formaDe(p.pagamento)]}${vp ? ` · ${formatarReais(lerReais(valorTxt) ?? vp.valor)}` : ""}`} onClick={() => setPasso(1)} />
               <LinhaAjuste icone={CalendarDays} rotulo="Sua semana" valor={`${formatarHorasCurto(horasSemanais(p.escala))} por semana`} onClick={() => setPasso(2)} />
               <LinhaAjuste
                 icone={Percent}

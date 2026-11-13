@@ -67,7 +67,21 @@ export function almocoAtual(escala: Escala): number {
   return almocoPadrao(escala);
 }
 
-export type Forma = Pagamento["forma"];
+/**
+ * Formas que as telas oferecem. "misto-mensal" é o salário fixo somado à produção:
+ * no perfil ele é gravado como { forma: "misto", base: "mensal" }, que o motor de cálculo já entende.
+ */
+export type Forma = Pagamento["forma"] | "misto-mensal";
+
+/** A forma da tela que corresponde a um pagamento gravado. */
+export function formaDe(p: Pagamento): Forma {
+  return p.forma === "misto" && p.base === "mensal" ? "misto-mensal" : p.forma;
+}
+
+/** Recebe pelo que lança na Produção, sozinho ou somado a um valor fixo. */
+export function somaProducao(f: Forma): boolean {
+  return f === "producao" || f === "misto" || f === "misto-mensal";
+}
 
 /** Pagamento novo para a forma escolhida, levando o valor que já existir. */
 export function pagamentoPara(forma: Forma, atual: Pagamento, horasDia = 480): Pagamento {
@@ -83,7 +97,16 @@ export function pagamentoPara(forma: Forma, atual: Pagamento, horasDia = 480): P
       return { forma };
     case "misto":
       return { forma, base: "hora", valorHora: a.valorHora ?? 0 };
+    case "misto-mensal":
+      return { forma: "misto", base: "mensal", salario: a.salario ?? 0, divisorHoras: a.divisorHoras ?? 220 };
   }
+}
+
+/** Salário e divisor de quem recebe por mês, com ou sem produção. Null nas outras formas. */
+export function salarioMensal(p: Pagamento): { salario: number; divisorHoras: number } | null {
+  if (p.forma === "mensal") return { salario: p.salario, divisorHoras: p.divisorHoras };
+  if (p.forma === "misto" && p.base === "mensal") return { salario: p.salario ?? 0, divisorHoras: p.divisorHoras ?? 220 };
+  return null;
 }
 
 /** Valor principal (centavos) e o rótulo do campo, conforme a forma. */
@@ -111,7 +134,8 @@ export const NOME_FORMA: Record<Forma, string> = {
   diaria: "Por dia",
   mensal: "Salário fixo",
   producao: "Por produção ou empreita",
-  misto: "Misto (hora + produção)",
+  misto: "Hora + produção",
+  "misto-mensal": "Salário + produção",
 };
 
 export function centavosParaTexto(c: number): string {

@@ -71,8 +71,11 @@ import {
   editar,
   type Forma,
   minutosDaSemana,
+  formaDe,
   NOME_FORMA,
   pagamentoPara,
+  salarioMensal,
+  somaProducao,
   valorPrincipal,
 } from "../../../lib/perfil";
 import { MARCA } from "../../../lib/marca";
@@ -153,12 +156,12 @@ export default function Conta() {
         <div>
           <h1 className="display text-32">{estado.pessoal.nome?.trim() || "Sua conta"}</h1>
           <p className="text-15 text-sobre-marca-2">
-            {MODELOS[perfil.area].nome} · {NOME_FORMA[perfil.pagamento.forma]}
+            {MODELOS[perfil.area].nome} · {NOME_FORMA[formaDe(perfil.pagamento)]}
           </p>
         </div>
         <ul className="grid grid-cols-3 gap-2">
           {[
-            { v: vp ? formatarReais(vp.valor) : NOME_FORMA[perfil.pagamento.forma], r: vp ? vp.rotulo.replace(/^Valor d[ao] /, "por ").replace("Salário", "salário") : "como recebe", p: "pagamento" as const },
+            { v: vp ? formatarReais(vp.valor) : NOME_FORMA[formaDe(perfil.pagamento)], r: vp ? vp.rotulo.replace(/^Valor d[ao] /, "por ").replace("Salário", "salário") : "como recebe", p: "pagamento" as const },
             { v: formatarHorasCurto(horasSemanais(perfil.escala)), r: "por semana", p: "semana" as const },
             { v: `dia ${perfil.ciclo.diaFechamento}`, r: "fecha o período", p: "fechamento" as const },
           ].map((c) => (
@@ -191,7 +194,7 @@ export default function Conta() {
 
       <Grupo titulo="Quanto e quando você recebe">
         {vp && <LinhaAjuste icone={Wallet} rotulo={vp.rotulo} valor={formatarReais(vp.valor)} onClick={() => abrir("pagamento")} />}
-        {!vp && <LinhaAjuste icone={Wallet} rotulo="Como você recebe" valor={NOME_FORMA[perfil.pagamento.forma]} onClick={() => abrir("pagamento")} />}
+        {!vp && <LinhaAjuste icone={Wallet} rotulo="Como você recebe" valor={NOME_FORMA[formaDe(perfil.pagamento)]} onClick={() => abrir("pagamento")} />}
         <LinhaAjuste
           icone={CalendarClock}
           rotulo="Fechamento e pagamento"
@@ -388,11 +391,11 @@ export default function Conta() {
             {(Object.keys(NOME_FORMA) as Forma[]).map((f) => (
               <Chip
                 key={f}
-                selecionado={p.pagamento.forma === f}
+                selecionado={formaDe(p.pagamento) === f}
                 onClick={() =>
                   mudar([], (x) => {
                     x.pagamento = pagamentoPara(f, x.pagamento);
-                    if (f === "producao" || f === "misto") x.producao.ativo = true;
+                    if (somaProducao(f)) x.producao.ativo = true;
                   })
                 }
               >
@@ -410,12 +413,13 @@ export default function Conta() {
               erro={!valorOk ? "Digite um valor maior que zero" : undefined}
             />
           )}
-          {p.pagamento.forma === "mensal" && (
+          {salarioMensal(p.pagamento) && (
             <p className="text-15 text-texto-2">
-              Valor da hora para extras: salário ÷ {p.pagamento.divisorHoras} horas
-              {lerReais(valorTxt) ? ` = ${formatarReais(Math.round((lerReais(valorTxt) ?? 0) / p.pagamento.divisorHoras))}` : ""}.
+              Valor da hora para extras: salário ÷ {salarioMensal(p.pagamento)!.divisorHoras} horas
+              {lerReais(valorTxt) ? ` = ${formatarReais(Math.round((lerReais(valorTxt) ?? 0) / salarioMensal(p.pagamento)!.divisorHoras))}` : ""}.
             </p>
           )}
+          {p.pagamento.forma === "misto" && <p className="text-17">O que você lançar na aba Produção soma com {p.pagamento.base === "mensal" ? "o salário" : "as horas"}.</p>}
           {p.pagamento.forma === "producao" && <p className="text-17">Você recebe pelo que lança na aba Produção.</p>}
         </div>
       </BottomSheet>

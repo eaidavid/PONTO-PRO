@@ -15,7 +15,7 @@ import { Check, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 import { salvarPerfil } from "../../../lib/acoes";
 import { useEstado } from "../../../lib/estado";
-import { editar } from "../../../lib/perfil";
+import { editar, salarioMensal } from "../../../lib/perfil";
 import { Carregando } from "../../carregando";
 
 const SEMANAS = [44, 40, 36, 30];
@@ -62,7 +62,7 @@ export default function Calculadora() {
   const estado = useEstado();
   const { mostrar } = useToast();
   const pg = estado?.perfil?.pagamento;
-  const salarioPerfil = pg?.forma === "mensal" ? pg.salario : 0;
+  const salarioPerfil = (pg && salarioMensal(pg)?.salario) || 0;
   const horaPerfil = pg?.forma === "hora" ? pg.valorHora : 0;
 
   const [salarioTxt, setSalarioTxt] = useState<string | null>(null);

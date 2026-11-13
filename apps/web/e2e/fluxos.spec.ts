@@ -11,6 +11,28 @@ test("onboarding leva para a tela Hoje com o nome", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Bater entrada às 09:41" })).toBeVisible();
 });
 
+test("começar com salário fixo mais produção", async ({ page }) => {
+  await preparar(page);
+  await page.goto("/comecar");
+  await page.getByRole("radio", { name: /Construção civil/ }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("radio", { name: /Salário \+ produção/ }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByLabel("Salário do mês").fill("3000,00");
+  await expect(page.getByText("Serviços que você faz")).toBeVisible();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByRole("heading", { name: "Pronto!" })).toBeVisible();
+  await expect(page.getByText(/Salário \+ produção · R\$ 3\.000,00/)).toBeVisible();
+  await page.getByLabel("Como quer ser chamado?").fill("José");
+  await page.getByRole("checkbox", { name: /Li e aceito/ }).click();
+  await page.getByRole("button", { name: "Começar a usar" }).click();
+  await expect(page).toHaveURL(/\/hoje$/);
+  await page.goto("/conta");
+  await expect(page.getByText(/Salário \+ produção/).first()).toBeVisible();
+});
+
 test("bater o ponto, desfazer e funcionar sem internet", async ({ page, context }) => {
   await fazerOnboarding(page);
   await page.getByRole("button", { name: "Bater entrada às 09:41" }).click();
