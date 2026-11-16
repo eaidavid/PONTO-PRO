@@ -105,6 +105,8 @@ h3 { font-size: 1.2rem; line-height: 1.25; font-weight: 700; }
 /* ---------- alerta ---------- */
 .alerta { display: grid; gap: 6px; background: var(--erro-suave); color: var(--texto); border-radius: 16px; padding: 18px 20px; margin-bottom: 28px; }
 .alerta b { color: var(--erro); }
+.alerta.resolvido { background: var(--ok-suave); }
+.alerta.resolvido b { color: var(--ok); }
 
 /* ---------- onde estamos ---------- */
 .grupos { display: grid; gap: 28px; }
@@ -292,9 +294,9 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
         <h2>Onde estamos</h2>
         <p>O produto em si está maduro: o cálculo é o mais difícil e está feito, com testes. O que separa o Pingou de um SaaS cobrando é quase tudo fora do código: empresa, contas de serviço, textos jurídicos e loja.</p>
       </div>
-      <div class="alerta" role="note">
-        <b>Corrigir antes de qualquer anúncio</b>
-        <p>A página de vendas e os Termos oferecem o plano Equipe a R$ 9,90 por pessoa, mas convite, aprovação e folha da equipe ainda não existem no app. Vender um recurso que não existe é risco de propaganda enganosa (CDC, art. 37). Até ficar pronto, o Equipe vira "lista de espera".</p>
+      <div class="alerta resolvido" role="note">
+        <b>Resolvido: o plano Equipe saiu de venda</b>
+        <p>A página de vendas e os Termos ofereciam o Equipe sem que convite, aprovação e folha existissem no app, o que é risco de propaganda enganosa (CDC, art. 37). Agora ele se chama Turma, aparece como "em breve" e tem lista de espera no app e na página. A rota de assinatura recusa o plano.</p>
       </div>
       <div class="grupos" id="grupos"></div>
     </div>
@@ -317,18 +319,18 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
             <li><svg><use href="#i-check"/></svg><span>Ponto sem limite, sem internet</span></li>
             <li><svg><use href="#i-check"/></svg><span>Valor do mês ao vivo e "Por que deu isso?"</span></li>
             <li><svg><use href="#i-check"/></svg><span>Hora extra, feriado, falta, INSS e IR na conta</span></li>
-            <li><svg><use href="#i-check"/></svg><span>Período atual e o anterior <span class="selo s-novo">muda</span></span></li>
-            <li><svg><use href="#i-check"/></svg><span>Conta e backup na nuvem <span class="selo s-novo">muda</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Período atual e o anterior <span class="selo s-feito">feito</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Conta e backup na nuvem <span class="selo s-feito">feito</span></span></li>
             <li><svg><use href="#i-check"/></svg><span>Lembrete "Bateu a saída?" <span class="selo s-novo">novo</span></span></li>
-            <li><svg><use href="#i-check"/></svg><span>Conferir pagamento: mostra se bateu e quanto faltou <span class="selo s-novo">muda</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Conferir pagamento: mostra se bateu e quanto faltou <span class="selo s-feito">feito</span></span></li>
             <li><svg><use href="#i-check"/></svg><span>Até 20 lançamentos de produção por período</span></li>
           </ul>
-          <p class="mudanca">Hoje o Grátis só vê o período atual e não guarda na nuvem. Ver o período anterior deixa a pessoa conferir o último pagamento, que é quando ela sente o valor. Perder dados ao trocar de celular derruba a confiança antes de qualquer venda.</p>
+          <p class="mudanca">Antes o Grátis só via o período atual. Ver o anterior deixa a pessoa conferir o último pagamento, que é quando ela sente o valor. O backup na nuvem nunca foi bloqueado no código; agora o plano diz isso.</p>
         </article>
 
         <article class="plano destaque" aria-labelledby="p-pro">
           <div class="plano-topo"><h3 id="p-pro" class="plano-nome">Pro</h3><span class="selo s-novo">era "Individual"</span></div>
-          <div class="plano-preco"><b class="num">R$ 14,90</b><span>por mês, ou R$ 119 por ano</span></div>
+          <div class="plano-preco"><b class="num">R$ 14,90</b><span>por mês, ou R$ 119 por ano <span class="selo s-feito">feito</span></span></div>
           <p class="papel">Para quem quer achar o dinheiro que faltou e ter prova.</p>
           <ul>
             <li><svg><use href="#i-check"/></svg><span>Tudo do Grátis</span></li>
@@ -354,7 +356,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
             <li><svg><use href="#i-check"/></svg><span>Folha da semana e do mês em PDF e planilha</span></li>
             <li><svg><use href="#i-check"/></svg><span>R$ 6,90 por pessoa a partir da 6ª</span></li>
           </ul>
-          <p class="mudanca">Hoje está como "Equipe", R$ 9,90 por pessoa. Turma que entra e sai toda semana deixa a conta imprevisível. Uma faixa fixa até 5 pessoas é fácil de entender e o empreiteiro decide sem calcular. Com 8 pessoas: R$ 60,60 contra R$ 79,20 hoje.</p>
+          <p class="mudanca">Era "Equipe", R$ 9,90 por pessoa. Turma que entra e sai toda semana deixa a conta imprevisível. Uma faixa fixa até 5 pessoas é fácil de entender e o empreiteiro decide sem calcular. Com 8 pessoas: R$ 60,60 contra R$ 79,20 hoje.</p>
         </article>
       </div>
 
@@ -459,7 +461,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
     <div class="miolo">
       <div class="secao-cabeca">
         <h2>Decisões que são suas</h2>
-        <p>Cinco escolhas que mudam o que se constrói. A recomendada está em verde.</p>
+        <p>Cinco escolhas que mudam o que se constrói. A recomendada está em verde. As quatro marcadas como aplicadas já estão no app; dá para voltar atrás em qualquer uma.</p>
       </div>
       <ol class="decisoes" id="lista-decisoes"></ol>
     </div>
@@ -468,7 +470,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
 
 <footer class="rodape faixa">
   <div class="miolo">
-    <p>Plano de lançamento do Pingou, montado em 16/11/2026 a partir do código do app (motor em <code>packages/core</code>, app em <code>apps/web</code>) e dos documentos <code>docs/vendavel.md</code> e <code>docs/configurar.md</code>. Preços e custos são sugestões para decidir, não valores contratados.</p>
+    <p>Plano de lançamento do Pingou, montado em 16/11/2026 e atualizado no mesmo dia, depois da implementação dos planos novos, a partir do código do app (motor em <code>packages/core</code>, app em <code>apps/web</code>) e dos documentos <code>docs/vendavel.md</code> e <code>docs/configurar.md</code>. Preços e custos são sugestões para decidir, não valores contratados.</p>
   </div>
 </footer>
 
@@ -483,16 +485,19 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
   /* ---------- onde estamos ---------- */
   var GRUPOS = [
     { titulo: "Produto", itens: [
-      ["Cálculo de salário, hora extra e descontos CLT", "feito", "INSS e IR por faixa, folga remunerada sobre extra, vale-transporte. 130 testes."],
+      ["Cálculo de salário, hora extra e descontos CLT", "feito", "INSS e IR por faixa, folga remunerada sobre extra, vale-transporte. 133 testes."],
       ["App que funciona sem internet e instala no celular", "feito", "Abre offline depois do primeiro acesso; tem ícone e atalhos."],
       ["Contracheque estimado em PDF", "feito", "Gerado no próprio celular."],
       ["Salário + produção, hora + produção, diária", "feito", "Todas as formas de pagamento do público."],
       ["Página de vendas com medição de cliques", "feito", "Falta só escolher o provedor de medição."],
       ["Conta e sincronização na nuvem", "parte", "Código pronto (Supabase). Falta criar o projeto e ligar as variáveis."],
       ["Cobrança por Pix e cartão", "parte", "Código pronto (Asaas, webhook, 14 dias grátis). Falta a conta e o teste ponta a ponta."],
-      ["Notificações (\"Bateu a saída?\", dia do pagamento)", "falta", "Maior motivo para voltar ao app todo dia."],
+      ["Planos novos: Grátis, Pro mensal ou anual", "feito", "Período anterior e conferência no Grátis; detalhe, histórico e PDF no Pro; anual a R$ 119."],
+      ["Aviso de fim de teste com os números da pessoa", "feito", "Na tela Hoje, nos 3 últimos dias do teste e nos 3 primeiros depois."],
+      ["Notificações (\"Bateu a saída?\", dia do pagamento)", "falta", "Maior motivo para voltar ao app todo dia. Exige servidor de envio e tarefa agendada."],
       ["Monitor de erros em produção", "falta", "Para saber de um erro antes do usuário reclamar."],
-      ["Plano Equipe (convite, aprovação, folha)", "falta", "Está à venda na página, mas não existe no app."]
+      ["Plano Turma (convite, aprovação, folha)", "falta", "Fora de venda, com lista de espera no app e na página."],
+      ["Lista de espera da Turma", "parte", "Formulário e rota prontos. Falta rodar a migração 0002 no Supabase."]
     ]},
     { titulo: "Empresa e jurídico", itens: [
       ["Empresa aberta (CNPJ)", "falta", "Necessária para o Asaas e para emitir nota."],
@@ -535,14 +540,15 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
     ["Lembretes de ponto esquecido no app", S, S, S, "feito", ""],
     ["Notificação \"Bateu a saída?\" e dia do pagamento", S, S, S, "falta", "Construir"],
     ["Dinheiro"],
-    ["Conferir pagamento: se bateu e quanto faltou", S, S, S, "parte", "Separar o resumo do detalhe"],
+    ["Conferir pagamento: se bateu e quanto faltou", "Último período", S, S, "feito", ""],
     ["Conferir pagamento: onde faltou, linha a linha", N, S, S, "feito", ""],
     ["Contracheque estimado em PDF e planilha", N, S, S, "feito", ""],
     ["Relatório de horas para RH, sindicato ou advogado", N, S, S, "falta", "Construir a partir do PDF atual"],
     ["Férias, 13º e rescisão com os seus números", N, S, S, "falta", "Construir no motor"],
     ["Dados"],
-    ["Períodos visíveis", "Atual e anterior", "Todos", "Todos", "parte", "Hoje o Grátis vê só o atual"],
-    ["Conta e backup na nuvem", S, S, S, "parte", "Hoje é recurso pago; ligar Supabase"],
+    ["Períodos visíveis", "Atual e anterior", "Todos", "Todos", "feito", ""],
+    ["Conta e backup na nuvem", S, S, S, "parte", "Liberado no app; falta ligar o Supabase"],
+    ["Pro anual a R$ 119", "", S, "", "parte", "Pronto no app e no Asaas; falta a conta"],
     ["Lançamentos de produção por período", "20", "Sem limite", "Sem limite", "feito", ""],
     ["Metas", N, S, S, "feito", ""],
     ["Equipe"],
@@ -559,12 +565,12 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
 
   /* ---------- momentos de upgrade ---------- */
   var MOM = [
-    ["Ao conferir o pagamento", "Ganhos, Conferir pagamento", "Faltou R$ 187,50. Veja onde pode estar a diferença no Pro."],
-    ["Ao abrir um período de 2 meses atrás", "Histórico", "Este período está guardado. Assine o Pro para ver de novo."],
+    ["Ao conferir o pagamento", "Ganhos, Conferir pagamento", "Achamos 2 pistas neste período. O Pro mostra, linha por linha, o que pode não ter sido pago."],
+    ["Ao abrir um período de 2 meses atrás", "Histórico", "No Grátis você vê o período atual e o anterior. No Pro, todos os que já fecharam."],
     ["Ao tocar em Baixar PDF", "Ganhos, Contracheque", "Leve o contracheque estimado para conferir com o RH. Recurso do Pro."],
     ["No 21º lançamento de produção", "Produção", "Você lançou 20 serviços neste período. No Pro não tem limite."],
-    ["Dia 12 do teste", "Hoje, aviso no topo", "Seu teste acaba em 2 dias. Em 12 dias você registrou 96h e R$ 312,00 de hora extra."],
-    ["No fim do teste", "Tela única, uma vez", "Resumo dos 14 dias e duas escolhas iguais: Assinar o Pro ou Continuar no Grátis."]
+    ["Nos 3 últimos dias do teste", "Hoje, aviso abaixo do relógio", "Seu teste do Pro acaba em 2 dias. Em 14 dias você registrou 96h, com 12h de hora extra (R$ 450,00)."],
+    ["Nos 3 primeiros dias depois do teste", "Hoje, mesmo aviso", "Seu teste do Pro acabou. Você continua no Grátis, com o ponto, o valor do mês e a conferência do pagamento."]
   ];
   $("momentos").innerHTML = MOM.map(function (m) {
     return '<li class="momento"><span class="quando">' + esc(m[0]) + '</span><span class="tela">' + esc(m[1]) + '</span><p class="msg">' + esc(m[2]) + "</p></li>";
@@ -573,10 +579,10 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
   /* ---------- matriz ---------- */
   var MAT = [
     { cls: "q-ja", titulo: "Faça já", sub: "Muito impacto, pouco esforço", itens: [
-      ["Separar o resumo do detalhe no Conferir pagamento", "O \"Faltou R$ X\" é o momento de maior emoção do app. Mostrar o valor no Grátis e o \"onde\" no Pro.", "Grátis + Pro"],
-      ["Plano anual a R$ 119", "Mais caixa na entrada, menos taxa e menos cancelamento. Só configuração no Asaas e no app.", "Pro"],
-      ["Período anterior no Grátis", "Deixa conferir o último pagamento sem pagar, e a pessoa vê o valor do histórico.", "Grátis"],
-      ["Equipe vira lista de espera", "Tira o risco legal e já mede quantos empreiteiros querem o plano.", "Turma"]
+      ["Separar o resumo do detalhe no Conferir pagamento", "O \"Faltou R$ X\" é o momento de maior emoção do app. Mostrar o valor no Grátis e o \"onde\" no Pro.", "Grátis + Pro", "feito"],
+      ["Plano anual a R$ 119", "Mais caixa na entrada, menos taxa e menos cancelamento. Só configuração no Asaas e no app.", "Pro", "feito"],
+      ["Período anterior no Grátis", "Deixa conferir o último pagamento sem pagar, e a pessoa vê o valor do histórico.", "Grátis", "feito"],
+      ["Equipe vira lista de espera", "Tira o risco legal e já mede quantos empreiteiros querem o plano.", "Turma", "feito"]
     ]},
     { cls: "q-planeje", titulo: "Planeje", sub: "Muito impacto, mais esforço", itens: [
       ["Notificações de ponto e de pagamento", "\"Bateu a saída?\" às 17:10 e \"Pingou! Seu salário cai hoje\". Maior alavanca de retenção.", "Grátis"],
@@ -597,7 +603,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
   ];
   $("matriz").innerHTML = MAT.map(function (q) {
     return '<div class="quadrante ' + q.cls + '"><header><h3>' + esc(q.titulo) + "</h3><span>" + esc(q.sub) + '</span></header><ul class="ideias">' + q.itens.map(function (i) {
-      return "<li><b>" + esc(i[0]) + "</b><span>" + esc(i[1]) + '</span><span class="plano-tag">' + esc(i[2]) + "</span></li>";
+      return "<li><b>" + esc(i[0]) + (i[3] ? " " + selo(i[3]) : "") + "</b><span>" + esc(i[1]) + '</span><span class="plano-tag">' + esc(i[2]) + "</span></li>";
     }).join("") + "</ul></div>";
   }).join("");
 
@@ -611,19 +617,19 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
       ["Revisão jurídica dos Termos e da Privacidade", "Advogado", "falta"]
     ], pronto: "Pronto quando: existe CNPJ, conta PJ, domínio e Termos revisados." },
     { nome: "Ligar o que já está pronto", tempo: "semanas 2 e 3", texto: "Conta, sincronização e cobrança já estão escritas. Esta fase é criar os serviços, ligar e testar de ponta a ponta.", tarefas: [
-      ["Criar o projeto no Supabase (São Paulo) e rodar a migração", "Código", "parte"],
+      ["Criar o projeto no Supabase (São Paulo) e rodar as migrações 0001 e 0002", "Código", "parte"],
       ["Login por e-mail com código; SMS depois, porque cada mensagem custa", "Código", "parte"],
       ["Asaas: sandbox, assinatura, webhook, depois produção", "Código + você", "parte"],
       ["Vercel no plano Pro, com o domínio próprio", "Você", "falta"],
       ["Monitor de erros e provedor de medição", "Código", "falta"]
     ], pronto: "Pronto quando: uma pessoa cria a conta, troca de celular sem perder nada e paga por Pix de verdade." },
-    { nome: "Planos novos e retenção", tempo: "semanas 3 a 5", texto: "As mudanças de plano desta página e as duas funções que mais seguram o usuário.", tarefas: [
-      ["Grátis com período anterior e backup; Individual vira Pro", "Código", "falta"],
-      ["Conferir pagamento: resumo no Grátis, detalhe no Pro", "Código", "falta"],
-      ["Plano anual a R$ 119", "Código", "falta"],
-      ["Equipe vira Turma em lista de espera, na página e nos Termos", "Código", "falta"],
-      ["Notificações de ponto e de dia do pagamento", "Código", "falta"],
-      ["Avisos de fim de teste e momentos de oferta do Pro", "Código", "falta"]
+    { nome: "Planos novos e retenção", tempo: "semanas 3 a 5", texto: "As mudanças de plano desta página e as duas funções que mais seguram o usuário. Adiantada: só faltam as notificações.", tarefas: [
+      ["Grátis com período anterior e backup; Individual vira Pro", "Código", "feito"],
+      ["Conferir pagamento: resumo no Grátis, detalhe no Pro", "Código", "feito"],
+      ["Plano anual a R$ 119", "Código", "feito"],
+      ["Equipe vira Turma em lista de espera, na página e nos Termos", "Código", "feito"],
+      ["Avisos de fim de teste e momentos de oferta do Pro", "Código", "feito"],
+      ["Notificações de ponto e de dia do pagamento", "Código", "falta"]
     ], pronto: "Pronto quando: os 6 momentos de oferta aparecem nas telas certas e a notificação chega no Android." },
     { nome: "Beta fechado", tempo: "semanas 5 a 7", texto: "30 trabalhadores de verdade, de pelo menos 3 áreas, usando por 2 ciclos de pagamento.", tarefas: [
       ["Recrutar em grupos de WhatsApp, obras e conhecidos", "Você", "falta"],
@@ -720,10 +726,10 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
 
   /* ---------- decisões ---------- */
   var DEC = [
-    ["Equipe enquanto não existe", ["Lista de espera na página e fora dos Termos", "Sem risco legal e já mede a procura."], ["Manter à venda e construir rápido", "Arrisca cobrar por algo que ainda não funciona."]],
-    ["Backup na nuvem no Grátis", ["Liberar para todos", "Ninguém perde dados ao trocar de celular, e o custo por usuário no Supabase é muito baixo."], ["Só no Pro, como hoje", "Vira motivo para assinar, mas quem perde os dados sai falando mal."]],
-    ["Conferir pagamento no Grátis", ["Mostrar quanto faltou; o detalhe é do Pro", "A pessoa descobre o problema de graça e paga para entender."], ["Tudo só no Pro", "Mais simples, mas quem não paga nunca sente o valor."]],
-    ["Nome do plano pago", ["Pro", "Curto e claramente acima do Grátis."], ["Manter \"Individual\"", "Fala de número de pessoas, não do que a pessoa ganha."]],
+    ["Equipe enquanto não existe (aplicado)", ["Lista de espera na página e fora dos Termos", "Sem risco legal e já mede a procura."], ["Manter à venda e construir rápido", "Arrisca cobrar por algo que ainda não funciona."]],
+    ["Backup na nuvem no Grátis (aplicado)", ["Liberar para todos", "Ninguém perde dados ao trocar de celular, e o custo por usuário no Supabase é muito baixo."], ["Só no Pro, como hoje", "Vira motivo para assinar, mas quem perde os dados sai falando mal."]],
+    ["Conferir pagamento no Grátis (aplicado)", ["Mostrar quanto faltou; o detalhe é do Pro", "A pessoa descobre o problema de graça e paga para entender."], ["Tudo só no Pro", "Mais simples, mas quem não paga nunca sente o valor."]],
+    ["Nome do plano pago (aplicado)", ["Pro", "Curto e claramente acima do Grátis."], ["Manter \"Individual\"", "Fala de número de pessoas, não do que a pessoa ganha."]],
     ["Primeiro login", ["E-mail com código de 6 números", "Sem custo por mensagem e já está no código."], ["Telefone com SMS", "Mais natural para o público, mas cada código custa e exige contratar um provedor."]]
   ];
   $("lista-decisoes").innerHTML = DEC.map(function (d) {
