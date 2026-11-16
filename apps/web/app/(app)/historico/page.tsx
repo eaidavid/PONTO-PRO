@@ -167,6 +167,9 @@ function Historico() {
   const plano = situacaoAtual(estado);
   const { r, semanas, pendencias, completar, valores, producaoDia } = calc;
   const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
+  /** O Grátis vê o período atual e o anterior; os mais antigos são do Pro. */
+  const anterior = periodo.fim === periodoVizinho(periodoDaData(agora.data, fech), -1, fech).fim;
+  const liberado = atual || anterior || plano.pode("historico");
   const porData = new Map(regs.map((x) => [x.data, x]));
   const nomeObra = new Map(obras.map((o) => [o.id, o.nome]));
   const usaProducao = perfil.producao.ativo || perfil.pagamento.forma === "producao" || perfil.pagamento.forma === "misto" || lancs.length > 0;
@@ -323,10 +326,10 @@ function Historico() {
         </section>
       )}
 
-      {!atual && !plano.pode("historico") ? (
+      {!liberado ? (
         <Bloqueio
-          titulo="Períodos passados"
-          texto="Veja e confira todos os períodos que já fecharam, para conversar com quem paga."
+          titulo="Períodos mais antigos"
+          texto="No Grátis você vê o período atual e o anterior. No Pro, todos os que já fecharam, para conferir e conversar com quem paga."
           acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
         />
       ) : aba === "ponto" ? (
@@ -497,7 +500,7 @@ function Historico() {
               <Download aria-hidden className="size-5 text-primaria-forte" />
               <span className="flex-1">
                 <span className="block text-17 font-bold">Baixar planilha do período</span>
-                <span className="block text-15 text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Individual"}</span>
+                <span className="block text-15 text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Pro"}</span>
               </span>
             </button>
           </li>

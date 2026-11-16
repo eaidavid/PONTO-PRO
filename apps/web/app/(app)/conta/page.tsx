@@ -184,7 +184,7 @@ export default function Conta() {
               <Gem className="size-5" strokeWidth={2.25} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-17 font-bold">{sp.emTeste ? "Teste grátis do Individual" : `Plano ${PLANOS[sp.plano].nome}`}</span>
+              <span className="block text-17 font-bold">{sp.emTeste ? "Teste grátis do Pro" : `Plano ${PLANOS[sp.plano].nome}`}</span>
               <span className="block text-15 text-texto-2">{sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}</span>
             </span>
             <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />

@@ -101,9 +101,9 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
           plano={(() => {
             const sp = situacaoAtual(estado);
             const a = estado.assinatura;
-            if (sp.emTeste) return { nome: "Teste grátis do Individual", detalhe: sp.diasDeTeste === 1 ? "Último dia" : `${sp.diasDeTeste} dias restantes`, emTeste: true, progressoTeste: (DIAS_TESTE - sp.diasDeTeste) / DIAS_TESTE };
+            if (sp.emTeste) return { nome: "Teste grátis do Pro", detalhe: sp.diasDeTeste === 1 ? "Último dia" : `${sp.diasDeTeste} dias restantes`, emTeste: true, progressoTeste: (DIAS_TESTE - sp.diasDeTeste) / DIAS_TESTE };
             if (a && sp.plano !== "gratis") return { nome: `Plano ${PLANOS[sp.plano].nome}`, detalhe: `Pago até ${a.pagoAte.slice(8, 10)}/${a.pagoAte.slice(5, 7)}`, emTeste: false };
-            return { nome: "Plano Grátis", detalhe: "Histórico, PDF e metas no Individual", emTeste: false };
+            return { nome: "Plano Grátis", detalhe: "Histórico, PDF e metas no Pro", emTeste: false };
           })()}
         />
       )}

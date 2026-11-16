@@ -351,18 +351,51 @@ test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram
   await page.goto("/metas");
   await expect(page.getByRole("heading", { name: "Quanto quero receber?" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Ver planos" })).toBeVisible();
+  // o Grátis vê o período anterior; os mais antigos são do Pro
   await page.goto("/historico?p=2026-09-21");
-  await expect(page.getByRole("heading", { name: "Períodos passados" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Períodos mais antigos" })).toHaveCount(0);
+  await page.goto("/historico?p=2026-08-21");
+  await expect(page.getByRole("heading", { name: "Períodos mais antigos" })).toBeVisible();
   await page.goto("/ganhos?aba=contracheque");
-  await expect(page.getByRole("link", { name: /PDF no plano Individual/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /PDF no plano Pro/ })).toBeVisible();
+  // conferir pagamento no Grátis: só o último período fechado, e o resto leva ao Pro
+  await page.goto("/ganhos?aba=periodos");
+  await expect(page.getByText(/Mais \d+ períodos guardados/)).toBeVisible();
   await page.goto("/planos");
-  await expect(page.getByText("Grátis", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Você está no Grátis")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Assinar por ano: R\$ 119,00/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Turma/ })).toContainText("em breve");
+  // sem servidor, a lista de espera avisa e não finge que salvou
+  await page.getByLabel("Seu nome").fill("Carlos");
+  await page.getByLabel("WhatsApp com DDD").fill("11 91234-5678");
+  await page.getByRole("button", { name: "Quero ser avisado" }).click();
+  await expect(page.getByText(/A lista de espera ainda não está aberta/)).toBeVisible();
+});
+
+test("teste grátis acabando: aviso na Hoje com o que a pessoa já registrou", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok) => { const r = indexedDB.open("ponto-pro"); r.onsuccess = () => ok(r.result); });
+    await new Promise((ok) => {
+      const tx = db.transaction("config", "readwrite");
+      tx.objectStore("config").put({ chave: "inicioUso", valor: "2026-10-27", atualizadoEm: "x" });
+      tx.oncomplete = ok;
+    });
+    db.close();
+  });
+  await page.goto("/hoje");
+  const aviso = page.getByRole("status", { name: "Teste grátis" });
+  await expect(aviso).toContainText("Seu teste do Pro acaba amanhã.");
+  await expect(aviso).toContainText(/Em 14 dias você registrou \d+h/);
+  await aviso.getByRole("link", { name: "Ver o Pro" }).click();
+  await expect(page).toHaveURL(/\/planos$/);
 });
 
 test("sem servidor configurado, conta e assinatura avisam e o app segue no celular", async ({ page }) => {
   await fazerOnboarding(page);
-  await page.goto("/planos/assinar?plano=individual");
-  await expect(page.getByRole("heading", { name: "Assinar o Individual" })).toBeVisible();
+  await page.goto("/planos/assinar?ciclo=anual");
+  await expect(page.getByRole("heading", { name: "Assinar o Pro" })).toBeVisible();
   await expect(page.getByText("As assinaturas ainda não estão disponíveis")).toBeVisible();
   await page.goto("/entrar");
   await expect(page.getByText("As contas ainda não estão disponíveis")).toBeVisible();
@@ -398,7 +431,8 @@ test("página de vendas: demonstração do ponto, planos e botão que leva ao co
   await expect(page.getByRole("heading", { name: "É seu. O patrão não vê." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Caiu diferente? Ache onde" })).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Individual" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pro", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tem uma turma? O plano Turma está chegando." })).toBeVisible();
   await page.getByText("O teste grátis cobra alguma coisa?").click();
   await expect(page.getByText(/Só paga se decidir assinar/)).toBeVisible();
 

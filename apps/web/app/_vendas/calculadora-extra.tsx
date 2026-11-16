@@ -127,7 +127,7 @@ export function CalculadoraExtra() {
         </p>
         <BotaoComecar secao="calculadora" className="numeros w-full">Anotar meus {formatarReais(porMes)}</BotaoComecar>
         <p className="numeros text-15">
-          O Pingou Individual custa <b>{formatarReais(plano)}</b> por mês. Na sua conta, ele se paga com{" "}
+          O Pingou Pro custa <b>{formatarReais(plano)}</b> por mês. Na sua conta, ele se paga com{" "}
           <b>{minutosPorExtenso(paga)}</b> de hora extra.
         </p>
         <p className="text-15 text-texto-2">

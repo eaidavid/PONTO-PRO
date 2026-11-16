@@ -3,16 +3,24 @@ import { diasEntre, somarDias } from "../tempo";
 /**
  * Planos e teste grátis. Regras puras: o app (cliente) e o servidor usam as mesmas.
  * Preços em centavos: valores SUGERIDOS — a decisão final é do negócio.
+ *
+ * Os identificadores ficam como estão no banco e na cobrança ("individual", "equipe");
+ * o nome que a pessoa vê é o de `PLANOS[id].nome` ("Pro", "Turma").
  */
 
 export type Plano = "gratis" | "individual" | "equipe";
+/** De quanto em quanto tempo a assinatura é cobrada. */
+export type CicloCobranca = "mensal" | "anual";
 
 export type Recurso =
   | "historico"
   | "pdf"
   | "metas"
   | "exportar"
+  /** Digitar o que caiu e ver se bateu, e quanto faltou ou sobrou. */
   | "conferencia"
+  /** As pistas de onde pode estar a diferença, linha por linha. */
+  | "conferencia-detalhe"
   | "producao-ilimitada"
   | "equipe";
 
@@ -22,33 +30,81 @@ export const DIAS_TOLERANCIA = 5;
 /** Lançamentos de produção por período no plano Grátis. */
 export const LIMITE_PRODUCAO_GRATIS = 20;
 
-export const PLANOS: Record<Plano, { nome: string; preco: number; porTrabalhador?: boolean; recursos: Recurso[]; resumo: string[] }> = {
+/** Pro anual: 12 meses pelo preço de 8. */
+export const PRECO_ANUAL = 11900;
+/** Turma: pessoas incluídas no valor fixo e preço de cada pessoa a mais. */
+export const TURMA_INCLUIDOS = 5;
+export const TURMA_POR_PESSOA = 690;
+
+export interface DefinicaoPlano {
+  nome: string;
+  /** Preço mensal (Turma: valor fixo até `TURMA_INCLUIDOS` pessoas). */
+  preco: number;
+  /** Preço do ciclo anual, quando o plano tem. */
+  precoAnual?: number;
+  /** Ainda não está à venda: aparece como lista de espera. */
+  emBreve?: boolean;
+  /** Para quem é, em uma frase. */
+  para: string;
+  recursos: Recurso[];
+  resumo: string[];
+}
+
+export const PLANOS: Record<Plano, DefinicaoPlano> = {
   gratis: {
     nome: "Grátis",
     preco: 0,
-    recursos: [],
-    resumo: ["1 pessoa", "Período atual", `Até ${LIMITE_PRODUCAO_GRATIS} lançamentos de produção por período`],
+    para: "Para bater o ponto todo dia e saber quanto vai cair.",
+    recursos: ["conferencia"],
+    resumo: [
+      "Ponto sem limite, mesmo sem internet",
+      "Valor do mês e o passo a passo da conta",
+      "Período atual e o anterior",
+      "Conferir se o pagamento bateu e quanto faltou",
+      "Seus dados guardados na sua conta",
+      `Até ${LIMITE_PRODUCAO_GRATIS} lançamentos de produção por período`,
+    ],
   },
   individual: {
-    nome: "Individual",
+    nome: "Pro",
     preco: 1490,
-    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "producao-ilimitada"],
-    resumo: ["Histórico de todos os períodos", "Contracheque em PDF e planilha", "Metas e conferir pagamento", "Produção sem limite", "Seus dados na nuvem, em qualquer celular"],
+    precoAnual: PRECO_ANUAL,
+    para: "Para achar o dinheiro que faltou e ter tudo guardado.",
+    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada"],
+    resumo: [
+      "Tudo do Grátis",
+      "Onde faltou no pagamento, linha por linha",
+      "Histórico de todos os períodos",
+      "Contracheque em PDF e planilha",
+      "Metas e produção sem limite",
+    ],
   },
   equipe: {
-    nome: "Equipe",
-    preco: 990,
-    porTrabalhador: true,
-    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "producao-ilimitada", "equipe"],
-    resumo: ["Tudo do Individual", "Convidar a equipe por link ou WhatsApp", "Aprovar ponto e produção", "Folha da equipe em PDF e planilha"],
+    nome: "Turma",
+    preco: 3990,
+    emBreve: true,
+    para: "Para empreiteiro e encarregado que pagam uma equipe.",
+    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada", "equipe"],
+    resumo: [
+      "Pro para cada pessoa da turma",
+      "Convite por link ou WhatsApp",
+      "Aprovar ponto e produção de cada um",
+      "Folha da turma em PDF e planilha",
+      `${TURMA_INCLUIDOS} pessoas incluídas; R$ 6,90 por pessoa a mais`,
+    ],
   },
 };
+
+/** Planos que dá para assinar hoje. */
+export const PLANOS_A_VENDA = (Object.keys(PLANOS) as Plano[]).filter((p): p is Exclude<Plano, "gratis"> => p !== "gratis" && !PLANOS[p].emBreve);
 
 export type StatusAssinatura = "ativa" | "atrasada" | "cancelada";
 
 export interface Assinatura {
   plano: Exclude<Plano, "gratis">;
   status: StatusAssinatura;
+  /** Ausente nas assinaturas antigas: mensal. */
+  ciclo?: CicloCobranca;
   /** Último dia já pago (inclusive). */
   pagoAte: string;
   trabalhadores?: number;
@@ -97,21 +153,33 @@ export function pode(plano: Plano, recurso: Recurso): boolean {
   return PLANOS[plano].recursos.includes(recurso);
 }
 
-/** Valor mensal da assinatura. */
+/** Valor mensal da assinatura. Turma: valor fixo até 5 pessoas e mais um tanto por pessoa a partir da 6ª. */
 export function valorMensal(plano: Exclude<Plano, "gratis">, trabalhadores = 1): number {
   const p = PLANOS[plano];
-  return p.porTrabalhador ? p.preco * Math.max(1, trabalhadores) : p.preco;
+  return plano === "equipe" ? p.preco + Math.max(0, trabalhadores - TURMA_INCLUIDOS) * TURMA_POR_PESSOA : p.preco;
 }
 
-/** Equipe: mínimo e máximo de trabalhadores numa assinatura. */
+/** Valor de uma cobrança no ciclo escolhido. Plano sem preço anual cobra sempre por mês. */
+export function valorDoCiclo(plano: Exclude<Plano, "gratis">, ciclo: CicloCobranca, trabalhadores = 1): number {
+  const anual = PLANOS[plano].precoAnual;
+  return ciclo === "anual" && anual ? anual : valorMensal(plano, trabalhadores);
+}
+
+/** Quanto se economiza no ano escolhendo o anual (0 se o plano não tem anual). */
+export function economiaAnual(plano: Exclude<Plano, "gratis">): number {
+  const anual = PLANOS[plano].precoAnual;
+  return anual ? valorMensal(plano) * 12 - anual : 0;
+}
+
+/** Turma: mínimo e máximo de trabalhadores numa assinatura. */
 export const TRABALHADORES_MIN = 2;
 export const TRABALHADORES_MAX = 200;
 
-/** Último dia coberto por uma mensalidade que vence em `vencimento` (um mês depois, menos um dia). */
-export function pagoAteDoPagamento(vencimento: string): string {
+/** Último dia coberto por uma cobrança que vence em `vencimento` (um mês ou um ano depois, menos um dia). */
+export function pagoAteDoPagamento(vencimento: string, ciclo: CicloCobranca = "mensal"): string {
   const [a, m, d] = vencimento.split("-").map(Number) as [number, number, number];
-  const ano = m === 12 ? a + 1 : a;
-  const mes = m === 12 ? 1 : m + 1;
+  const ano = ciclo === "anual" ? a + 1 : m === 12 ? a + 1 : a;
+  const mes = ciclo === "anual" ? m : m === 12 ? 1 : m + 1;
   const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
   const dia = Math.min(d, ultimo);
   return somarDias(`${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`, -1);

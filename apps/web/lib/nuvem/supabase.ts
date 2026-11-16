@@ -77,10 +77,10 @@ export const remotoSupabase: Remoto = {
   },
 
   async assinatura() {
-    const { data, error } = await supabase().from("subscriptions").select("plano, status, pago_ate, trabalhadores").limit(1).maybeSingle();
+    const { data, error } = await supabase().from("subscriptions").select("plano, status, pago_ate, trabalhadores, ciclo").limit(1).maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    return { plano: data.plano, status: data.status, pagoAte: data.pago_ate, trabalhadores: data.trabalhadores } as Assinatura;
+    return { plano: data.plano, status: data.status, pagoAte: data.pago_ate, trabalhadores: data.trabalhadores, ciclo: data.ciclo ?? "mensal" } as Assinatura;
   },
 };
 

@@ -34,9 +34,9 @@ export default function Termos() {
 
       <h2>3. Planos e pagamento</h2>
       <ul>
-        <li>O plano Grátis mostra o período atual. Os planos pagos liberam histórico, PDF, metas e recursos de equipe, conforme a página de planos.</li>
-        <li>Todo plano pago começa com 14 dias de teste grátis. Você só é cobrado se continuar depois do teste.</li>
-        <li>A cobrança é mensal e recorrente (Pix Automático ou cartão), processada pela Asaas. Você pode cancelar quando quiser; o acesso pago vale até o fim do período já pago.</li>
+        <li>O plano Grátis mostra o período atual e o anterior e permite conferir se o pagamento bateu. O plano Pro libera o histórico completo, o detalhe da conferência, PDF, metas e produção sem limite, conforme a página de planos. O plano Turma ainda não está à venda.</li>
+        <li>Quem começa a usar ganha 14 dias de teste grátis do Pro. Você só é cobrado se assinar.</li>
+        <li>A cobrança é recorrente, mensal ou anual, conforme a sua escolha (Pix ou cartão), processada pela Asaas. Você pode cancelar quando quiser; o acesso pago vale até o fim do período já pago.</li>
         <li>Mudanças de preço são avisadas com pelo menos 30 dias de antecedência.</li>
       </ul>
 

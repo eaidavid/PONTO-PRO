@@ -1,4 +1,4 @@
-import { agoraEmSaoPaulo, lerCpfCnpj, TRABALHADORES_MAX, TRABALHADORES_MIN } from "@ponto-pro/core";
+import { agoraEmSaoPaulo, lerCpfCnpj, PLANOS, TRABALHADORES_MAX, TRABALHADORES_MIN } from "@ponto-pro/core";
 import { z } from "zod";
 import { provedorDoServidor } from "../../../lib/cobranca/asaas";
 import { contaDoToken, supabaseServidor } from "../../../lib/cobranca/servidor";
@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 const Pedido = z.object({
   plano: z.enum(["individual", "equipe"]),
+  ciclo: z.enum(["mensal", "anual"]).default("mensal"),
   trabalhadores: z.number().int().min(1).max(TRABALHADORES_MAX).default(1),
   nome: z.string().trim().min(3).max(120),
   cpfCnpj: z.string(),
@@ -27,6 +28,9 @@ export async function POST(req: Request) {
 
   const r = Pedido.safeParse(await req.json().catch(() => null));
   if (!r.success) return erro(400, "Confira o nome e o plano.");
+  const def = PLANOS[r.data.plano];
+  if (def.emBreve) return erro(400, `O plano ${def.nome} ainda não está à venda. Entre na lista de espera em Planos.`);
+  const ciclo = r.data.ciclo === "anual" && def.precoAnual ? "anual" : "mensal";
   const cpfCnpj = lerCpfCnpj(r.data.cpfCnpj);
   if (!cpfCnpj) return erro(400, "CPF ou CNPJ inválido.");
   const trabalhadores = r.data.plano === "equipe" ? Math.max(TRABALHADORES_MIN, r.data.trabalhadores) : 1;
@@ -35,6 +39,7 @@ export async function POST(req: Request) {
     const { link } = await provedor.assinar({
       conta: dono.conta,
       plano: r.data.plano,
+      ciclo,
       trabalhadores,
       nome: r.data.nome,
       cpfCnpj,

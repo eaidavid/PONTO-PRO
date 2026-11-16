@@ -1,8 +1,8 @@
 "use client";
 
-import { formatarReais, lerCpfCnpj, PLANOS, TRABALHADORES_MAX, TRABALHADORES_MIN, valorMensal } from "@ponto-pro/core";
-import { Banner, BotaoPrincipal, CabecalhoTela, CampoTexto, Contador } from "@ponto-pro/ui";
-import { CreditCard, LogIn, RefreshCw, ShieldCheck } from "lucide-react";
+import { type CicloCobranca, economiaAnual, formatarReais, lerCpfCnpj, PLANOS, valorDoCiclo } from "@ponto-pro/core";
+import { Banner, BotaoPrincipal, CabecalhoTela, CampoTexto, CartaoOpcao } from "@ponto-pro/ui";
+import { CalendarCheck, CalendarDays, CreditCard, LogIn, RefreshCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -11,23 +11,26 @@ import { sincronizarAgora, useStatusNuvem } from "../../../../lib/nuvem/status";
 import { MARCA } from "../../../../lib/marca";
 import { Carregando } from "../../../carregando";
 
-/** Assinar: nome e CPF/CNPJ, e o pagamento (Pix ou cartão) abre na página segura do Asaas. */
+/**
+ * Assinar o Pro: mensal ou anual, nome e CPF/CNPJ; o pagamento (Pix ou cartão) abre na página segura do Asaas.
+ * A Turma ainda não está à venda: quem chega aqui com ?plano=equipe volta para Planos.
+ */
 function Assinar() {
   const estado = useEstado();
   const nuvem = useStatusNuvem();
   const busca = useSearchParams();
-  const plano = busca.get("plano") === "equipe" ? "equipe" : "individual";
+  const plano = "individual" as const;
+  const [ciclo, setCiclo] = useState<CicloCobranca>(busca.get("ciclo") === "anual" ? "anual" : "mensal");
   const [nome, setNome] = useState("");
   const [documento, setDocumento] = useState("");
-  const [trabalhadores, setTrabalhadores] = useState(5);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [link, setLink] = useState<string | null>(null);
 
   if (!estado?.perfil) return <Carregando />;
   const p = PLANOS[plano];
-  const qtd = plano === "equipe" ? trabalhadores : 1;
-  const valor = valorMensal(plano, qtd);
+  const valor = valorDoCiclo(plano, ciclo);
+  const porMes = ciclo === "anual" ? Math.round(valor / 12) : valor;
   const docOk = !!lerCpfCnpj(documento);
 
   async function pagar() {
@@ -43,7 +46,7 @@ function Assinar() {
       const r = await fetch("/api/assinatura", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
-        body: JSON.stringify({ plano, trabalhadores: qtd, nome: nome.trim(), cpfCnpj: documento }),
+        body: JSON.stringify({ plano, ciclo, trabalhadores: 1, nome: nome.trim(), cpfCnpj: documento }),
       });
       const corpo = (await r.json().catch(() => ({}))) as { link?: string; erro?: string };
       if (!r.ok || !corpo.link) throw new Error(corpo.erro ?? "Não deu para criar a cobrança agora.");
@@ -59,7 +62,7 @@ function Assinar() {
 
   return (
     <main className="flex flex-col gap-5 px-4 pb-6">
-      <CabecalhoTela titulo={`Assinar o ${p.nome}`} subtitulo={`${formatarReais(valor)} por mês · cancele quando quiser`} />
+      <CabecalhoTela titulo={`Assinar o ${p.nome}`} subtitulo={ciclo === "anual" ? `${formatarReais(valor)} por ano, ${formatarReais(porMes)} por mês` : `${formatarReais(valor)} por mês, cancele quando quiser`} />
 
       {!nuvem.configurado ? (
         <Banner tom="info" texto="As assinaturas ainda não estão disponíveis. Enquanto isso, aproveite o teste grátis." />
@@ -88,19 +91,22 @@ function Assinar() {
             pagar();
           }}
         >
-          {plano === "equipe" && (
-            <section className="cartao p-5">
-              <Contador
-                rotulo="Quantas pessoas na equipe?"
-                valor={String(trabalhadores)}
-                passo="1 pessoa"
-                onMenos={() => setTrabalhadores((t) => Math.max(TRABALHADORES_MIN, t - 1))}
-                onMais={() => setTrabalhadores((t) => Math.min(TRABALHADORES_MAX, t + 1))}
-                podeMenos={trabalhadores > TRABALHADORES_MIN}
-                podeMais={trabalhadores < TRABALHADORES_MAX}
-              />
-            </section>
-          )}
+          <div role="radiogroup" aria-label="Como quer pagar" className="flex flex-col gap-2">
+            <CartaoOpcao
+              icone={CalendarCheck}
+              titulo={`Por ano: ${formatarReais(p.precoAnual ?? 0)}`}
+              descricao={`Sai por ${formatarReais(Math.round((p.precoAnual ?? 0) / 12))} por mês. Você economiza ${formatarReais(economiaAnual(plano))}.`}
+              selecionado={ciclo === "anual"}
+              onClick={() => setCiclo("anual")}
+            />
+            <CartaoOpcao
+              icone={CalendarDays}
+              titulo={`Por mês: ${formatarReais(p.preco)}`}
+              descricao="Cobrado todo mês. Cancele quando quiser."
+              selecionado={ciclo === "mensal"}
+              onClick={() => setCiclo("mensal")}
+            />
+          </div>
           <CampoTexto rotulo="Nome completo (para a nota)" valor={nome} onChange={setNome} autoComplete="name" />
           <CampoTexto rotulo="CPF ou CNPJ" valor={documento} onChange={setDocumento} inputMode="numeric" ajuda="O provedor de pagamento exige para emitir a cobrança." />
           {erro && <p role="alert" className="text-15 font-bold text-erro-texto">{erro}</p>}
@@ -113,7 +119,7 @@ function Assinar() {
       <p className="flex gap-2 px-1 text-13 text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
-          O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. Cobrança mensal; cancele quando quiser em Planos.
+          O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos.
         </span>
       </p>
     </main>

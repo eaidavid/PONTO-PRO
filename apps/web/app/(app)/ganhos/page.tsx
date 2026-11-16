@@ -49,6 +49,7 @@ import { salvarConferencia } from "../../../lib/acoes";
 import type { ConferenciaSalva } from "../../../lib/db";
 import { type Estado, useAgora, useEstado, useHistoricoLongo } from "../../../lib/estado";
 import { MARCA } from "../../../lib/marca";
+import { medir } from "../../../lib/medir";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { baixarArquivo, Compartilhar } from "../compartilhar";
@@ -215,7 +216,7 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
           <BotaoPrincipal tamanho="g" icone={Download} onClick={() => baixarArquivo(pdfContracheque(cc, MARCA.nome), nomeArquivoContracheque(cc))}>Baixar PDF</BotaoPrincipal>
         ) : (
           <Link href="/planos" className="inline-flex min-h-16 items-center justify-center gap-3 rounded-full border-2 border-primaria px-6 text-17 font-bold text-primaria">
-            <Download aria-hidden className="size-6" /> PDF no plano Individual
+            <Download aria-hidden className="size-6" /> PDF no plano Pro
           </Link>
         )}
         <Compartilhar texto={textoContracheque(cc, MARCA.nome)} oque="contracheque" />
@@ -229,6 +230,10 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
 
 function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
   const perfil = estado.perfil!;
+  const plano = situacaoAtual(estado);
+  /** Grátis: confere o último período fechado e vê quanto faltou; o Pro vê todos e as pistas. */
+  const todos = plano.pode("historico");
+  const detalhe = plano.pode("conferencia-detalhe");
   const fech = perfil.ciclo.diaFechamento;
   const longo = useHistoricoLongo(true, somarDias(agora, -230));
   const [conferindo, setConferindo] = useState<{ periodo: Periodo; r: ResultadoPeriodo } | null>(null);
@@ -255,7 +260,7 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
     <div className="entrada-escalonada flex flex-col gap-4">
       <p className="px-1 text-15 text-texto-2">Confira o que você recebeu em cada período fechado. O app compara com a estimativa e mostra de onde a diferença pode vir.</p>
       <ul className="cartao divide-y divide-borda overflow-hidden">
-        {lista.map(({ periodo, r }) => {
+        {(todos ? lista : lista.slice(0, 1)).map(({ periodo, r }) => {
           const c = conf.get(periodo.fim);
           const dif = c ? c.recebido - c.estimado : 0;
           return (
@@ -312,7 +317,21 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
                 {resultado.situacao === "igual" ? <CircleCheck aria-hidden className="size-5 text-sucesso-texto" /> : <TriangleAlert aria-hidden className="size-5 text-extra-texto" />}
                 {resultado.frase}
               </p>
-              {resultado.pistas.length > 0 && (
+              {resultado.pistas.length > 0 && !detalhe && (
+                <div className="flex flex-col items-start gap-2 border-t border-borda-forte pt-3">
+                  <p className="text-15">
+                    O Pro mostra, linha por linha, o que pode não ter sido {resultado.situacao === "a-menos" ? "pago" : "descontado"}: {resultado.pistas.length === 1 ? "achamos 1 pista" : `achamos ${resultado.pistas.length} pistas`} neste período.
+                  </p>
+                  <Link
+                    href="/planos"
+                    onClick={() => medir("oferta_pro", { origem: "conferir" })}
+                    className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria"
+                  >
+                    Ver onde está a diferença
+                  </Link>
+                </div>
+              )}
+              {resultado.pistas.length > 0 && detalhe && (
                 <>
                   <p className="text-15">{resultado.situacao === "a-menos" ? "Pode ser que não tenham pago:" : "Pode ser que não tenham descontado:"}</p>
                   <ul className="list-disc pl-5 text-15">
@@ -327,6 +346,15 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
           )}
         </div>
       </BottomSheet>
+      {!todos && lista.length > 1 && (
+        <Link href="/planos" className="flex min-h-14 items-center gap-3 rounded-[20px] bg-primaria-suave px-4 py-3 text-15">
+          <span className="flex-1">
+            <b className="block text-17">Mais {lista.length - 1} períodos guardados</b>
+            No Pro você confere todos os períodos que já fecharam.
+          </span>
+          <ChevronRight aria-hidden className="size-5 shrink-0 text-primaria-forte" />
+        </Link>
+      )}
     </div>
   );
 }
@@ -418,16 +446,7 @@ function Ganhos() {
         </div>
       )}
       {aba === "contracheque" && <Contracheque r={previsto} estado={estado} onTermo={setTermo} />}
-      {aba === "periodos" &&
-        (situacaoAtual(estado).pode("conferencia") ? (
-          <Periodos estado={estado} agora={agora.data} />
-        ) : (
-          <Bloqueio
-            titulo="Conferir pagamento"
-            texto="Digite quanto você recebeu em cada período e veja se bate com a conta — e o que pode ter faltado."
-            acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
-          />
-        ))}
+      {aba === "periodos" && <Periodos estado={estado} agora={agora.data} />}
 
       <BottomSheet aberto={porQue} onFechar={() => setPorQue(false)} titulo="Por que deu isso?" subtitulo={`Previsão até ${periodo.fim.slice(8, 10)}/${periodo.fim.slice(5, 7)}`}>
         <ExplicacaoConta r={previsto} contexto={`Conta até o fechamento (${dataCurta(periodo.fim)}): o que você já fez mais os dias que faltam pela sua escala.`} />

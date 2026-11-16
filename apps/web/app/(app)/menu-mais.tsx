@@ -17,7 +17,7 @@ interface Atalho {
 }
 
 export interface SituacaoMenu {
-  /** "Teste grátis do Individual", "Individual", "Grátis". */
+  /** "Teste grátis do Pro", "Plano Pro", "Plano Grátis". */
   nome: string;
   /** "14 dias restantes", "pago até 05/12". */
   detalhe?: string;

@@ -1,9 +1,10 @@
-import type { Assinatura, Plano } from "@ponto-pro/core";
+import type { Assinatura, CicloCobranca, Plano } from "@ponto-pro/core";
 
 /** Pedido de assinatura (a pessoa já está logada; `conta` é o id da conta no banco). */
 export interface PedidoAssinatura {
   conta: string;
   plano: Exclude<Plano, "gratis">;
+  ciclo: CicloCobranca;
   trabalhadores: number;
   nome: string;
   cpfCnpj: string;
@@ -23,7 +24,7 @@ export interface AtualizacaoAssinatura {
 
 /** Quem cobra. Interface para trocar o Asaas por outro provedor sem mexer no app. */
 export interface ProvedorCobranca {
-  /** Cria cliente e assinatura mensal; devolve o link da primeira cobrança (Pix ou cartão). */
+  /** Cria cliente e assinatura (mensal ou anual); devolve o link da primeira cobrança (Pix ou cartão). */
   assinar(p: PedidoAssinatura): Promise<{ link: string; provedorCliente: string; provedorAssinatura: string }>;
   /** Traduz um aviso (webhook) do provedor. */
   interpretarAviso(corpo: unknown): Promise<AtualizacaoAssinatura | null>;

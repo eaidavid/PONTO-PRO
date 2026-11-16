@@ -1,22 +1,24 @@
-import { pagoAteDoPagamento, somarDias, valorMensal } from "@ponto-pro/core";
+import { type CicloCobranca, PLANOS, pagoAteDoPagamento, somarDias, valorDoCiclo } from "@ponto-pro/core";
 import type { AtualizacaoAssinatura, PedidoAssinatura, ProvedorCobranca } from "./provedor";
 
 /**
  * Asaas (https://docs.asaas.com). Só roda no servidor: a chave nunca vai para o navegador.
- * A cobrança é mensal com forma "UNDEFINED": a pessoa escolhe Pix ou cartão na página de pagamento.
+ * A cobrança é mensal ou anual, com forma "UNDEFINED": a pessoa escolhe Pix ou cartão na página de pagamento.
  */
 
 type Buscar = typeof fetch;
 
-/** Referência guardada na assinatura do Asaas: conta, plano e trabalhadores. */
-export const referencia = (p: Pick<PedidoAssinatura, "conta" | "plano" | "trabalhadores">) => `${p.conta}|${p.plano}|${p.trabalhadores}`;
+/** Referência guardada na assinatura do Asaas: conta, plano, trabalhadores e ciclo. */
+export const referencia = (p: Pick<PedidoAssinatura, "conta" | "plano" | "trabalhadores" | "ciclo">) => `${p.conta}|${p.plano}|${p.trabalhadores}|${p.ciclo}`;
 
-export function lerReferencia(r: unknown): { conta: string; plano: "individual" | "equipe"; trabalhadores: number } | null {
+/** Lê a referência. As antigas, sem ciclo, são mensais. */
+export function lerReferencia(r: unknown): { conta: string; plano: "individual" | "equipe"; trabalhadores: number; ciclo: CicloCobranca } | null {
   if (typeof r !== "string") return null;
-  const [conta, plano, t] = r.split("|");
+  const [conta, plano, t, c = "mensal"] = r.split("|");
   const trabalhadores = Number(t);
   if (!conta || (plano !== "individual" && plano !== "equipe") || !Number.isInteger(trabalhadores) || trabalhadores < 1) return null;
-  return { conta, plano, trabalhadores };
+  if (c !== "mensal" && c !== "anual") return null;
+  return { conta, plano, trabalhadores, ciclo: c };
 }
 
 interface PagamentoAsaas {
@@ -66,10 +68,10 @@ export class Asaas implements ProvedorCobranca {
       body: {
         customer: cliente.id,
         billingType: "UNDEFINED",
-        cycle: "MONTHLY",
-        value: valorMensal(p.plano, p.trabalhadores) / 100,
+        cycle: p.ciclo === "anual" ? "YEARLY" : "MONTHLY",
+        value: valorDoCiclo(p.plano, p.ciclo, p.trabalhadores) / 100,
         nextDueDate: p.vencimento,
-        description: p.plano === "equipe" ? `Pingou Equipe (${p.trabalhadores} pessoas)` : "Pingou Individual",
+        description: `Pingou ${PLANOS[p.plano].nome}${p.plano === "equipe" ? ` (${p.trabalhadores} pessoas)` : ""}${p.ciclo === "anual" ? ", anual" : ""}`,
         externalReference: referencia(p),
       },
     });
@@ -98,8 +100,9 @@ export class Asaas implements ProvedorCobranca {
         assinatura: {
           plano: ref.plano,
           status: pago ? "ativa" : "atrasada",
+          ciclo: ref.ciclo,
           // atrasado: vale até a véspera do vencimento não pago (a tolerância conta a partir daí)
-          pagoAte: pago ? pagoAteDoPagamento(pg.dueDate) : somarDias(pg.dueDate, -1),
+          pagoAte: pago ? pagoAteDoPagamento(pg.dueDate, ref.ciclo) : somarDias(pg.dueDate, -1),
           trabalhadores: ref.trabalhadores,
         },
       };
@@ -113,7 +116,7 @@ export class Asaas implements ProvedorCobranca {
         provedorCliente: aviso.subscription.customer,
         provedorAssinatura: aviso.subscription.id,
         // pagoAte vazio = manter o que já estava pago (o webhook só troca o status)
-        assinatura: { plano: ref.plano, status: "cancelada", pagoAte: "", trabalhadores: ref.trabalhadores },
+        assinatura: { plano: ref.plano, status: "cancelada", ciclo: ref.ciclo, pagoAte: "", trabalhadores: ref.trabalhadores },
       };
     }
     return null;

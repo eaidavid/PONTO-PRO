@@ -33,6 +33,7 @@ import { baterPonto, completarMarcacoes, restaurarRegistro, salvarPreferencias }
 import { primeiroNome, useAgora, useEstado } from "../../../lib/estado";
 import { seloSync, useStatusNuvem } from "../../../lib/nuvem/status";
 import { Carregando } from "../../carregando";
+import { AvisoTeste } from "../aviso-teste";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
 
@@ -169,6 +170,8 @@ export default function Hoje() {
             <BotaoPrincipal variante="secundaria" onClick={() => corrigir(l)}>{l.acao}</BotaoPrincipal>
           </div>
         ))}
+
+        <AvisoTeste estado={estado} hoje={agora.data} />
 
         <section aria-label="Linha do dia" className="cartao flex flex-col gap-4 p-4">
           <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />

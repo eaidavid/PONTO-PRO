@@ -24,6 +24,7 @@ export async function gravarAssinatura(sb: SupabaseClient, a: AtualizacaoAssinat
     plano: a.assinatura.plano,
     status: a.assinatura.status,
     trabalhadores: a.assinatura.trabalhadores ?? 1,
+    ciclo: a.assinatura.ciclo ?? "mensal",
     provedor: "asaas",
     provedor_assinatura: a.provedorAssinatura,
     atualizado_em: new Date().toISOString(),

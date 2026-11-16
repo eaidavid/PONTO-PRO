@@ -164,7 +164,7 @@ function LancarProducao() {
       {noLimite && (
         <Bloqueio
           titulo={`Você chegou a ${LIMITE_PRODUCAO_GRATIS} lançamentos neste período`}
-          texto="No plano Grátis dá para lançar até 20 serviços por período. Com o Individual, é sem limite."
+          texto="No plano Grátis dá para lançar até 20 serviços por período. No Pro, é sem limite."
           acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
         />
       )}

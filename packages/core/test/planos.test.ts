@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LIMITE_PRODUCAO_GRATIS, lerCpfCnpj, pagoAteDoPagamento, PLANOS, pode, situacaoDoPlano, valorMensal } from "../src/planos";
+import { economiaAnual, LIMITE_PRODUCAO_GRATIS, lerCpfCnpj, pagoAteDoPagamento, PLANOS, PLANOS_A_VENDA, pode, situacaoDoPlano, valorDoCiclo, valorMensal } from "../src/planos";
 
 const inicioUso = "2026-11-01";
 
@@ -38,12 +38,26 @@ describe("recursos e preço", () => {
     expect(pode("individual", "pdf")).toBe(true);
     expect(pode("individual", "equipe")).toBe(false);
     expect(pode("equipe", "equipe")).toBe(true);
-    expect(PLANOS.gratis.resumo[2]).toContain(String(LIMITE_PRODUCAO_GRATIS));
+    expect(PLANOS.gratis.resumo.at(-1)).toContain(String(LIMITE_PRODUCAO_GRATIS));
   });
-  it("Equipe cobra por trabalhador", () => {
-    expect(valorMensal("individual")).toBe(1490);
-    expect(valorMensal("equipe", 5)).toBe(4950);
-    expect(valorMensal("equipe", 0)).toBe(990);
+  it("Grátis confere se bateu; o detalhe de onde faltou é do Pro", () => {
+    expect(pode("gratis", "conferencia")).toBe(true);
+    expect(pode("gratis", "conferencia-detalhe")).toBe(false);
+    expect(pode("individual", "conferencia-detalhe")).toBe(true);
+    expect(PLANOS.individual.nome).toBe("Pro");
+  });
+  it("Turma: valor fixo até 5 pessoas e R$ 6,90 por pessoa a mais; ainda não está à venda", () => {
+    expect(valorMensal("equipe", 2)).toBe(3990);
+    expect(valorMensal("equipe", 5)).toBe(3990);
+    expect(valorMensal("equipe", 8)).toBe(3990 + 3 * 690);
+    expect(PLANOS_A_VENDA).toEqual(["individual"]);
+  });
+  it("Pro mensal ou anual", () => {
+    expect(valorDoCiclo("individual", "mensal")).toBe(1490);
+    expect(valorDoCiclo("individual", "anual")).toBe(11900);
+    expect(economiaAnual("individual")).toBe(1490 * 12 - 11900);
+    // Turma não tem anual: cobra por mês
+    expect(valorDoCiclo("equipe", "anual", 5)).toBe(3990);
   });
 });
 
@@ -52,6 +66,10 @@ describe("cobrança", () => {
     expect(pagoAteDoPagamento("2026-11-11")).toBe("2026-12-10");
     expect(pagoAteDoPagamento("2026-12-20")).toBe("2027-01-19");
     expect(pagoAteDoPagamento("2027-01-31")).toBe("2027-02-27");
+  });
+  it("anuidade cobre até a véspera do mesmo dia no ano seguinte", () => {
+    expect(pagoAteDoPagamento("2026-11-16", "anual")).toBe("2027-11-15");
+    expect(pagoAteDoPagamento("2028-02-29", "anual")).toBe("2029-02-27");
   });
 
   it("valida CPF e CNPJ", () => {

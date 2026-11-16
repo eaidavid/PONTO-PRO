@@ -5,7 +5,7 @@ Sem nenhuma configuração, o Pingou funciona **só no celular** (como hoje). Ca
 ## 1. Supabase (conta e sincronização)
 
 1. Crie um projeto em supabase.com (região São Paulo).
-2. Em **SQL Editor**, rode `supabase/migrations/0001_inicial.sql` (ou `supabase db push` com a CLI).
+2. Em **SQL Editor**, rode `supabase/migrations/0001_inicial.sql` e depois `0002_planos.sql` (ou `supabase db push` com a CLI). A 0002 cria o ciclo mensal/anual da assinatura e a lista de espera da Turma.
 3. **Authentication → Providers**:
    - **Email**: ligado, com "Email OTP" (código de 6 números). Em *Email Templates → Magic Link*, use `{{ .Token }}` no texto para mandar o código.
    - **Phone**: ligue e configure um provedor de SMS (Twilio, MessageBird ou Vonage). Sem ele, só o login por e-mail funciona.
@@ -32,9 +32,9 @@ Como funciona:
    - Eventos: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `SUBSCRIPTION_DELETED`, `SUBSCRIPTION_INACTIVATED`
 
 Como funciona:
-- "Assinar" cria cliente e assinatura mensal no Asaas e abre a página de pagamento, onde a pessoa escolhe **Pix ou cartão**. O app nunca vê dados de cartão.
+- "Assinar" cria cliente e assinatura (Pro mensal de R$ 14,90 ou anual de R$ 119) no Asaas e abre a página de pagamento, onde a pessoa escolhe **Pix ou cartão**. O app nunca vê dados de cartão.
 - O webhook grava a situação em `subscriptions`; o app recebe na próxima sincronização.
-- Pagamento confirmado: plano vale até a véspera do mesmo dia no mês seguinte. Atrasado: 5 dias de tolerância. Cancelado: vale até o último dia pago.
+- Pagamento confirmado: plano vale até a véspera do mesmo dia no mês seguinte (no anual, no ano seguinte). Atrasado: 5 dias de tolerância. Cancelado: vale até o último dia pago.
 - Pix Automático (débito recorrente autorizado) pode entrar depois, trocando só `lib/cobranca/asaas.ts` (a interface `ProvedorCobranca` não muda).
 
 ## 3. Antes de vender
@@ -43,3 +43,4 @@ Como funciona:
 - Peça para um advogado revisar Termos e Privacidade.
 - Confira os preços sugeridos em `packages/core/src/planos/index.ts`.
 - As tabelas de INSS e IRRF estão em `packages/core/src/clt/index.ts`, por ano. Atualize em janeiro.
+- A lista de espera da Turma fica na tabela `waitlist` (nome, WhatsApp, tamanho da equipe). Só o servidor grava; consulte pelo painel do Supabase.

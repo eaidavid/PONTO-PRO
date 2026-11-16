@@ -16,7 +16,7 @@ function fetchFalso(respostas: Record<string, unknown>) {
   return { f, chamadas };
 }
 
-const pedido = { conta: "conta-1", plano: "equipe" as const, trabalhadores: 4, nome: "Ana Souza", cpfCnpj: "52998224725", email: "ana@exemplo.com", vencimento: "2026-11-11" };
+const pedido = { conta: "conta-1", plano: "equipe" as const, ciclo: "mensal" as const, trabalhadores: 7, nome: "Ana Souza", cpfCnpj: "52998224725", email: "ana@exemplo.com", vencimento: "2026-11-11" };
 
 describe("Asaas", () => {
   it("cria cliente e assinatura mensal e devolve o link de pagamento", async () => {
@@ -28,7 +28,23 @@ describe("Asaas", () => {
     const r = await new Asaas("chave", "https://api.teste/v3", f).assinar(pedido);
     expect(r).toEqual({ link: "https://pagar/abc", provedorCliente: "cus_1", provedorAssinatura: "sub_1" });
     expect(chamadas[0]!.headers.access_token).toBe("chave");
-    expect(chamadas[1]!.body).toMatchObject({ customer: "cus_1", cycle: "MONTHLY", billingType: "UNDEFINED", value: 39.6, nextDueDate: "2026-11-11", externalReference: "conta-1|equipe|4" });
+    expect(chamadas[1]!.body).toMatchObject({ customer: "cus_1", cycle: "MONTHLY", billingType: "UNDEFINED", value: 53.7, nextDueDate: "2026-11-11", externalReference: "conta-1|equipe|7|mensal", description: "Pingou Turma (7 pessoas)" });
+  });
+
+  it("Pro anual cria assinatura anual de R$ 119", async () => {
+    const { f, chamadas } = fetchFalso({
+      "POST /customers": { id: "cus_1" },
+      "POST /subscriptions": { id: "sub_2" },
+      "GET /subscriptions/sub_2/payments": { data: [{ invoiceUrl: "https://pagar/xyz" }] },
+    });
+    await new Asaas("chave", "https://api.teste/v3", f).assinar({ ...pedido, plano: "individual", ciclo: "anual", trabalhadores: 1 });
+    expect(chamadas[1]!.body).toMatchObject({ cycle: "YEARLY", value: 119, description: "Pingou Pro, anual", externalReference: "conta-1|individual|1|anual" });
+  });
+
+  it("pagamento da anuidade ativa o plano por um ano", async () => {
+    const { f } = fetchFalso({ "GET /subscriptions/sub_2": { id: "sub_2", customer: "cus_1", externalReference: "conta-1|individual|1|anual" } });
+    const r = await new Asaas("chave", "https://api.teste/v3", f).interpretarAviso({ event: "PAYMENT_CONFIRMED", payment: { id: "pay_9", subscription: "sub_2", dueDate: "2026-11-16" } });
+    expect(r?.assinatura).toEqual({ plano: "individual", status: "ativa", ciclo: "anual", pagoAte: "2027-11-15", trabalhadores: 1 });
   });
 
   it("mostra o erro do Asaas", async () => {
@@ -41,7 +57,7 @@ describe("Asaas", () => {
   it("pagamento confirmado ativa o plano por um mês", async () => {
     const { f } = fetchFalso(assinatura);
     const r = await new Asaas("chave", "https://api.teste/v3", f).interpretarAviso({ event: "PAYMENT_RECEIVED", payment: { id: "pay_1", subscription: "sub_1", dueDate: "2026-11-11" } });
-    expect(r).toEqual({ conta: "conta-1", provedorCliente: "cus_1", provedorAssinatura: "sub_1", assinatura: { plano: "individual", status: "ativa", pagoAte: "2026-12-10", trabalhadores: 1 } });
+    expect(r).toEqual({ conta: "conta-1", provedorCliente: "cus_1", provedorAssinatura: "sub_1", assinatura: { plano: "individual", status: "ativa", ciclo: "mensal", pagoAte: "2026-12-10", trabalhadores: 1 } });
   });
 
   it("pagamento vencido marca atraso", async () => {
@@ -65,7 +81,10 @@ describe("Asaas", () => {
   });
 
   it("referência ida e volta", () => {
-    expect(lerReferencia(referencia({ conta: "c", plano: "equipe", trabalhadores: 3 }))).toEqual({ conta: "c", plano: "equipe", trabalhadores: 3 });
+    expect(lerReferencia(referencia({ conta: "c", plano: "equipe", trabalhadores: 3, ciclo: "mensal" }))).toEqual({ conta: "c", plano: "equipe", trabalhadores: 3, ciclo: "mensal" });
+    // referências antigas, sem ciclo, são mensais
+    expect(lerReferencia("c|individual|1")).toEqual({ conta: "c", plano: "individual", trabalhadores: 1, ciclo: "mensal" });
+    expect(lerReferencia("c|individual|1|semestral")).toBeNull();
     expect(lerReferencia("c|ouro|1")).toBeNull();
     expect(lerReferencia(42)).toBeNull();
   });
@@ -89,5 +108,15 @@ describe("webhook", () => {
   it("assinar sem cobrança configurada responde 503", async () => {
     const { POST } = await import("../app/api/assinatura/route");
     expect((await POST(new Request("http://x/api/assinatura", { method: "POST", body: "{}" }))).status).toBe(503);
+  });
+
+  it("lista de espera: 503 sem configuração e 400 com WhatsApp inválido", async () => {
+    const { POST } = await import("../app/api/lista-espera/route");
+    const pedir = (corpo: unknown) => new Request("http://x/api/lista-espera", { method: "POST", body: JSON.stringify(corpo) });
+    expect((await POST(pedir({ plano: "equipe", nome: "Ana", whatsapp: "11912345678" }))).status).toBe(503);
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://exemplo.supabase.co");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "servico");
+    expect((await POST(pedir({ plano: "equipe", nome: "Ana", whatsapp: "123" }))).status).toBe(400);
+    expect((await POST(pedir({ plano: "individual", nome: "Ana", whatsapp: "11912345678" }))).status).toBe(400);
   });
 });

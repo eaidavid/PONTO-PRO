@@ -11,6 +11,7 @@ import { BarraFixa } from "./_vendas/barra-fixa";
 import { BotaoCabecalho } from "./_vendas/botao-cabecalho";
 import { CalculadoraExtra } from "./_vendas/calculadora-extra";
 import { DemoPonto } from "./_vendas/demo-ponto";
+import { ListaEsperaTurma } from "./lista-espera-turma";
 import { BotaoComecar, LinkMedido } from "./_vendas/link-medido";
 
 const TITULO = `${MARCA.nome}: saiba quanto vai cair antes do dia do pagamento`;
@@ -75,7 +76,7 @@ const ULTIMOS_DIAS = [
 ];
 
 const PRECO = PLANOS.individual.preco;
-const PRECO_ANO = PRECO * 12;
+const PRECO_ANUAL = PLANOS.individual.precoAnual ?? PRECO * 12;
 /** Centavos por dia, arredondado para cima: "menos de 50 centavos". */
 const CENTAVOS_DIA = Math.ceil(PRECO / 30);
 
@@ -111,7 +112,7 @@ const DUVIDAS: { pergunta: string; resposta: string }[] = [
   },
   {
     pergunta: "O teste grátis cobra alguma coisa?",
-    resposta: `Não. Você usa tudo do plano Individual por ${DIAS_TESTE} dias, sem informar cartão. Só paga se decidir assinar.`,
+    resposta: `Não. Você usa tudo do plano Pro por ${DIAS_TESTE} dias, sem informar cartão. Só paga se decidir assinar.`,
   },
   {
     pergunta: "Como pago e como cancelo?",
@@ -439,6 +440,7 @@ export default function Vendas() {
               {ORDEM_PLANOS.map((id) => {
                 const p = PLANOS[id];
                 const destaque = id === "individual";
+                const emBreve = !!p.emBreve;
                 return (
                   <section
                     key={id}
@@ -451,13 +453,15 @@ export default function Vendas() {
                         {destaque && (
                           <span className="rounded-full bg-marca-destaque px-3 py-0.5 text-15 font-bold text-[color:var(--marca)]">{DIAS_TESTE} dias grátis</span>
                         )}
+                        {emBreve && <span className="rounded-full bg-primaria-suave px-3 py-0.5 text-15 font-bold text-primaria-forte">em breve</span>}
                       </div>
                       <p className="flex flex-wrap items-baseline gap-x-2">
                         <span className="display text-32">{p.preco ? formatarReais(p.preco) : "R$ 0"}</span>
                         <span className={cx("text-15", destaque ? "text-sobre-marca-2" : "text-texto-2")}>
-                          {p.preco ? (p.porTrabalhador ? "por pessoa, por mês" : "por mês") : "para sempre"}
+                          {!p.preco ? "para sempre" : p.precoAnual ? `por mês, ou ${formatarReais(p.precoAnual)} por ano` : "por mês"}
                         </span>
                       </p>
+                      <p className={cx("text-15", destaque ? "text-sobre-marca-2" : "text-texto-2")}>{p.para}</p>
                     </div>
                     <ul className="flex flex-col gap-1.5">
                       {p.resumo.map((r) => (
@@ -469,12 +473,13 @@ export default function Vendas() {
                     </ul>
                     <LinkMedido
                       secao={`plano-${id}`}
+                      href={emBreve ? "#lista-turma" : "/comecar"}
                       className={cx(
                         "mt-auto inline-flex min-h-12 items-center justify-center rounded-full px-6 text-17 font-bold",
                         destaque ? "bg-white text-[color:var(--marca)]" : "borda border-primaria! text-primaria",
                       )}
                     >
-                      {destaque ? `Testar ${DIAS_TESTE} dias grátis` : id === "gratis" ? "Começar no Grátis" : "Começar com a equipe"}
+                      {destaque ? `Testar ${DIAS_TESTE} dias grátis` : id === "gratis" ? "Começar no Grátis" : "Entrar na lista de espera"}
                     </LinkMedido>
                   </section>
                 );
@@ -482,7 +487,7 @@ export default function Vendas() {
             </div>
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-10">
               <p data-revelar className="numeros max-w-[52ch] text-15">
-                O ano inteiro do Individual sai por <b>{formatarReais(PRECO_ANO)}</b>. Um único erro de pagamento desse tamanho, achado com a ajuda do Pingou, já paga os 12 meses.
+                No anual, o Pro sai por <b>{formatarReais(PRECO_ANUAL)}</b>, ou {formatarReais(Math.round(PRECO_ANUAL / 12))} por mês. Um único erro de pagamento desse tamanho, achado com a ajuda do Pingou, já paga o ano inteiro.
               </p>
               <ul className="grid shrink-0 gap-x-6 gap-y-1 text-15 font-bold sm:grid-cols-2">
                 {SEM_RISCO.map((r) => (
@@ -492,6 +497,20 @@ export default function Vendas() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="lista-turma" aria-labelledby="t-turma" className={cx(LARGURA, "scroll-mt-14 pt-12 md:pt-20")}>
+          <div className="fundo-marca flex flex-col gap-5 rounded-[24px] p-5 md:flex-row md:items-start md:gap-10 md:p-8">
+            <div className="flex flex-col gap-2 md:max-w-[34ch]">
+              <h2 id="t-turma" className="display text-[clamp(1.5rem,6vw,2rem)] leading-[1.08] text-balance">Tem uma turma? O plano Turma está chegando.</h2>
+              <p className="text-17 text-sobre-marca-2">
+                Convite pelo WhatsApp, aprovação do ponto e da produção e a folha da semana pronta. {formatarReais(PLANOS.equipe.preco)} por mês para até 5 pessoas.
+              </p>
+            </div>
+            <div className="min-w-0 flex-1">
+              <ListaEsperaTurma origem="site" sobreMarca />
             </div>
           </div>
         </section>
