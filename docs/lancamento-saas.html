@@ -292,7 +292,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
     <div class="miolo">
       <div class="secao-cabeca">
         <h2>Onde estamos</h2>
-        <p>O produto em si está maduro: o cálculo é o mais difícil e está feito, com testes. O que separa o Pingou de um SaaS cobrando é quase tudo fora do código: empresa, contas de serviço, textos jurídicos e loja.</p>
+        <p>O produto em si está maduro: o cálculo é o mais difícil e está feito, com testes. O que separa o Pingou de um SaaS cobrando é quase tudo fora do código: empresa, contas de serviço e textos jurídicos. A versão 1 sai só no navegador, como app instalável (PWA), sem loja.</p>
       </div>
       <div class="alerta resolvido" role="note">
         <b>Resolvido: o plano Equipe saiu de venda</b>
@@ -508,7 +508,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
       ["Domínio próprio", "falta", "Um .com.br e, se der, o .app."]
     ]},
     { titulo: "Lançamento", itens: [
-      ["App na Play Store", "falta", "O público procura app na loja. O PWA vira app Android sem reescrever."],
+      ["Instalação guiada do app no celular", "falta", "A versão 1 é só no navegador (PWA). Ensinar a pôr na tela inicial no Android e no iPhone vira o \"baixar o app\"."],
       ["E-mail e WhatsApp de suporte", "falta", "O público resolve tudo pelo WhatsApp."],
       ["Beta com 30 trabalhadores", "falta", "Para achar erros com contracheques reais e colher depoimentos."],
       ["Depoimentos reais autorizados", "falta", "A seção da página fica oculta até existirem."],
@@ -598,6 +598,7 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
     { cls: "q-depois", titulo: "Depois do lançamento", sub: "Vale testar com dados", itens: [
       ["Foto do contracheque com leitura automática", "Conferir sem digitar nada. Exige leitura de imagem e cuidado com dados sensíveis.", "Pro"],
       ["Avisos pelo WhatsApp", "Mais lido que notificação, mas cada mensagem tem custo na API oficial.", "Pro"],
+      ["App na Play Store", "Fora da versão 1. O mesmo app do navegador vira app Android sem reescrever, quando a loja valer a pena.", "Todos"],
       ["App para iPhone na App Store", "O app já funciona no Safari. A loja da Apple pede conta paga e revisão mais rígida.", "Todos"]
     ]}
   ];
@@ -635,10 +636,10 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
       ["Recrutar em grupos de WhatsApp, obras e conhecidos", "Você", "falta"],
       ["Comparar o cálculo com contracheques reais e corrigir", "Código", "falta"],
       ["Pedir depoimento com autorização por escrito", "Você", "falta"],
-      ["Publicar na Play Store em teste fechado", "Código + você", "falta"]
+      ["Testar a instalação e as notificações no Android e no iPhone", "Código + você", "falta"]
     ], pronto: "Pronto quando: o cálculo bate com pelo menos 9 de cada 10 contracheques e existem 3 depoimentos autorizados." },
     { nome: "Lançamento e crescimento", tempo: "semana 8 em diante", texto: "Abrir para todos e trazer gente sem depender só de anúncio pago.", tarefas: [
-      ["Play Store aberta e depoimentos na página", "Código + você", "falta"],
+      ["Depoimentos na página de vendas", "Código + você", "falta"],
       ["Calculadoras públicas: hora extra, rescisão, férias, salário líquido", "Código", "falta"],
       ["Vídeos curtos: \"quanto vale sua hora extra\", \"como conferir o contracheque\"", "Você", "falta"],
       ["Indique e ganhe 1 mês", "Código", "falta"],
@@ -660,7 +661,6 @@ input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; 
     ["SMS para login por telefone", "Por mensagem", "Centavos a cada código", "Por isso começar pelo login por e-mail."],
     ["Domínio .com.br", "Anual", "R$ 40", "No Registro.br."],
     ["Marca no INPI", "Uma vez, por classe", "A partir de R$ 140 com desconto de ME", "Duas classes: 9 e 42."],
-    ["Conta de desenvolvedor Google Play", "Uma vez", "US$ 25", "Pede verificação de identidade e da empresa."],
     ["Revisão jurídica", "Uma vez", "R$ 800 a R$ 3.000", "Termos, Privacidade e o aviso de estimativa."]
   ];
   $("tab-custos").innerHTML = CUSTOS.map(function (c) {
