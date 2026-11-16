@@ -1,0 +1,745 @@
+<title>Lançamento do Pingou</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap">
+<style>
+/* Layout: faixa verde de abertura, navegação presa, seções em coluna de leitura com tabelas e grades que abrem no computador. Mesma marca do app. */
+:root {
+  --fundo: #f3f6f4;
+  --superficie: #ffffff;
+  --superficie-2: #e8eeea;
+  --texto: #0f1c18;
+  --texto-2: #4b5c56;
+  --linha: #d6dfdb;
+  --marca: #07352d;
+  --marca-brilho: #0f6a56;
+  --sobre-marca: #ffffff;
+  --sobre-marca-2: rgb(255 255 255 / 0.78);
+  --menta: #7ee0c3;
+  --acao: #0e7c66;
+  --acao-suave: #dff1eb;
+  --extra: #c2410c;
+  --extra-suave: #fdeee4;
+  --erro: #b91c1c;
+  --erro-suave: #fbe9e9;
+  --ok: #15803d;
+  --ok-suave: #e3f4e8;
+  --fonte-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --fonte-texto: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fundo: #0b1512; --superficie: #121e1a; --superficie-2: #18261f; --texto: #e7efec; --texto-2: #a2b3ad; --linha: #26352f;
+    --marca: #0d2a24; --marca-brilho: #17493e; --acao: #5fd3b2; --acao-suave: #12312a;
+    --extra: #fdba74; --extra-suave: #3a2112; --erro: #fca5a5; --erro-suave: #3a1616; --ok: #86efac; --ok-suave: #10301d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fundo: #0b1512; --superficie: #121e1a; --superficie-2: #18261f; --texto: #e7efec; --texto-2: #a2b3ad; --linha: #26352f;
+  --marca: #0d2a24; --marca-brilho: #17493e; --acao: #5fd3b2; --acao-suave: #12312a;
+  --extra: #fdba74; --extra-suave: #3a2112; --erro: #fca5a5; --erro-suave: #3a1616; --ok: #86efac; --ok-suave: #10301d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--fundo); color: var(--texto); font-family: var(--fonte-texto); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--fonte-titulo); text-wrap: balance; margin: 0; letter-spacing: -0.015em; }
+p { margin: 0; }
+a { color: var(--acao); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--acao); outline-offset: 2px; border-radius: 6px; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+
+.faixa { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.miolo { max-width: 1080px; margin: 0 auto; }
+.leitura { max-width: 68ch; }
+
+/* ---------- abertura ---------- */
+.abertura { background: var(--marca); background-image: radial-gradient(110% 90% at 100% 0%, var(--marca-brilho) 0%, transparent 62%); color: var(--sobre-marca); padding-block: 40px 44px; }
+.abertura .miolo { display: grid; gap: 32px; }
+.marca { display: inline-flex; align-items: center; gap: 8px; font-family: var(--fonte-titulo); font-weight: 700; font-size: 20px; }
+.marca svg { width: 26px; height: 26px; }
+.abertura h1 { font-size: clamp(2rem, 6.4vw, 3.4rem); line-height: 1.02; font-weight: 750; max-width: 18ch; }
+.abertura .sub { color: var(--sobre-marca-2); font-size: clamp(1.02rem, 2.4vw, 1.2rem); max-width: 54ch; }
+.prontidao { display: grid; gap: 10px; background: rgb(255 255 255 / 0.07); border: 1px solid rgb(255 255 255 / 0.14); border-radius: 20px; padding: 20px; }
+.prontidao-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.prontidao-valor { font-family: var(--fonte-titulo); font-size: clamp(2.2rem, 7vw, 3rem); font-weight: 750; line-height: 1; }
+.trilho { height: 10px; border-radius: 99px; background: rgb(255 255 255 / 0.14); overflow: hidden; display: flex; }
+.trilho span { display: block; height: 100%; }
+.trilho .t-feito { background: var(--menta); }
+.trilho .t-parte { background: rgb(126 224 195 / 0.42); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--sobre-marca-2); }
+.legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+@media (min-width: 860px) {
+  .abertura { padding-block: 56px 64px; }
+  .abertura .miolo { grid-template-columns: 1.35fr 1fr; align-items: end; gap: 48px; }
+}
+
+/* ---------- navegação ---------- */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--fundo); }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--fundo) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--linha); }
+.nav ul { list-style: none; margin: 0 auto; padding: 0; max-width: 1080px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.nav a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 12px; white-space: nowrap; color: var(--texto-2); text-decoration: none; font-size: 15px; font-weight: 700; border-bottom: 2px solid transparent; }
+.nav a:hover { color: var(--texto); }
+.nav a.ativo { color: var(--texto); border-bottom-color: var(--acao); }
+
+/* ---------- seções ---------- */
+.secao { padding-block: 56px; scroll-margin-top: 56px; }
+.secao + .secao { border-top: 1px solid var(--linha); }
+.secao-cabeca { display: grid; gap: 10px; margin-bottom: 28px; }
+.secao h2 { font-size: clamp(1.6rem, 4.6vw, 2.3rem); line-height: 1.08; font-weight: 720; }
+.secao-cabeca p { color: var(--texto-2); max-width: 62ch; }
+h3 { font-size: 1.2rem; line-height: 1.25; font-weight: 700; }
+@media (min-width: 860px) { .secao { padding-block: 80px; } }
+
+/* selos de situação */
+.selo { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.selo::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.s-feito { background: var(--ok-suave); color: var(--ok); }
+.s-parte { background: var(--extra-suave); color: var(--extra); }
+.s-falta { background: var(--erro-suave); color: var(--erro); }
+.s-novo { background: var(--acao-suave); color: var(--acao); }
+.s-novo::before { display: none; }
+
+/* ---------- alerta ---------- */
+.alerta { display: grid; gap: 6px; background: var(--erro-suave); color: var(--texto); border-radius: 16px; padding: 18px 20px; margin-bottom: 28px; }
+.alerta b { color: var(--erro); }
+
+/* ---------- onde estamos ---------- */
+.grupos { display: grid; gap: 28px; }
+@media (min-width: 860px) { .grupos { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
+.grupo h3 { padding-bottom: 10px; border-bottom: 2px solid var(--texto); margin-bottom: 4px; }
+.itens { list-style: none; margin: 0; padding: 0; }
+.itens li { display: grid; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--linha); }
+.itens .linha1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; font-weight: 700; }
+.itens .obs { font-size: 15px; color: var(--texto-2); }
+
+/* ---------- planos ---------- */
+.planos { display: grid; gap: 16px; }
+@media (min-width: 860px) { .planos { grid-template-columns: repeat(3, 1fr); align-items: stretch; } }
+.plano { display: flex; flex-direction: column; gap: 14px; background: var(--superficie); border: 1px solid var(--linha); border-radius: 22px; padding: 22px; min-width: 0; }
+.plano.destaque { background: var(--marca); background-image: radial-gradient(120% 80% at 100% 0%, var(--marca-brilho) 0%, transparent 60%); color: var(--sobre-marca); border-color: transparent; }
+.plano-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.plano-nome { font-family: var(--fonte-titulo); font-size: 1.35rem; font-weight: 750; }
+.plano-preco { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.plano-preco b { font-family: var(--fonte-titulo); font-size: 2.3rem; font-weight: 750; line-height: 1; }
+.plano-preco span, .plano .papel { font-size: 15px; color: var(--texto-2); }
+.plano.destaque .plano-preco span, .plano.destaque .papel { color: var(--sobre-marca-2); }
+.plano ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 15px; }
+.plano li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+.plano li svg { width: 16px; height: 16px; margin-top: 3px; color: var(--acao); }
+.plano.destaque li svg { color: var(--menta); }
+.plano.destaque .s-novo { background: rgb(126 224 195 / 0.18); color: var(--menta); }
+.plano .mudanca { margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--linha); font-size: 14px; color: var(--texto-2); }
+.plano.destaque .mudanca { border-top-color: rgb(255 255 255 / 0.25); color: var(--sobre-marca-2); }
+
+.tabela-caixa { overflow-x: auto; margin-top: 28px; border: 1px solid var(--linha); border-radius: 18px; background: var(--superficie); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 15px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+thead th { font-family: var(--fonte-titulo); font-size: 15px; background: var(--superficie-2); position: sticky; top: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+td.c { text-align: center; white-space: nowrap; }
+th.c { text-align: center; }
+.sim { color: var(--ok); font-weight: 700; }
+.nao { color: var(--texto-2); }
+.grupo-linha td { background: var(--fundo); font-weight: 700; font-size: 14px; color: var(--texto-2); }
+
+/* momentos de upgrade */
+.momentos { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 12px; }
+@media (min-width: 720px) { .momentos { grid-template-columns: repeat(2, 1fr); } }
+.momento { display: grid; gap: 6px; padding: 18px; border-radius: 16px; background: var(--superficie); border: 1px solid var(--linha); min-width: 0; }
+.momento .quando { font-size: 14px; color: var(--texto-2); font-weight: 700; }
+.momento .tela { font-family: var(--fonte-titulo); font-size: 1.05rem; font-weight: 700; }
+.momento .msg { font-size: 15px; background: var(--fundo); border-radius: 10px; padding: 10px 12px; }
+
+/* ---------- matriz ---------- */
+.matriz { display: grid; gap: 12px; }
+@media (min-width: 760px) { .matriz { grid-template-columns: 1fr 1fr; } }
+.quadrante { border-radius: 20px; padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.q-ja { background: var(--acao-suave); }
+.q-planeje { background: var(--superficie); border: 1px solid var(--linha); }
+.q-encaixe { background: var(--superficie-2); }
+.q-depois { background: transparent; border: 1px dashed var(--linha); }
+.quadrante header { display: grid; gap: 2px; }
+.quadrante header span { font-size: 14px; color: var(--texto-2); }
+.ideias { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ideias li { display: grid; gap: 2px; }
+.ideias b { font-size: 16px; }
+.ideias span { font-size: 15px; color: var(--texto-2); }
+.ideias .plano-tag { font-size: 13px; font-weight: 700; color: var(--acao); }
+
+/* ---------- fases ---------- */
+.fases { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: fase; }
+.fase { display: grid; grid-template-columns: 44px 1fr; gap: 16px; position: relative; padding-bottom: 32px; }
+.fase:last-child { padding-bottom: 0; }
+.fase::before { counter-increment: fase; content: counter(fase); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--fonte-titulo); font-weight: 750; font-size: 20px; background: var(--marca); color: var(--sobre-marca); position: relative; z-index: 1; }
+.fase::after { content: ""; position: absolute; left: 21px; top: 44px; bottom: 0; width: 2px; background: var(--linha); }
+.fase:last-child::after { display: none; }
+.fase-corpo { display: grid; gap: 10px; min-width: 0; padding-top: 6px; }
+.fase-topo { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.fase-topo span { font-size: 14px; color: var(--texto-2); font-weight: 700; }
+.fase-corpo > p { color: var(--texto-2); font-size: 15px; }
+.tarefas { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; background: var(--superficie); border: 1px solid var(--linha); border-radius: 16px; }
+.tarefas li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--linha); font-size: 15px; }
+.tarefas li:last-child { border-bottom: 0; }
+.tarefas .quem { font-size: 13px; color: var(--texto-2); grid-column: 1; }
+.tarefas .selo { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
+.criterio { font-size: 15px; padding: 12px 16px; border-radius: 12px; background: var(--acao-suave); }
+
+/* ---------- simulador ---------- */
+.simulador { display: grid; gap: 20px; }
+@media (min-width: 900px) { .simulador { grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; } }
+.controles { display: grid; gap: 16px; background: var(--superficie); border: 1px solid var(--linha); border-radius: 20px; padding: 20px; }
+.controle { display: grid; gap: 4px; }
+.controle label { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; font-size: 15px; }
+.controle output { font-variant-numeric: tabular-nums; }
+.controle small { color: var(--texto-2); font-size: 13px; }
+input[type="range"] { width: 100%; accent-color: var(--acao); min-height: 32px; }
+.resultado { display: grid; gap: 12px; }
+.res-principal { background: var(--marca); color: var(--sobre-marca); border-radius: 20px; padding: 22px; display: grid; gap: 6px; }
+.res-principal span { color: var(--sobre-marca-2); font-size: 15px; }
+.res-principal b { font-family: var(--fonte-titulo); font-size: clamp(2.2rem, 7vw, 3rem); font-weight: 750; line-height: 1; }
+.res-linhas { background: var(--superficie); border: 1px solid var(--linha); border-radius: 20px; padding: 6px 20px; }
+.res-linhas div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--linha); font-size: 15px; }
+.res-linhas div:last-child { border-bottom: 0; font-weight: 700; }
+.negativo { color: var(--erro); }
+.nota { font-size: 14px; color: var(--texto-2); }
+
+.custos { margin-top: 28px; }
+
+/* ---------- métricas ---------- */
+.metricas { display: grid; gap: 12px; }
+@media (min-width: 720px) { .metricas { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .metricas { grid-template-columns: repeat(3, 1fr); } }
+.metrica { display: grid; gap: 4px; padding: 18px 0; border-top: 2px solid var(--texto); min-width: 0; }
+.metrica .alvo { font-family: var(--fonte-titulo); font-size: 1.8rem; font-weight: 750; line-height: 1.1; }
+.metrica h3 { font-size: 1.02rem; }
+.metrica p { font-size: 15px; color: var(--texto-2); }
+
+/* ---------- riscos e decisões ---------- */
+.riscos { display: grid; gap: 0; border-top: 1px solid var(--linha); }
+.risco { display: grid; gap: 6px; padding: 16px 0; border-bottom: 1px solid var(--linha); }
+@media (min-width: 760px) { .risco { grid-template-columns: 1fr 1.4fr; gap: 24px; } }
+.risco p { font-size: 15px; color: var(--texto-2); }
+
+.decisoes { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: dec; }
+.decisao { display: grid; gap: 10px; background: var(--superficie); border: 1px solid var(--linha); border-radius: 18px; padding: 20px; }
+.decisao h3 { font-size: 1.1rem; }
+.opcoes { display: grid; gap: 8px; }
+@media (min-width: 720px) { .opcoes { grid-template-columns: 1fr 1fr; } }
+.opcao { padding: 12px 14px; border-radius: 12px; background: var(--fundo); font-size: 15px; display: grid; gap: 2px; }
+.opcao.rec { background: var(--acao-suave); }
+.opcao b { font-size: 15px; }
+
+.rodape { padding-block: 32px 48px; color: var(--texto-2); font-size: 14px; border-top: 1px solid var(--linha); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .trilho span { transition: width 600ms ease-out; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="abertura faixa">
+  <div class="miolo">
+    <div style="display:grid;gap:18px">
+      <span class="marca">
+        <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M256 70C256 70 128 222 128 316a128 128 0 0 0 256 0C384 222 256 70 256 70z" fill="currentColor"/><g fill="none" stroke="#07352d" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"><path d="M256 222v188"/><path d="M302 262c-8-15-26-24-46-24-27 0-46 15-46 35 0 47 94 25 94 74 0 22-20 38-48 38-23 0-42-10-50-27"/></g></svg>
+        Pingou
+      </span>
+      <h1>Do app pronto ao Pingou que cobra todo mês.</h1>
+      <p class="sub">O que já existe, o que falta, como ficam os planos começando pelo Grátis, o que construir para atrair e em que ordem lançar. Feito a partir do código atual do app.</p>
+    </div>
+    <div class="prontidao" aria-labelledby="t-prontidao">
+      <div class="prontidao-topo">
+        <span id="t-prontidao" style="font-weight:700">Pronto para lançar</span>
+        <span class="prontidao-valor num" id="pront-valor">0 de 0</span>
+      </div>
+      <div class="trilho" role="img" id="pront-trilho" aria-label="Itens prontos para o lançamento">
+        <span class="t-feito" id="tr-feito" style="width:0"></span>
+        <span class="t-parte" id="tr-parte" style="width:0"></span>
+      </div>
+      <div class="legenda">
+        <span><i style="background:var(--menta)"></i><b id="n-feito">0</b> feitos</span>
+        <span><i style="background:rgb(126 224 195 / 0.42)"></i><b id="n-parte">0</b> com código pronto, falta ligar</span>
+        <span><i style="background:rgb(255 255 255 / 0.14)"></i><b id="n-falta">0</b> por fazer</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav faixa" aria-label="Seções">
+  <ul>
+    <li><a href="#onde-estamos">Onde estamos</a></li>
+    <li><a href="#planos">Planos</a></li>
+    <li><a href="#o-que-construir">O que construir</a></li>
+    <li><a href="#roteiro">Roteiro</a></li>
+    <li><a href="#numeros">Números</a></li>
+    <li><a href="#metricas">Métricas</a></li>
+    <li><a href="#cuidados">Cuidados</a></li>
+    <li><a href="#decisoes">Decisões</a></li>
+  </ul>
+</nav>
+
+<main>
+  <!-- ================= ONDE ESTAMOS ================= -->
+  <section id="onde-estamos" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Onde estamos</h2>
+        <p>O produto em si está maduro: o cálculo é o mais difícil e está feito, com testes. O que separa o Pingou de um SaaS cobrando é quase tudo fora do código: empresa, contas de serviço, textos jurídicos e loja.</p>
+      </div>
+      <div class="alerta" role="note">
+        <b>Corrigir antes de qualquer anúncio</b>
+        <p>A página de vendas e os Termos oferecem o plano Equipe a R$ 9,90 por pessoa, mas convite, aprovação e folha da equipe ainda não existem no app. Vender um recurso que não existe é risco de propaganda enganosa (CDC, art. 37). Até ficar pronto, o Equipe vira "lista de espera".</p>
+      </div>
+      <div class="grupos" id="grupos"></div>
+    </div>
+  </section>
+
+  <!-- ================= PLANOS ================= -->
+  <section id="planos" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Planos: o Grátis cria o hábito, o Pro resolve o dinheiro</h2>
+        <p>A regra que guia a divisão: tudo que faz a pessoa voltar todo dia fica no Grátis. O que ela usa quando tem dinheiro em jogo (achar o que faltou, provar, guardar o histórico) fica no Pro. Quem entra ganha 14 dias de Pro e, se não assinar, continua no Grátis sem perder nada.</p>
+      </div>
+
+      <div class="planos">
+        <article class="plano" aria-labelledby="p-gratis">
+          <div class="plano-topo"><h3 id="p-gratis" class="plano-nome">Grátis</h3></div>
+          <div class="plano-preco"><b class="num">R$ 0</b><span>para sempre</span></div>
+          <p class="papel">Para bater o ponto todo dia e saber quanto vai cair.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg><span>Ponto sem limite, sem internet</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Valor do mês ao vivo e "Por que deu isso?"</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Hora extra, feriado, falta, INSS e IR na conta</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Período atual e o anterior <span class="selo s-novo">muda</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Conta e backup na nuvem <span class="selo s-novo">muda</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Lembrete "Bateu a saída?" <span class="selo s-novo">novo</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Conferir pagamento: mostra se bateu e quanto faltou <span class="selo s-novo">muda</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Até 20 lançamentos de produção por período</span></li>
+          </ul>
+          <p class="mudanca">Hoje o Grátis só vê o período atual e não guarda na nuvem. Ver o período anterior deixa a pessoa conferir o último pagamento, que é quando ela sente o valor. Perder dados ao trocar de celular derruba a confiança antes de qualquer venda.</p>
+        </article>
+
+        <article class="plano destaque" aria-labelledby="p-pro">
+          <div class="plano-topo"><h3 id="p-pro" class="plano-nome">Pro</h3><span class="selo s-novo">era "Individual"</span></div>
+          <div class="plano-preco"><b class="num">R$ 14,90</b><span>por mês, ou R$ 119 por ano</span></div>
+          <p class="papel">Para quem quer achar o dinheiro que faltou e ter prova.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg><span>Tudo do Grátis</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Conferir pagamento completo: onde faltou, linha a linha</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Histórico de todos os períodos, com busca</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Contracheque estimado em PDF e planilha</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Relatório de horas para RH, sindicato ou advogado <span class="selo s-novo">novo</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Férias, 13º e rescisão com os seus números <span class="selo s-novo">novo</span></span></li>
+            <li><svg><use href="#i-check"/></svg><span>Metas e produção sem limite, várias obras</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Suporte prioritário no WhatsApp <span class="selo s-novo">novo</span></span></li>
+          </ul>
+          <p class="mudanca">O anual a R$ 119 sai por R$ 9,92 ao mês: 4 meses de graça e uma taxa de cobrança só, em vez de 12. O nome "Pro" deixa claro que é o passo acima, em vez de "Individual", que fala de quantidade de pessoas.</p>
+        </article>
+
+        <article class="plano" aria-labelledby="p-turma">
+          <div class="plano-topo"><h3 id="p-turma" class="plano-nome">Turma</h3><span class="selo s-parte">lista de espera</span></div>
+          <div class="plano-preco"><b class="num">R$ 39,90</b><span>por mês, até 5 pessoas</span></div>
+          <p class="papel">Para empreiteiro e encarregado que pagam uma equipe.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg><span>Pro para cada pessoa da turma</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Convite por link ou WhatsApp</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Aprovar ponto e produção de cada um</span></li>
+            <li><svg><use href="#i-check"/></svg><span>Folha da semana e do mês em PDF e planilha</span></li>
+            <li><svg><use href="#i-check"/></svg><span>R$ 6,90 por pessoa a partir da 6ª</span></li>
+          </ul>
+          <p class="mudanca">Hoje está como "Equipe", R$ 9,90 por pessoa. Turma que entra e sai toda semana deixa a conta imprevisível. Uma faixa fixa até 5 pessoas é fácil de entender e o empreiteiro decide sem calcular. Com 8 pessoas: R$ 60,60 contra R$ 79,20 hoje.</p>
+        </article>
+      </div>
+
+      <div class="tabela-caixa" tabindex="0" role="region" aria-label="Comparação completa dos planos">
+        <table>
+          <thead><tr><th scope="col">Recurso</th><th scope="col" class="c">Grátis</th><th scope="col" class="c">Pro</th><th scope="col" class="c">Turma</th><th scope="col">Situação no código</th></tr></thead>
+          <tbody id="comparacao"></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:44px">Onde o app oferece o Pro</h3>
+      <p class="nota" style="margin-top:6px;max-width:62ch">Cada oferta aparece na hora em que a pessoa acabou de sentir a falta do recurso, nunca como tela cheia ao abrir o app.</p>
+      <ul class="momentos" id="momentos"></ul>
+    </div>
+  </section>
+
+  <!-- ================= O QUE CONSTRUIR ================= -->
+  <section id="o-que-construir" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>O que construir para ficar mais atrativo</h2>
+        <p>Ideias organizadas por impacto em cadastro, retenção ou assinatura, contra o esforço de construir. Cada uma diz em que plano entra.</p>
+      </div>
+      <div class="matriz" id="matriz"></div>
+    </div>
+  </section>
+
+  <!-- ================= ROTEIRO ================= -->
+  <section id="roteiro" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Roteiro de lançamento</h2>
+        <p>Cinco fases, nesta ordem, porque cada uma depende da anterior: sem empresa não há conta no Asaas, sem cobrança testada não há beta pago, sem depoimentos do beta a página vende menos. Prazos em semanas de trabalho, contando a partir de quando a fase começa.</p>
+      </div>
+      <ol class="fases" id="fases"></ol>
+    </div>
+  </section>
+
+  <!-- ================= NÚMEROS ================= -->
+  <section id="numeros" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Números: quanto entra e quando se paga</h2>
+        <p>Mexa nos valores. Os padrões são estimativas para começar a conversa, não promessa. Troque pelas taxas reais do Asaas e pelos custos que você já tem.</p>
+      </div>
+      <div class="simulador">
+        <form class="controles" id="sim" onsubmit="return false">
+          <div class="controle"><label for="s-ativos">Pessoas usando por mês <output id="o-ativos" class="num"></output></label><input id="s-ativos" type="range" min="100" max="20000" step="100" value="2000"></div>
+          <div class="controle"><label for="s-conv">Dessas, quantas assinam <output id="o-conv" class="num"></output></label><input id="s-conv" type="range" min="0.5" max="12" step="0.5" value="4"><small>App de consumo com teste grátis costuma ficar entre 2% e 6%.</small></div>
+          <div class="controle"><label for="s-preco">Preço mensal do Pro <output id="o-preco" class="num"></output></label><input id="s-preco" type="range" min="490" max="2990" step="100" value="1490"></div>
+          <div class="controle"><label for="s-anual">Assinantes no plano anual <output id="o-anual" class="num"></output></label><input id="s-anual" type="range" min="0" max="80" step="5" value="25"><small>Anual a R$ 119.</small></div>
+          <div class="controle"><label for="s-taxa">Taxa por cobrança <output id="o-taxa" class="num"></output></label><input id="s-taxa" type="range" min="0" max="400" step="10" value="199"><small>Média entre Pix e cartão. Confira a tabela atual do Asaas.</small></div>
+          <div class="controle"><label for="s-fixo">Custos fixos por mês <output id="o-fixo" class="num"></output></label><input id="s-fixo" type="range" min="100" max="3000" step="50" value="700"><small>Ver a tabela de custos abaixo.</small></div>
+        </form>
+        <div class="resultado" aria-live="polite">
+          <div class="res-principal"><span>Sobra por mês</span><b class="num" id="r-lucro">R$ 0</b><span id="r-equilibrio"></span></div>
+          <div class="res-linhas">
+            <div><span>Assinantes</span><span class="num" id="r-pagantes"></span></div>
+            <div><span>Receita por mês</span><span class="num" id="r-receita"></span></div>
+            <div><span>Taxas de cobrança</span><span class="num negativo" id="r-taxas"></span></div>
+            <div><span>Custos fixos</span><span class="num negativo" id="r-fixo"></span></div>
+            <div><span>Receita em 12 meses</span><span class="num" id="r-ano"></span></div>
+          </div>
+          <p class="nota">Não conta impostos (Simples Nacional, a partir de 6% sobre o faturamento para software, conforme o anexo que o contador definir) nem gasto com anúncio.</p>
+        </div>
+      </div>
+
+      <div class="tabela-caixa custos" tabindex="0" role="region" aria-label="Custos para operar">
+        <table>
+          <thead><tr><th scope="col">Custo</th><th scope="col">Quando</th><th scope="col">Valor aproximado</th><th scope="col">Observação</th></tr></thead>
+          <tbody id="tab-custos"></tbody>
+        </table>
+      </div>
+      <p class="nota" style="margin-top:10px">Valores de referência para planejar. Câmbio e tabelas mudam: confirme cada um antes de contratar.</p>
+    </div>
+  </section>
+
+  <!-- ================= MÉTRICAS ================= -->
+  <section id="metricas" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Métricas que dizem se está funcionando</h2>
+        <p>Seis números, olhados toda semana a partir do beta. As metas são pontos de partida comuns para app de consumo; ajuste depois de 2 meses de dados reais. A medição de cliques da página de vendas já existe e precisa de um provedor ligado.</p>
+      </div>
+      <div class="metricas" id="lista-metricas"></div>
+    </div>
+  </section>
+
+  <!-- ================= CUIDADOS ================= -->
+  <section id="cuidados" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Cuidados legais e de reputação</h2>
+        <p>O Pingou mexe com salário e com relação de trabalho. Estes pontos protegem o negócio e a pessoa que usa. Não substituem a revisão de um advogado.</p>
+      </div>
+      <div class="riscos" id="riscos"></div>
+    </div>
+  </section>
+
+  <!-- ================= DECISÕES ================= -->
+  <section id="decisoes" class="secao faixa">
+    <div class="miolo">
+      <div class="secao-cabeca">
+        <h2>Decisões que são suas</h2>
+        <p>Cinco escolhas que mudam o que se constrói. A recomendada está em verde.</p>
+      </div>
+      <ol class="decisoes" id="lista-decisoes"></ol>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape faixa">
+  <div class="miolo">
+    <p>Plano de lançamento do Pingou, montado em 16/11/2026 a partir do código do app (motor em <code>packages/core</code>, app em <code>apps/web</code>) e dos documentos <code>docs/vendavel.md</code> e <code>docs/configurar.md</code>. Preços e custos são sugestões para decidir, não valores contratados.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var SELO = { feito: ["s-feito", "Feito"], parte: ["s-parte", "Falta ligar"], falta: ["s-falta", "Falta"] };
+  var selo = function (s) { var x = SELO[s]; return '<span class="selo ' + x[0] + '">' + x[1] + "</span>"; };
+
+  /* ---------- onde estamos ---------- */
+  var GRUPOS = [
+    { titulo: "Produto", itens: [
+      ["Cálculo de salário, hora extra e descontos CLT", "feito", "INSS e IR por faixa, folga remunerada sobre extra, vale-transporte. 130 testes."],
+      ["App que funciona sem internet e instala no celular", "feito", "Abre offline depois do primeiro acesso; tem ícone e atalhos."],
+      ["Contracheque estimado em PDF", "feito", "Gerado no próprio celular."],
+      ["Salário + produção, hora + produção, diária", "feito", "Todas as formas de pagamento do público."],
+      ["Página de vendas com medição de cliques", "feito", "Falta só escolher o provedor de medição."],
+      ["Conta e sincronização na nuvem", "parte", "Código pronto (Supabase). Falta criar o projeto e ligar as variáveis."],
+      ["Cobrança por Pix e cartão", "parte", "Código pronto (Asaas, webhook, 14 dias grátis). Falta a conta e o teste ponta a ponta."],
+      ["Notificações (\"Bateu a saída?\", dia do pagamento)", "falta", "Maior motivo para voltar ao app todo dia."],
+      ["Monitor de erros em produção", "falta", "Para saber de um erro antes do usuário reclamar."],
+      ["Plano Equipe (convite, aprovação, folha)", "falta", "Está à venda na página, mas não existe no app."]
+    ]},
+    { titulo: "Empresa e jurídico", itens: [
+      ["Empresa aberta (CNPJ)", "falta", "Necessária para o Asaas e para emitir nota."],
+      ["Conta bancária PJ e Asaas em produção", "falta", "Hoje só o ambiente de teste está previsto."],
+      ["Dados da empresa nos Termos e na Privacidade", "parte", "Textos e aceite prontos; razão social, CNPJ, e-mail e encarregado de dados estão em branco."],
+      ["Revisão dos Termos por advogado", "falta", "Principalmente o aviso de que os valores são estimativa."],
+      ["Marca \"Pingou\" no INPI", "falta", "Classes 9 (app) e 42 (software como serviço)."],
+      ["Domínio próprio", "falta", "Um .com.br e, se der, o .app."]
+    ]},
+    { titulo: "Lançamento", itens: [
+      ["App na Play Store", "falta", "O público procura app na loja. O PWA vira app Android sem reescrever."],
+      ["E-mail e WhatsApp de suporte", "falta", "O público resolve tudo pelo WhatsApp."],
+      ["Beta com 30 trabalhadores", "falta", "Para achar erros com contracheques reais e colher depoimentos."],
+      ["Depoimentos reais autorizados", "falta", "A seção da página fica oculta até existirem."],
+      ["Calculadoras públicas (hora extra, rescisão, férias)", "falta", "Trazem gente pelo Google sem pagar anúncio."],
+      ["Primeiros vídeos e grupos de WhatsApp", "falta", "Canal principal do público."]
+    ]}
+  ];
+  var n = { feito: 0, parte: 0, falta: 0 }, total = 0;
+  $("grupos").innerHTML = GRUPOS.map(function (g) {
+    return '<div class="grupo"><h3>' + esc(g.titulo) + '</h3><ul class="itens">' + g.itens.map(function (i) {
+      n[i[1]]++; total++;
+      return '<li><span class="linha1"><span>' + esc(i[0]) + "</span>" + selo(i[1]) + '</span><span class="obs">' + esc(i[2]) + "</span></li>";
+    }).join("") + "</ul></div>";
+  }).join("");
+  $("pront-valor").textContent = n.feito + " de " + total;
+  $("n-feito").textContent = n.feito; $("n-parte").textContent = n.parte; $("n-falta").textContent = n.falta;
+  $("pront-trilho").setAttribute("aria-label", n.feito + " feitos, " + n.parte + " com código pronto e " + n.falta + " por fazer, de " + total + " itens");
+  requestAnimationFrame(function () {
+    $("tr-feito").style.width = (n.feito / total * 100) + "%";
+    $("tr-parte").style.width = (n.parte / total * 100) + "%";
+  });
+
+  /* ---------- comparação ---------- */
+  var S = '<span class="sim">Sim</span>', N = '<span class="nao">Não</span>';
+  var COMP = [
+    ["Todo dia"],
+    ["Bater ponto, sem internet", S, S, S, "feito", ""],
+    ["Valor do mês e passo a passo da conta", S, S, S, "feito", ""],
+    ["Lembretes de ponto esquecido no app", S, S, S, "feito", ""],
+    ["Notificação \"Bateu a saída?\" e dia do pagamento", S, S, S, "falta", "Construir"],
+    ["Dinheiro"],
+    ["Conferir pagamento: se bateu e quanto faltou", S, S, S, "parte", "Separar o resumo do detalhe"],
+    ["Conferir pagamento: onde faltou, linha a linha", N, S, S, "feito", ""],
+    ["Contracheque estimado em PDF e planilha", N, S, S, "feito", ""],
+    ["Relatório de horas para RH, sindicato ou advogado", N, S, S, "falta", "Construir a partir do PDF atual"],
+    ["Férias, 13º e rescisão com os seus números", N, S, S, "falta", "Construir no motor"],
+    ["Dados"],
+    ["Períodos visíveis", "Atual e anterior", "Todos", "Todos", "parte", "Hoje o Grátis vê só o atual"],
+    ["Conta e backup na nuvem", S, S, S, "parte", "Hoje é recurso pago; ligar Supabase"],
+    ["Lançamentos de produção por período", "20", "Sem limite", "Sem limite", "feito", ""],
+    ["Metas", N, S, S, "feito", ""],
+    ["Equipe"],
+    ["Convidar, aprovar ponto e produção", N, N, S, "falta", "Construir"],
+    ["Folha da equipe em PDF e planilha", N, N, S, "falta", "Construir"],
+    ["Atendimento"],
+    ["Suporte no WhatsApp", "Perguntas frequentes", "Prioritário", "Prioritário", "falta", "Número e horário"]
+  ];
+  $("comparacao").innerHTML = COMP.map(function (r) {
+    if (r.length === 1) return '<tr class="grupo-linha"><td colspan="5">' + esc(r[0]) + "</td></tr>";
+    var cel = function (v) { return v === S || v === N ? v : esc(v); };
+    return "<tr><th scope=\"row\" style=\"font-weight:400\">" + esc(r[0]) + '</th><td class="c">' + cel(r[1]) + '</td><td class="c">' + cel(r[2]) + '</td><td class="c">' + cel(r[3]) + "</td><td>" + selo(r[4]) + (r[5] ? ' <span class="nota">' + esc(r[5]) + "</span>" : "") + "</td></tr>";
+  }).join("");
+
+  /* ---------- momentos de upgrade ---------- */
+  var MOM = [
+    ["Ao conferir o pagamento", "Ganhos, Conferir pagamento", "Faltou R$ 187,50. Veja onde pode estar a diferença no Pro."],
+    ["Ao abrir um período de 2 meses atrás", "Histórico", "Este período está guardado. Assine o Pro para ver de novo."],
+    ["Ao tocar em Baixar PDF", "Ganhos, Contracheque", "Leve o contracheque estimado para conferir com o RH. Recurso do Pro."],
+    ["No 21º lançamento de produção", "Produção", "Você lançou 20 serviços neste período. No Pro não tem limite."],
+    ["Dia 12 do teste", "Hoje, aviso no topo", "Seu teste acaba em 2 dias. Em 12 dias você registrou 96h e R$ 312,00 de hora extra."],
+    ["No fim do teste", "Tela única, uma vez", "Resumo dos 14 dias e duas escolhas iguais: Assinar o Pro ou Continuar no Grátis."]
+  ];
+  $("momentos").innerHTML = MOM.map(function (m) {
+    return '<li class="momento"><span class="quando">' + esc(m[0]) + '</span><span class="tela">' + esc(m[1]) + '</span><p class="msg">' + esc(m[2]) + "</p></li>";
+  }).join("");
+
+  /* ---------- matriz ---------- */
+  var MAT = [
+    { cls: "q-ja", titulo: "Faça já", sub: "Muito impacto, pouco esforço", itens: [
+      ["Separar o resumo do detalhe no Conferir pagamento", "O \"Faltou R$ X\" é o momento de maior emoção do app. Mostrar o valor no Grátis e o \"onde\" no Pro.", "Grátis + Pro"],
+      ["Plano anual a R$ 119", "Mais caixa na entrada, menos taxa e menos cancelamento. Só configuração no Asaas e no app.", "Pro"],
+      ["Período anterior no Grátis", "Deixa conferir o último pagamento sem pagar, e a pessoa vê o valor do histórico.", "Grátis"],
+      ["Equipe vira lista de espera", "Tira o risco legal e já mede quantos empreiteiros querem o plano.", "Turma"]
+    ]},
+    { cls: "q-planeje", titulo: "Planeje", sub: "Muito impacto, mais esforço", itens: [
+      ["Notificações de ponto e de pagamento", "\"Bateu a saída?\" às 17:10 e \"Pingou! Seu salário cai hoje\". Maior alavanca de retenção.", "Grátis"],
+      ["Relatório de horas para RH, sindicato ou advogado", "PDF com todas as marcações, horas extras por dia e totais. É o que justifica pagar quando há conflito.", "Pro"],
+      ["Férias, 13º e rescisão", "Perguntas que todo trabalhador faz. No app com os números da pessoa; no site como calculadora pública.", "Pro + site"],
+      ["Plano Turma", "Ticket maior e cada empreiteiro traz 5 a 20 trabalhadores para o app.", "Turma"]
+    ]},
+    { cls: "q-encaixe", titulo: "Encaixe quando der", sub: "Impacto menor, pouco esforço", itens: [
+      ["Indique um colega e ganhe 1 mês", "Link pelo WhatsApp. Cada assinatura que vier por indicação dá 30 dias de Pro a quem indicou.", "Pro"],
+      ["Resumo da semana", "Domingo à noite: horas, extras e quanto já pingou. Puxa o app de volta.", "Grátis"],
+      ["Selo \"Conferido\" no período", "Quando o pagamento bate, um registro visual de que estava tudo certo.", "Grátis"]
+    ]},
+    { cls: "q-depois", titulo: "Depois do lançamento", sub: "Vale testar com dados", itens: [
+      ["Foto do contracheque com leitura automática", "Conferir sem digitar nada. Exige leitura de imagem e cuidado com dados sensíveis.", "Pro"],
+      ["Avisos pelo WhatsApp", "Mais lido que notificação, mas cada mensagem tem custo na API oficial.", "Pro"],
+      ["App para iPhone na App Store", "O app já funciona no Safari. A loja da Apple pede conta paga e revisão mais rígida.", "Todos"]
+    ]}
+  ];
+  $("matriz").innerHTML = MAT.map(function (q) {
+    return '<div class="quadrante ' + q.cls + '"><header><h3>' + esc(q.titulo) + "</h3><span>" + esc(q.sub) + '</span></header><ul class="ideias">' + q.itens.map(function (i) {
+      return "<li><b>" + esc(i[0]) + "</b><span>" + esc(i[1]) + '</span><span class="plano-tag">' + esc(i[2]) + "</span></li>";
+    }).join("") + "</ul></div>";
+  }).join("");
+
+  /* ---------- fases ---------- */
+  var FASES = [
+    { nome: "Fundação", tempo: "semanas 1 e 2", texto: "Tudo que precisa existir antes de cobrar o primeiro real. Quase nada é código; dá para correr em paralelo com a fase 2.", tarefas: [
+      ["Abrir a empresa e a conta PJ", "Você, com contador", "falta"],
+      ["Registrar o domínio e o e-mail de contato", "Você", "falta"],
+      ["Pedir a marca no INPI, classes 9 e 42", "Você", "falta"],
+      ["Preencher os dados da empresa nos Termos e na Privacidade", "Código", "parte"],
+      ["Revisão jurídica dos Termos e da Privacidade", "Advogado", "falta"]
+    ], pronto: "Pronto quando: existe CNPJ, conta PJ, domínio e Termos revisados." },
+    { nome: "Ligar o que já está pronto", tempo: "semanas 2 e 3", texto: "Conta, sincronização e cobrança já estão escritas. Esta fase é criar os serviços, ligar e testar de ponta a ponta.", tarefas: [
+      ["Criar o projeto no Supabase (São Paulo) e rodar a migração", "Código", "parte"],
+      ["Login por e-mail com código; SMS depois, porque cada mensagem custa", "Código", "parte"],
+      ["Asaas: sandbox, assinatura, webhook, depois produção", "Código + você", "parte"],
+      ["Vercel no plano Pro, com o domínio próprio", "Você", "falta"],
+      ["Monitor de erros e provedor de medição", "Código", "falta"]
+    ], pronto: "Pronto quando: uma pessoa cria a conta, troca de celular sem perder nada e paga por Pix de verdade." },
+    { nome: "Planos novos e retenção", tempo: "semanas 3 a 5", texto: "As mudanças de plano desta página e as duas funções que mais seguram o usuário.", tarefas: [
+      ["Grátis com período anterior e backup; Individual vira Pro", "Código", "falta"],
+      ["Conferir pagamento: resumo no Grátis, detalhe no Pro", "Código", "falta"],
+      ["Plano anual a R$ 119", "Código", "falta"],
+      ["Equipe vira Turma em lista de espera, na página e nos Termos", "Código", "falta"],
+      ["Notificações de ponto e de dia do pagamento", "Código", "falta"],
+      ["Avisos de fim de teste e momentos de oferta do Pro", "Código", "falta"]
+    ], pronto: "Pronto quando: os 6 momentos de oferta aparecem nas telas certas e a notificação chega no Android." },
+    { nome: "Beta fechado", tempo: "semanas 5 a 7", texto: "30 trabalhadores de verdade, de pelo menos 3 áreas, usando por 2 ciclos de pagamento.", tarefas: [
+      ["Recrutar em grupos de WhatsApp, obras e conhecidos", "Você", "falta"],
+      ["Comparar o cálculo com contracheques reais e corrigir", "Código", "falta"],
+      ["Pedir depoimento com autorização por escrito", "Você", "falta"],
+      ["Publicar na Play Store em teste fechado", "Código + você", "falta"]
+    ], pronto: "Pronto quando: o cálculo bate com pelo menos 9 de cada 10 contracheques e existem 3 depoimentos autorizados." },
+    { nome: "Lançamento e crescimento", tempo: "semana 8 em diante", texto: "Abrir para todos e trazer gente sem depender só de anúncio pago.", tarefas: [
+      ["Play Store aberta e depoimentos na página", "Código + você", "falta"],
+      ["Calculadoras públicas: hora extra, rescisão, férias, salário líquido", "Código", "falta"],
+      ["Vídeos curtos: \"quanto vale sua hora extra\", \"como conferir o contracheque\"", "Você", "falta"],
+      ["Indique e ganhe 1 mês", "Código", "falta"],
+      ["Construir o plano Turma com quem entrou na lista", "Código", "falta"]
+    ], pronto: "Pronto quando: o custo para trazer um assinante é menor que 3 meses de assinatura." }
+  ];
+  $("fases").innerHTML = FASES.map(function (f) {
+    return '<li class="fase"><div class="fase-corpo"><div class="fase-topo"><h3>' + esc(f.nome) + "</h3><span>" + esc(f.tempo) + "</span></div><p>" + esc(f.texto) + '</p><ul class="tarefas">' + f.tarefas.map(function (t) {
+      return "<li><span>" + esc(t[0]) + '</span><span class="quem">' + esc(t[1]) + "</span>" + selo(t[2]) + "</li>";
+    }).join("") + '</ul><p class="criterio">' + esc(f.pronto) + "</p></div></li>";
+  }).join("");
+
+  /* ---------- custos ---------- */
+  var CUSTOS = [
+    ["Vercel Pro", "Mensal", "US$ 20", "O plano gratuito não permite uso comercial."],
+    ["Supabase", "Mensal", "R$ 0 no começo; US$ 25 no Pro", "O gratuito aguenta o beta. O Pro traz backup diário."],
+    ["Contador", "Mensal", "R$ 200 a R$ 500", "Simples Nacional, notas fiscais e folha."],
+    ["Asaas", "Por cobrança", "Em torno de R$ 1 a R$ 3", "Pix costuma ter taxa fixa; cartão, percentual mais taxa."],
+    ["SMS para login por telefone", "Por mensagem", "Centavos a cada código", "Por isso começar pelo login por e-mail."],
+    ["Domínio .com.br", "Anual", "R$ 40", "No Registro.br."],
+    ["Marca no INPI", "Uma vez, por classe", "A partir de R$ 140 com desconto de ME", "Duas classes: 9 e 42."],
+    ["Conta de desenvolvedor Google Play", "Uma vez", "US$ 25", "Pede verificação de identidade e da empresa."],
+    ["Revisão jurídica", "Uma vez", "R$ 800 a R$ 3.000", "Termos, Privacidade e o aviso de estimativa."]
+  ];
+  $("tab-custos").innerHTML = CUSTOS.map(function (c) {
+    return '<tr><th scope="row" style="font-weight:700">' + esc(c[0]) + "</th><td>" + esc(c[1]) + '</td><td class="num">' + esc(c[2]) + '</td><td class="nota">' + esc(c[3]) + "</td></tr>";
+  }).join("");
+
+  /* ---------- simulador ---------- */
+  var real = function (c) { return (c < 0 ? "−" : "") + "R$ " + (Math.abs(c) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }); };
+  var realCent = function (c) { return "R$ " + (c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var PRECO_ANUAL = 11900;
+  function calcular() {
+    var ativos = +$("s-ativos").value, conv = +$("s-conv").value, preco = +$("s-preco").value, anual = +$("s-anual").value / 100, taxa = +$("s-taxa").value, fixo = +$("s-fixo").value * 100;
+    $("o-ativos").textContent = ativos.toLocaleString("pt-BR");
+    $("o-conv").textContent = conv.toLocaleString("pt-BR") + "%";
+    $("o-preco").textContent = realCent(preco);
+    $("o-anual").textContent = Math.round(anual * 100) + "%";
+    $("o-taxa").textContent = realCent(taxa);
+    $("o-fixo").textContent = real(fixo);
+    var pagantes = Math.round(ativos * conv / 100);
+    var mensais = pagantes * (1 - anual), anuais = pagantes * anual;
+    var receita = mensais * preco + anuais * PRECO_ANUAL / 12;
+    var taxas = mensais * taxa + anuais * taxa / 12;
+    var lucro = Math.round(receita - taxas - fixo);
+    var porAssinante = pagantes ? (receita - taxas) / pagantes : preco - taxa;
+    var equilibrio = porAssinante > 0 ? Math.ceil(fixo / porAssinante) : Infinity;
+    $("r-pagantes").textContent = pagantes.toLocaleString("pt-BR");
+    $("r-receita").textContent = real(Math.round(receita));
+    $("r-taxas").textContent = real(-Math.round(taxas));
+    $("r-fixo").textContent = real(-fixo);
+    $("r-ano").textContent = real(Math.round(receita * 12));
+    var el = $("r-lucro"); el.textContent = real(lucro);
+    $("r-equilibrio").textContent = isFinite(equilibrio) ? "Os custos se pagam com " + equilibrio.toLocaleString("pt-BR") + " assinantes." : "Com essa taxa, cada assinatura não cobre a cobrança.";
+  }
+  ["s-ativos", "s-conv", "s-preco", "s-anual", "s-taxa", "s-fixo"].forEach(function (id) { $(id).addEventListener("input", calcular); });
+  calcular();
+
+  /* ---------- métricas ---------- */
+  var MET = [
+    ["Mais de 60%", "Bate o 1º ponto no dia do cadastro", "Mede se o começo está simples. Se cair, o problema está nas perguntas do início."],
+    ["Mais de 25%", "Ainda usa 30 dias depois", "O número que mais importa. Notificação é a principal alavanca."],
+    ["De 3% a 6%", "Dos usuários ativos, quantos pagam", "Abaixo de 2%, o Grátis está dando demais ou a oferta aparece na hora errada."],
+    ["Menos de 7%", "Assinantes que cancelam por mês", "Acima disso, o Pro não está sendo usado depois do primeiro mês."],
+    ["Mais de 1 em 10", "Usuários que vieram por indicação", "Mostra se o boca a boca funciona. Alvo depois do \"Indique e ganhe\"."],
+    ["Menos de 3 meses", "Tempo para o custo de trazer um assinante se pagar", "Regra para decidir se vale aumentar o gasto com anúncio."]
+  ];
+  $("lista-metricas").innerHTML = MET.map(function (m) {
+    return '<div class="metrica"><span class="alvo num">' + esc(m[0]) + "</span><h3>" + esc(m[1]) + "</h3><p>" + esc(m[2]) + "</p></div>";
+  }).join("");
+
+  /* ---------- riscos ---------- */
+  var RIS = [
+    ["Vender o que não existe", "O plano Equipe aparece na página e nos Termos sem existir no app. Trocar por lista de espera antes de anunciar."],
+    ["O valor é estimativa", "Manter o aviso no app, na página e nos Termos: o Pingou não substitui a folha nem o ponto oficial da empresa (REP). Nunca prometer valor exato."],
+    ["Depoimentos e números", "Só depoimento real com autorização por escrito, guardada. Nada de \"milhares de usuários\" antes de existirem."],
+    ["Dados pessoais (LGPD)", "Horários e salário são dados pessoais. Ter encarregado de dados nomeado, apagar e baixar dados funcionando (já existe) e servidor no Brasil."],
+    ["Relação com o empregador", "O relatório de horas é registro pessoal do trabalhador. Dizer isso no próprio PDF e não apresentar como prova garantida em processo."],
+    ["Tabelas anuais", "INSS e IR mudam em janeiro. Deixar um lembrete fixo para atualizar as tabelas e publicar antes do primeiro pagamento do ano."],
+    ["Cancelamento simples", "Cancelar tem que ser tão fácil quanto assinar, dentro do app. O app já mantém o acesso até o fim do mês pago."]
+  ];
+  $("riscos").innerHTML = RIS.map(function (r) {
+    return '<div class="risco"><h3>' + esc(r[0]) + "</h3><p>" + esc(r[1]) + "</p></div>";
+  }).join("");
+
+  /* ---------- decisões ---------- */
+  var DEC = [
+    ["Equipe enquanto não existe", ["Lista de espera na página e fora dos Termos", "Sem risco legal e já mede a procura."], ["Manter à venda e construir rápido", "Arrisca cobrar por algo que ainda não funciona."]],
+    ["Backup na nuvem no Grátis", ["Liberar para todos", "Ninguém perde dados ao trocar de celular, e o custo por usuário no Supabase é muito baixo."], ["Só no Pro, como hoje", "Vira motivo para assinar, mas quem perde os dados sai falando mal."]],
+    ["Conferir pagamento no Grátis", ["Mostrar quanto faltou; o detalhe é do Pro", "A pessoa descobre o problema de graça e paga para entender."], ["Tudo só no Pro", "Mais simples, mas quem não paga nunca sente o valor."]],
+    ["Nome do plano pago", ["Pro", "Curto e claramente acima do Grátis."], ["Manter \"Individual\"", "Fala de número de pessoas, não do que a pessoa ganha."]],
+    ["Primeiro login", ["E-mail com código de 6 números", "Sem custo por mensagem e já está no código."], ["Telefone com SMS", "Mais natural para o público, mas cada código custa e exige contratar um provedor."]]
+  ];
+  $("lista-decisoes").innerHTML = DEC.map(function (d) {
+    return '<li class="decisao"><h3>' + esc(d[0]) + '</h3><div class="opcoes"><div class="opcao rec"><b>' + esc(d[1][0]) + "</b><span>" + esc(d[1][1]) + '</span></div><div class="opcao"><b>' + esc(d[2][0]) + "</b><span>" + esc(d[2][1]) + "</span></div></div></li>";
+  }).join("");
+
+  /* ---------- navegação ativa ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll(".nav a"));
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (a) { a.classList.toggle("ativo", a.getAttribute("href") === "#" + e.target.id); });
+      });
+    }, { rootMargin: "-40% 0px -55% 0px" });
+    document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
