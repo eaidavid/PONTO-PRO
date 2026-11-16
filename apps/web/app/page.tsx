@@ -109,7 +109,8 @@ const DUVIDAS: { pergunta: string; resposta: string }[] = [
   },
   {
     pergunta: "Tenho que baixar na loja de aplicativos?",
-    resposta: "Não. O Pingou abre no navegador do celular e pode ser instalado na tela inicial, como um aplicativo.",
+    resposta:
+      "Não. O Pingou abre no navegador do celular. Para deixar na tela inicial: no Android, toque em Instalar o app quando ele aparecer, ou no menu ⋮ do Chrome, em Instalar app. No iPhone, abra no Safari, toque em Compartilhar e em Adicionar à Tela de Início.",
   },
   {
     pergunta: "O teste grátis cobra alguma coisa?",
@@ -541,6 +542,7 @@ export default function Vendas() {
         <nav aria-label="Rodapé" className="-mx-3 flex flex-wrap font-bold text-texto">
           <Link href="/termos" className="inline-flex min-h-12 items-center px-3 underline underline-offset-4">Termos de uso</Link>
           <Link href="/privacidade" className="inline-flex min-h-12 items-center px-3 underline underline-offset-4">Privacidade</Link>
+          <Link href="/calculadoras" className="inline-flex min-h-12 items-center px-3 underline underline-offset-4">Calculadoras</Link>
           <Link href="/entrar" className="inline-flex min-h-12 items-center px-3 underline underline-offset-4">Entrar</Link>
         </nav>
       </footer>

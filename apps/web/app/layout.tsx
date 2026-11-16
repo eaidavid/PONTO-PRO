@@ -4,9 +4,11 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { MARCA } from "../lib/marca";
+import { SITE_URL } from "../lib/site";
 import { Provedores } from "./provedores";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: MARCA.nome, template: `%s · ${MARCA.nome}` },
   description: MARCA.descricao,
   applicationName: MARCA.nome,

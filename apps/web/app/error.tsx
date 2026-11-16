@@ -2,9 +2,12 @@
 
 import { BotaoPrincipal } from "@ponto-pro/ui";
 import { RefreshCw } from "lucide-react";
+import { useEffect } from "react";
+import { reportarErro } from "../lib/erros";
 
 /** Erro inesperado: mensagem calma e um jeito de tentar de novo. Os dados continuam no celular. */
-export default function Erro({ reset }: { error: Error; reset: () => void }) {
+export default function Erro({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => reportarErro(error), [error]);
   return (
     <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center gap-4 px-6">
       <h1 className="display text-32">Algo deu errado nesta tela</h1>

@@ -624,3 +624,50 @@ test("histórico com resumo do período, produção editável e conta organizada
   await expect(page.locator("html")).toHaveAttribute("data-tamanho", "grande");
   await expect(page.getByRole("link", { name: "Termos de uso" })).toBeAttached();
 });
+
+test("calculadoras públicas: rescisão, 13º e convite para o app", async ({ page }) => {
+  await page.goto("/calculadoras");
+  await expect(page.getByRole("heading", { level: 1, name: /Contas do trabalhador/ })).toBeVisible();
+  await page.getByRole("link", { name: /Quanto recebo se sair do emprego/ }).click();
+  await expect(page).toHaveURL(/\/calculadoras\/rescisao$/);
+  await page.getByLabel("Último salário").fill("3000,00");
+  await page.getByLabel("Data de admissão").fill("2024-02-01");
+  await page.getByLabel("Último dia de trabalho").fill("2026-11-16");
+  const resultado = page.getByRole("region", { name: "Resultado" });
+  await expect(resultado).toContainText("Aviso prévio indenizado (36 dias)");
+  await expect(resultado).toContainText("R$ 3.600,00");
+  await page.getByRole("button", { name: "Pedi demissão" }).click();
+  await expect(resultado).not.toContainText("Aviso prévio indenizado");
+
+  await page.goto("/calculadoras/decimo-terceiro");
+  await page.getByLabel("Salário", { exact: true }).fill("3000,00");
+  await expect(page.getByText("1ª parcela, até 30/11")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resultado" })).toContainText("R$ 1.500,00");
+
+  await page.getByRole("link", { name: "Começar grátis" }).first().click();
+  await expect(page).toHaveURL(/\/comecar$/);
+});
+
+test("Google: mapa do site e robots", async ({ request }) => {
+  const mapa = await (await request.get("/sitemap.xml")).text();
+  expect(mapa).toContain("/calculadoras/rescisao");
+  const robots = await (await request.get("/robots.txt")).text();
+  expect(robots).toContain("Disallow: /hoje");
+  expect(robots).toContain("Sitemap:");
+});
+
+test("Pro: seus direitos com os números do perfil e relatório de horas em PDF", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/direitos");
+  await expect(page.getByRole("heading", { name: "Seus direitos" })).toBeVisible();
+  await expect(page.getByText(/Salário estimado pelas suas horas/)).toContainText("R$ 5.500,00");
+  await page.getByRole("tab", { name: "13º" }).click();
+  await expect(page.getByText("1ª parcela, até 30/11")).toBeVisible();
+
+  await page.goto("/historico");
+  await page.getByRole("button", { name: /Opções/ }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: /Relatório de horas em PDF/ }).click();
+  expect((await download).suggestedFilename()).toMatch(/^relatorio-de-horas-.*\.pdf$/);
+});

@@ -5,10 +5,10 @@ import { Contador } from "@ponto-pro/ui";
 import { useState } from "react";
 import { CampoReais, Caixa, Opcoes, Resultado, useReais } from "../campos";
 
-export function CalculadoraDecimo() {
-  const salario = useReais(300_000);
-  const media = useReais(0);
-  const [meses, setMeses] = useState(12);
+export function CalculadoraDecimo({ inicial }: { inicial?: { salario?: number; media?: number; meses?: number; admissao?: string } } = {}) {
+  const salario = useReais(inicial?.salario ?? 300_000);
+  const media = useReais(inicial?.media ?? 0);
+  const [meses, setMeses] = useState(inicial?.meses ?? 12);
   const [dependentes, setDependentes] = useState(0);
   const ano = Number(agoraEmSaoPaulo().data.slice(0, 4));
   const r = decimoTerceiro({ salario: salario.centavos, mediaVariaveis: media.centavos, meses, dependentes, ano });

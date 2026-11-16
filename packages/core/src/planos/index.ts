@@ -22,6 +22,8 @@ export type Recurso =
   /** As pistas de onde pode estar a diferença, linha por linha. */
   | "conferencia-detalhe"
   | "producao-ilimitada"
+  /** Férias, 13º e rescisão com o salário e a média de extras da pessoa. */
+  | "direitos"
   | "equipe";
 
 export const DIAS_TESTE = 14;
@@ -70,12 +72,13 @@ export const PLANOS: Record<Plano, DefinicaoPlano> = {
     preco: 1490,
     precoAnual: PRECO_ANUAL,
     para: "Para achar o dinheiro que faltou e ter tudo guardado.",
-    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada"],
+    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada", "direitos"],
     resumo: [
       "Tudo do Grátis",
       "Onde faltou no pagamento, linha por linha",
       "Histórico de todos os períodos",
       "Contracheque em PDF e planilha",
+      "Férias, 13º e rescisão com os seus números",
       "Metas e produção sem limite",
     ],
   },
@@ -84,7 +87,7 @@ export const PLANOS: Record<Plano, DefinicaoPlano> = {
     preco: 3990,
     emBreve: true,
     para: "Para empreiteiro e encarregado que pagam uma equipe.",
-    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada", "equipe"],
+    recursos: ["historico", "pdf", "metas", "exportar", "conferencia", "conferencia-detalhe", "producao-ilimitada", "direitos", "equipe"],
     resumo: [
       "Pro para cada pessoa da turma",
       "Convite por link ou WhatsApp",

@@ -194,3 +194,93 @@ export function nomeArquivoContracheque(cc: Contracheque): string {
     .replace(/^-|-$/g, "");
   return `contracheque-${ref || "estimado"}.pdf`;
 }
+
+// ---------- relatório de horas ----------
+
+export interface DiaRelatorio {
+  data: string;
+  /** "seg", "ter"... */
+  dia: string;
+  /** "normal", "falta", "feriado (Natal)"... */
+  tipo: string;
+  entrada?: string;
+  almoco?: string;
+  volta?: string;
+  saida?: string;
+  trabalhadoMin: number;
+  extraMin: number;
+}
+
+function duracao(min: number): string {
+  if (!min) return "-";
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}h${String(m).padStart(2, "0")}`;
+}
+
+/**
+ * Relatório de horas do período (A4): todas as marcações, horas trabalhadas e extras por dia e os totais.
+ * Para levar ao RH, ao sindicato ou ao advogado. Registro pessoal, não o ponto oficial da empresa.
+ */
+export function pdfRelatorioHoras(p: { nome: string; referencia: string; dias: DiaRelatorio[]; geradoEm: string; marca: string }): Uint8Array {
+  const pg = new Pagina();
+  const dir = LARGURA - MARGEM;
+  let y = ALTURA - MARGEM;
+
+  pg.retangulo(MARGEM, y - 64, LARGURA - 2 * MARGEM, 64, VERDE);
+  pg.texto(MARGEM + 16, y - 24, "Relatório de horas", 10, true, [0.49, 0.88, 0.76]);
+  pg.texto(MARGEM + 16, y - 46, caber(p.nome || "Trabalhador", 16, 300, true), 16, true, BRANCO);
+  pg.direita(dir - 16, y - 24, "Período", 9, false, BRANCO);
+  pg.direita(dir - 16, y - 44, p.referencia, 12, true, BRANCO);
+  y -= 86;
+
+  const col = { data: MARGEM, dia: MARGEM + 52, tipo: MARGEM + 84, ent: MARGEM + 190, alm: MARGEM + 236, vol: MARGEM + 282, sai: MARGEM + 328, trab: dir - 60, extra: dir };
+  const cab = (s: string, x: number, direita = false) => (direita ? pg.direita(x, y, s, 8, true, CINZA) : pg.texto(x, y, s, 8, true, CINZA));
+  cab("Data", col.data);
+  cab("Dia", col.dia);
+  cab("Tipo", col.tipo);
+  cab("Entrada", col.ent);
+  cab("Almoço", col.alm);
+  cab("Volta", col.vol);
+  cab("Saída", col.sai);
+  cab("Trabalhado", col.trab, true);
+  cab("Extra", col.extra, true);
+  y -= 6;
+  pg.linha(MARGEM, y, dir);
+
+  const altura = Math.min(18, (y - 130) / Math.max(1, p.dias.length));
+  const fonte = altura < 15 ? 8 : 9;
+  let total = 0;
+  let extras = 0;
+  for (const d of p.dias) {
+    y -= altura;
+    total += d.trabalhadoMin;
+    extras += d.extraMin;
+    pg.texto(col.data, y, `${d.data.slice(8, 10)}/${d.data.slice(5, 7)}`, fonte);
+    pg.texto(col.dia, y, d.dia, fonte, false, CINZA);
+    pg.texto(col.tipo, y, caber(d.tipo, fonte, 100), fonte, false, d.tipo === "falta" ? VERMELHO : CINZA);
+    pg.texto(col.ent, y, d.entrada ?? "-", fonte);
+    pg.texto(col.alm, y, d.almoco ?? "-", fonte);
+    pg.texto(col.vol, y, d.volta ?? "-", fonte);
+    pg.texto(col.sai, y, d.saida ?? "-", fonte);
+    pg.direita(col.trab, y, duracao(d.trabalhadoMin), fonte, true);
+    pg.direita(col.extra, y, d.extraMin ? `+${duracao(d.extraMin)}` : "-", fonte, !!d.extraMin);
+    pg.linha(MARGEM, y - 5, dir, [0.93, 0.94, 0.93], 0.4);
+  }
+
+  y -= 28;
+  pg.retangulo(MARGEM, y - 14, LARGURA - 2 * MARGEM, 36, [0.88, 0.95, 0.93]);
+  pg.texto(MARGEM + 12, y, "Total no período", 11, true);
+  pg.direita(col.trab, y, duracao(total), 11, true);
+  pg.direita(col.extra, y, extras ? `+${duracao(extras)}` : "-", 11, true);
+
+  y -= 46;
+  pg.texto(MARGEM, y, `Registro pessoal do trabalhador, feito no app ${p.marca} e gerado em ${p.geradoEm}.`, 8, false, CINZA);
+  pg.texto(MARGEM, y - 12, "Não substitui o controle de ponto oficial do empregador.", 8, false, CINZA);
+  return montarPdf(pg.ops.join("\n"), `Relatório de horas ${p.referencia}`);
+}
+
+/** Nome do arquivo: "relatorio-de-horas-2026-10-21-a-2026-11-20.pdf". */
+export function nomeArquivoRelatorio(inicio: string, fim: string): string {
+  return `relatorio-de-horas-${inicio}-a-${fim}.pdf`;
+}

@@ -50,6 +50,7 @@ import {
   CircleCheck,
   Download,
   Ellipsis,
+  FileText,
   Hammer,
   PackagePlus,
   Search,
@@ -65,6 +66,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { restaurarVarios, salvarVariosRegistros } from "../../../lib/acoes";
 import { useAgora, useEstado, useHistoricoLongo, useLancamentosDoPeriodo, useRegistrosDoPeriodo } from "../../../lib/estado";
+import { MARCA } from "../../../lib/marca";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { EditorDia } from "../editor-dia";
@@ -182,6 +184,36 @@ function Historico() {
   async function completarDias() {
     const antes = await salvarVariosRegistros(completar);
     mostrar({ texto: `${completar.length} ${completar.length === 1 ? "dia preenchido" : "dias preenchidos"} como a escala`, desfazer: () => restaurarVarios(antes) });
+  }
+
+  async function relatorioPdf() {
+    const { pdfRelatorioHoras, nomeArquivoRelatorio } = await import("@ponto-pro/core");
+    const { baixarArquivo } = await import("../compartilhar");
+    const porDia = new Map(regs!.map((x) => [x.data, x]));
+    const bytes = pdfRelatorioHoras({
+      nome: estado?.pessoal.nome?.trim() || "Trabalhador",
+      referencia: rotuloPeriodo(periodo!),
+      geradoEm: `${agora!.data.slice(8, 10)}/${agora!.data.slice(5, 7)}/${agora!.data.slice(0, 4)}`,
+      marca: MARCA.nome,
+      dias: r.dias
+        .filter((d) => d.data <= agora!.data)
+        .map((d) => {
+          const m = porDia.get(d.data)?.marcacoes ?? {};
+          return {
+            data: d.data,
+            dia: seloDia(d.data).split(" ")[0]!,
+            tipo: d.feriado ? `feriado (${d.feriado})` : d.tipo,
+            entrada: m.entrada,
+            almoco: m.almoco,
+            volta: m.volta,
+            saida: m.saida,
+            trabalhadoMin: d.trabalhadoMin,
+            extraMin: d.extraMin,
+          };
+        }),
+    });
+    baixarArquivo(bytes, nomeArquivoRelatorio(periodo!.inicio, periodo!.fim));
+    mostrar({ texto: "Relatório de horas baixado" });
   }
 
   function exportar() {
@@ -501,6 +533,23 @@ function Historico() {
               <span className="flex-1">
                 <span className="block text-17 font-bold">Baixar planilha do período</span>
                 <span className="block text-15 text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Pro"}</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => {
+                setOpcoes(false);
+                if (plano.pode("pdf")) void relatorioPdf();
+                else setTimeout(() => router.push("/planos"), 120);
+              }}
+              className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2"
+            >
+              <FileText aria-hidden className="size-5 text-primaria-forte" />
+              <span className="flex-1">
+                <span className="block text-17 font-bold">Relatório de horas em PDF</span>
+                <span className="block text-15 text-texto-2">{plano.pode("pdf") ? "Para o RH, o sindicato ou o advogado" : "Do plano Pro"}</span>
               </span>
             </button>
           </li>

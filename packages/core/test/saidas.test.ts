@@ -193,3 +193,25 @@ describe("modelos por área", () => {
     expect(PerfilTrabalho.safeParse(p).success).toBe(false);
   });
 });
+
+describe("relatório de horas em PDF", () => {
+  it("gera um PDF de uma página com os dias e os totais", async () => {
+    const { pdfRelatorioHoras } = await import("../src/contracheque/pdf");
+    const bytes = pdfRelatorioHoras({
+      nome: "José da Silva",
+      referencia: "21/10 a 20/11/2026",
+      geradoEm: "16/11/2026",
+      marca: "Pingou",
+      dias: [
+        { data: "2026-10-21", dia: "qua", tipo: "normal", entrada: "07:00", almoco: "12:00", volta: "13:00", saida: "18:00", trabalhadoMin: 600, extraMin: 60 },
+        { data: "2026-10-22", dia: "qui", tipo: "falta", trabalhadoMin: 0, extraMin: 0 },
+      ],
+    });
+    const texto = new TextDecoder("latin1").decode(bytes);
+    expect(texto.startsWith("%PDF-1.4")).toBe(true);
+    expect(texto).toContain("(Relat\\363rio de horas)");
+    expect(texto).toContain("(Total no per\\355odo)");
+    expect(texto).toContain("(+1h00)");
+    expect(texto.trimEnd().endsWith("%%EOF")).toBe(true);
+  });
+});

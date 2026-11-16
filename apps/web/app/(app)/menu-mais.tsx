@@ -1,7 +1,7 @@
 "use client";
 
 import { BottomSheet, cx } from "@ponto-pro/ui";
-import { Calculator, ChevronRight, Gem, HardHat, type LucideIcon, Smartphone, Tags, Target, User } from "lucide-react";
+import { Calculator, ChevronRight, Gem, HardHat, type LucideIcon, Scale, Smartphone, Tags, Target, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Preferencias } from "../../lib/db";
 import { instalarApp, usePodeInstalar } from "../../lib/instalar";
@@ -51,6 +51,7 @@ export function MenuMais({
     { href: "/obras", rotulo: "Obras", descricao: "Horas e produção por lugar", icone: HardHat, tom: "bg-primaria-suave text-primaria-forte" },
     ...(usaProducao ? [{ href: "/producao", rotulo: "Catálogo", descricao: "Serviços e preços", icone: Tags, tom: "bg-primaria-suave text-primaria-forte" }] : []),
     { href: "/calculadora", rotulo: "Calculadora", descricao: "Salário e conta do dia", icone: Calculator, tom: "bg-superficie-2 text-texto" },
+    { href: "/direitos", rotulo: "Seus direitos", descricao: "Férias, 13º e rescisão", icone: Scale, tom: "bg-sucesso-suave text-sucesso-texto" },
   ];
   return (
     <BottomSheet aberto={aberto} onFechar={onFechar} titulo="Mais">

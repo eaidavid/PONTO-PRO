@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { fazerOnboarding, preparar, semearHistorico } from "./ajuda";
 
 const TEMAS = ["claro", "escuro", "sol"] as const;
-const TELAS = ["hoje", "historico", "producao", "ganhos", "metas", "conta", "obras", "calculadora"] as const;
+const TELAS = ["hoje", "historico", "producao", "ganhos", "metas", "conta", "obras", "calculadora", "direitos", "planos"] as const;
 
 for (const tema of TEMAS) {
   test(`acessibilidade das telas (${tema})`, async ({ page }) => {
@@ -30,6 +30,20 @@ for (const tema of TEMAS) {
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(graves.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(", ")}`)).toEqual([]);
+  });
+}
+
+for (const tema of TEMAS) {
+  test(`acessibilidade das calculadoras (${tema})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await preparar(page, tema);
+    for (const tela of ["calculadoras", "calculadoras/rescisao", "calculadoras/ferias"]) {
+      await page.goto(`/${tela}`);
+      await page.waitForLoadState("networkidle");
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+      const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(graves.map((v) => `${tela} ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(", ")}`)).toEqual([]);
+    }
   });
 }
 

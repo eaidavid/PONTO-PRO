@@ -80,6 +80,7 @@ import {
 } from "../../../lib/perfil";
 import { MARCA } from "../../../lib/marca";
 import { sincronizarAgora, useStatusNuvem } from "../../../lib/nuvem/status";
+import { LinhaAvisos } from "../avisos-celular";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 import { PreferenciasVisuais } from "../preferencias-visuais";
@@ -278,6 +279,7 @@ export default function Conta() {
                 }
                 onClick={() => sincronizarAgora()}
               />
+              <LinhaAvisos />
               <LinhaAjuste
                 icone={LogOut}
                 rotulo="Sair da conta"

@@ -5,9 +5,9 @@ import { Interruptor } from "@ponto-pro/ui";
 import { useState } from "react";
 import { CampoReais, Caixa, Opcoes, Resultado, useReais } from "../campos";
 
-export function CalculadoraFerias() {
-  const salario = useReais(300_000);
-  const media = useReais(0);
+export function CalculadoraFerias({ inicial }: { inicial?: { salario?: number; media?: number; meses?: number; admissao?: string } } = {}) {
+  const salario = useReais(inicial?.salario ?? 300_000);
+  const media = useReais(inicial?.media ?? 0);
   const [dias, setDias] = useState(30);
   const [vender, setVender] = useState(false);
   const [dependentes, setDependentes] = useState(0);

@@ -4,7 +4,7 @@
  * - Arquivos /_next/static (nome com hash, nunca mudam): cópia salva primeiro.
  * Os dados ficam no IndexedDB, fora deste cache.
  */
-const VERSAO = "pp-v4";
+const VERSAO = "pp-v5";
 const TELAS = ["/", "/hoje", "/registros", "/producao", "/ganhos", "/metas", "/conta", "/comecar", "/calculadora"];
 const ESTATICOS = "pp-estaticos";
 const LIMITE_ESTATICOS = 300;
@@ -82,4 +82,41 @@ self.addEventListener("fetch", (e) => {
     return;
   }
   e.respondWith(redePrimeiro(req));
+});
+
+// ---------- notificações ("Bateu a saída?", dia do pagamento) ----------
+self.addEventListener("push", (e) => {
+  let d = {};
+  try {
+    d = e.data ? e.data.json() : {};
+  } catch {
+    d = { corpo: e.data ? e.data.text() : "" };
+  }
+  e.waitUntil(
+    self.registration.showNotification(d.titulo || "Pingou", {
+      body: d.corpo || "",
+      tag: d.tag || "pingou",
+      icon: "/icones/icone-192.png",
+      badge: "/icones/icone-192.png",
+      data: { url: d.url || "/hoje" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/hoje";
+  e.waitUntil(
+    (async () => {
+      const abertas = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of abertas) {
+        if ("focus" in c) {
+          await c.focus();
+          if ("navigate" in c) await c.navigate(url).catch(() => {});
+          return;
+        }
+      }
+      await self.clients.openWindow(url);
+    })(),
+  );
 });

@@ -22,12 +22,12 @@ function CampoData({ rotulo, valor, onChange, max }: { rotulo: string; valor: st
   );
 }
 
-export function CalculadoraRescisao() {
+export function CalculadoraRescisao({ inicial }: { inicial?: { salario?: number; media?: number; meses?: number; admissao?: string } } = {}) {
   const hoje = agoraEmSaoPaulo().data;
-  const salario = useReais(300_000);
-  const media = useReais(0);
+  const salario = useReais(inicial?.salario ?? 300_000);
+  const media = useReais(inicial?.media ?? 0);
   const fgts = useReais(0);
-  const [admissao, setAdmissao] = useState(`${Number(hoje.slice(0, 4)) - 2}-02-01`);
+  const [admissao, setAdmissao] = useState(inicial?.admissao ?? `${Number(hoje.slice(0, 4)) - 2}-02-01`);
   const [saida, setSaida] = useState(hoje);
   const [motivo, setMotivo] = useState<MotivoSaida>("sem-justa-causa");
   const [avisoTrabalhado, setAvisoTrabalhado] = useState(false);
