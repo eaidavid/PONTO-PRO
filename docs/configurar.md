@@ -44,3 +44,18 @@ Como funciona:
 - Confira os preços sugeridos em `packages/core/src/planos/index.ts`.
 - As tabelas de INSS e IRRF estão em `packages/core/src/clt/index.ts`, por ano. Atualize em janeiro.
 - A lista de espera da Turma fica na tabela `waitlist` (nome, WhatsApp, tamanho da equipe). Só o servidor grava; consulte pelo painel do Supabase.
+
+## 4. Notificações sem o cron pago da Vercel
+
+- O agendador fica no próprio Supabase (`pg_cron` + `pg_net`, migração `0004_agendador.sql`): a cada 5 minutos ele chama `POST /api/notificacoes/enviar` com o token do Vault.
+- Variáveis na Vercel: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (secreta) e `CRON_TOKEN` (secreta, o mesmo valor guardado no Vault como `pingou_cron_token`).
+- Para gerar chaves novas: `npx web-push generate-vapid-keys`.
+- Ver se o agendador está rodando: `select * from cron.job_run_details order by start_time desc limit 5;`
+- Ver erros do app: `select * from client_errors order by em desc limit 20;`
+
+## 5. Projeto atual (16/11/2026)
+
+- Supabase: projeto `pingou` (São Paulo), ligado à conta da Vercel.
+- Vercel: projeto `pingou`, com `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (chave publicável), `NEXT_PUBLIC_SITE_URL`, as chaves VAPID e `CRON_TOKEN` já configuradas.
+- Falta: `SUPABASE_SERVICE_ROLE_KEY` (Supabase, Project Settings, API Keys, chave secreta) na Vercel; o modelo de e-mail com `{{ .Token }}`; a Site URL em Authentication, URL Configuration; e um SMTP próprio (o envio padrão do Supabase manda poucos e-mails por hora).
+
