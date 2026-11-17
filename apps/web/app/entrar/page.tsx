@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { type Destino, lerDestino } from "../../lib/nuvem/destino";
 import { NUVEM_CONFIGURADA } from "../../lib/nuvem/status";
 import { MARCA } from "../../lib/marca";
+import { medirUmaVez } from "../../lib/medir";
 
 /** Entrar por SMS só quando houver um provedor de SMS ligado no Supabase. */
 const COM_TELEFONE = process.env.NEXT_PUBLIC_LOGIN_TELEFONE === "1";
@@ -40,7 +41,10 @@ export default function Entrar() {
       .then((m) => m.concluirEntradaPeloLink())
       .then((r) => {
         window.history.replaceState(null, "", "/entrar");
-        if (r === true) router.replace("/conta");
+        if (r === true) {
+          medirUmaVez("conta_criada");
+          router.replace("/conta");
+        }
         else setPeloLink(r === "vencido" ? "vencido" : null);
       })
       .catch(() => setPeloLink("vencido"));
@@ -81,6 +85,7 @@ export default function Entrar() {
     try {
       const { confirmarCodigo } = await import("../../lib/nuvem/supabase");
       await confirmarCodigo(destino, codigo);
+      medirUmaVez("conta_criada");
       router.replace("/conta");
     } catch (e) {
       setErro(explicar(e));

@@ -4,7 +4,7 @@ import { DIAS_TESTE, economiaAnual, formatarReais, PLANOS } from "@ponto-pro/cor
 import { Banner, CabecalhoTela, cx, TituloSecao } from "@ponto-pro/ui";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useEstado } from "../../../lib/estado";
 import { medir } from "../../../lib/medir";
 import { situacaoAtual } from "../../../lib/plano";
@@ -37,6 +37,7 @@ function Selo({ children, sobreMarca }: { children: ReactNode; sobreMarca?: bool
 
 export default function Planos() {
   const estado = useEstado();
+  useEffect(() => medir("abriu_planos"), []);
   if (!estado?.perfil) return <Carregando />;
   const s = situacaoAtual(estado);
   const a = estado.assinatura;

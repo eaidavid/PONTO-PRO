@@ -404,6 +404,22 @@ test("sem servidor configurado, conta e assinatura avisam e o app segue no celul
   await expect(page.getByText("As contas ainda não estão disponíveis")).toBeVisible();
   await page.goto("/hoje");
   await expect(page.getByRole("status").filter({ hasText: "Salvo no celular" })).toBeVisible();
+  // suporte: a pessoa escreve, e sem servidor recebe o aviso em vez de perder a mensagem
+  await page.goto("/conta");
+  await page.getByRole("button", { name: /Falar com o suporte/ }).click();
+  await expect(page.getByRole("checkbox", { name: /informações técnicas/ })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /registros deste período/ })).not.toBeChecked();
+  await page.getByLabel("O que aconteceu?").fill("A hora extra de sábado não entrou");
+  await page.getByRole("button", { name: "Enviar pedido" }).click();
+  await expect(page.getByText("Deixe um e-mail ou WhatsApp com DDD para a resposta.")).toBeVisible();
+  await page.getByLabel("E-mail ou WhatsApp para a resposta").fill("11 91234-5678");
+  await page.getByRole("button", { name: "Enviar pedido" }).click();
+  await expect(page.getByText(/suporte pelo app ainda não está disponível/)).toBeVisible();
+  await expect(page.getByLabel("O que aconteceu?")).toHaveValue("A hora extra de sábado não entrou");
+  // painel: sem banco, não mostra nada além do aviso
+  await page.goto("/admin");
+  await expect(page.getByText("O painel precisa do banco configurado (Supabase).")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Painel" })).toHaveCount(0);
 });
 
 test("página de vendas: demonstração do ponto, planos e botão que leva ao começo", async ({ page }) => {
@@ -656,6 +672,7 @@ test("Google: mapa do site e robots", async ({ request }) => {
   expect(mapa).toContain("/calculadoras/rescisao");
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /hoje");
+  expect(robots).toContain("Disallow: /admin");
   expect(robots).toContain("Sitemap:");
 });
 

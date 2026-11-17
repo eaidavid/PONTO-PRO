@@ -2,6 +2,7 @@ import { cx } from "@ponto-pro/ui";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { BotaoComecar } from "../_vendas/link-medido";
+import { MedirVisita } from "../_vendas/medir-visita";
 import { LARGURA } from "./largura";
 
 export interface Duvida {
@@ -32,6 +33,7 @@ export function PaginaCalculadora({
 }) {
   return (
     <>
+      <MedirVisita evento="visita_calculadora" secao={slug} />
       <section className="fundo-marca">
         <div className={cx(LARGURA, "flex flex-col gap-3 py-8 md:py-12")}>
           <h1 className="display max-w-[22ch] text-[clamp(1.9rem,8vw,3rem)] leading-[1.04] text-balance">{titulo}</h1>

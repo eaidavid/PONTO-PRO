@@ -35,6 +35,7 @@ import { seloSync, useStatusNuvem } from "../../../lib/nuvem/status";
 import { Carregando } from "../../carregando";
 import { AvisoTeste } from "../aviso-teste";
 import { ConviteCelular } from "../avisos-celular";
+import { medirUmaVez } from "../../../lib/medir";
 import { ResumoSemana } from "../resumo-semana";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
@@ -126,6 +127,7 @@ export default function Hoje() {
     setSalvando(true);
     try {
       const antes = await baterPonto(agora.data, etapa, agora.hora, obraAtual?.id);
+      medirUmaVez("primeiro_ponto");
       mostrar({
         texto: `${NOME[etapa]} às ${agora.hora}`,
         desfazer: () => {

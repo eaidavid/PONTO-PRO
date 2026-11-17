@@ -1,5 +1,6 @@
 "use client";
 
+import { medirUmaVez } from "../../lib/medir";
 import {
   agoraEmSaoPaulo,
   type Area,
@@ -179,6 +180,7 @@ export default function Comecar() {
     await marcarInicioUso(hoje);
     await salvarPerfil(r.data);
     await salvarPessoal({ ...estado!.pessoal, nome: nome.trim() || undefined });
+    medirUmaVez("comecar_concluido");
     router.replace("/hoje");
   }
 

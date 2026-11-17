@@ -13,6 +13,7 @@ import { BotaoCabecalho } from "./_vendas/botao-cabecalho";
 import { CalculadoraExtra } from "./_vendas/calculadora-extra";
 import { DemoPonto } from "./_vendas/demo-ponto";
 import { Gota } from "./_vendas/gota";
+import { MedirVisita } from "./_vendas/medir-visita";
 import { ListaEsperaTurma } from "./lista-espera-turma";
 import { BotaoComecar, LinkMedido } from "./_vendas/link-medido";
 
@@ -183,6 +184,7 @@ export default function Vendas() {
   return (
     <>
       <Animacoes />
+      <MedirVisita evento="visita_vendas" />
 
       <header className="sticky top-0 z-20 bg-[color:var(--marca)] text-sobre-marca">
         <div className={cx(LARGURA, "flex min-h-14 items-center justify-between gap-3")}>
