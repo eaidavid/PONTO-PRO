@@ -4,10 +4,13 @@ import { Banner, BotaoPrincipal, CampoTexto } from "@ponto-pro/ui";
 import { ChevronLeft, Cloud, Send, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type Destino, lerDestino } from "../../lib/nuvem/destino";
 import { NUVEM_CONFIGURADA } from "../../lib/nuvem/status";
 import { MARCA } from "../../lib/marca";
+
+/** Entrar por SMS só quando houver um provedor de SMS ligado no Supabase. */
+const COM_TELEFONE = process.env.NEXT_PUBLIC_LOGIN_TELEFONE === "1";
 
 /** Erros do servidor em português simples. */
 function explicar(e: unknown): string {
@@ -19,9 +22,29 @@ function explicar(e: unknown): string {
   return "Não deu certo agora. Tente de novo em instantes.";
 }
 
-/** Entrar ou criar conta: um código chega por SMS ou e-mail. Sem senha para esquecer. */
+/**
+ * Entrar ou criar conta, sem senha: chega um e-mail com um código de 6 números (ou um link, conforme o modelo
+ * de e-mail do Supabase). Os dois jeitos funcionam. SMS só aparece com NEXT_PUBLIC_LOGIN_TELEFONE=1.
+ */
 export default function Entrar() {
   const router = useRouter();
+  const [peloLink, setPeloLink] = useState<"conferindo" | "vencido" | null>(null);
+
+  // quem tocou no link do e-mail chega aqui com a sessão no endereço
+  useEffect(() => {
+    if (!NUVEM_CONFIGURADA) return;
+    const temLink = /access_token|error=|[?&]code=/.test(window.location.hash + window.location.search);
+    if (!temLink) return;
+    setPeloLink("conferindo");
+    import("../../lib/nuvem/supabase")
+      .then((m) => m.concluirEntradaPeloLink())
+      .then((r) => {
+        window.history.replaceState(null, "", "/entrar");
+        if (r === true) router.replace("/conta");
+        else setPeloLink(r === "vencido" ? "vencido" : null);
+      })
+      .catch(() => setPeloLink("vencido"));
+  }, [router]);
   const [texto, setTexto] = useState("");
   const [destino, setDestino] = useState<Destino | null>(null);
   const [codigo, setCodigo] = useState("");
@@ -31,7 +54,11 @@ export default function Entrar() {
   async function pedirCodigo() {
     const d = lerDestino(texto);
     if (!d) {
-      setErro("Digite o celular com DDD (ex.: 11 98765-4321) ou um e-mail.");
+      setErro(COM_TELEFONE ? "Digite o celular com DDD (ex.: 11 98765-4321) ou um e-mail." : "Digite um e-mail, como nome@gmail.com.");
+      return;
+    }
+    if (d.tipo === "telefone" && !COM_TELEFONE) {
+      setErro("Por enquanto a conta é criada com e-mail. Digite um e-mail.");
       return;
     }
     setErro(null);
@@ -74,13 +101,18 @@ export default function Entrar() {
         <h1 className="display text-titulo-2">{destino ? "Digite o código" : "Entrar ou criar conta"}</h1>
         <p className="text-corpo text-texto-2">
           {destino
-            ? `Mandamos um código de 6 números para ${destino.tipo === "email" ? destino.valor : "o seu celular"}.`
-            : `Com uma conta, seus registros ficam guardados e aparecem se você trocar de celular. Sem senha: o ${MARCA.nome} manda um código.`}
+            ? destino.tipo === "email"
+              ? `Mandamos um e-mail para ${destino.valor}. Digite o código de 6 números ou toque no link do e-mail. Não chegou? Olhe a caixa de spam.`
+              : "Mandamos um código de 6 números para o seu celular."
+            : `Com uma conta, seus registros ficam guardados e aparecem se você trocar de celular. Sem senha: o ${MARCA.nome} manda um código por e-mail.`}
         </p>
       </div>
 
+      {peloLink === "vencido" && <Banner tom="aviso" texto="Esse link não vale mais (ele vence depois de um tempo ou de um uso). Peça um novo código abaixo." />}
       {!NUVEM_CONFIGURADA ? (
         <Banner tom="info" texto="As contas ainda não estão disponíveis. Seus dados continuam salvos neste celular." />
+      ) : peloLink === "conferindo" ? (
+        <p role="status" className="text-corpo font-bold">Entrando na sua conta…</p>
       ) : destino ? (
         <form
           className="flex flex-col gap-4"
@@ -95,7 +127,7 @@ export default function Entrar() {
             {enviando ? "Conferindo…" : "Entrar"}
           </BotaoPrincipal>
           <BotaoPrincipal variante="fantasma" type="button" onClick={() => { setDestino(null); setCodigo(""); setErro(null); }}>
-            Usar outro número ou e-mail
+            {COM_TELEFONE ? "Usar outro número ou e-mail" : "Usar outro e-mail"}
           </BotaoPrincipal>
         </form>
       ) : (
@@ -106,7 +138,16 @@ export default function Entrar() {
             pedirCodigo();
           }}
         >
-          <CampoTexto rotulo="Celular ou e-mail" valor={texto} onChange={setTexto} autoComplete="tel email" placeholder="(11) 98765-4321" autoFocus />
+          <CampoTexto
+            rotulo={COM_TELEFONE ? "Celular ou e-mail" : "E-mail"}
+            valor={texto}
+            onChange={setTexto}
+            type={COM_TELEFONE ? "text" : "email"}
+            inputMode={COM_TELEFONE ? "text" : "email"}
+            autoComplete={COM_TELEFONE ? "tel email" : "email"}
+            placeholder={COM_TELEFONE ? "(11) 98765-4321" : "nome@gmail.com"}
+            autoFocus
+          />
           {erro && <p role="alert" className="text-apoio font-bold text-erro-texto">{erro}</p>}
           <BotaoPrincipal tamanho="g" icone={Send} type="submit" disabled={enviando || !texto.trim()}>
             {enviando ? "Enviando…" : "Mandar código"}
@@ -117,7 +158,7 @@ export default function Entrar() {
       <p className="flex gap-2 text-legenda text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
-          Usamos o número ou e-mail só para entrar e guardar seus dados. Veja a <Link href="/privacidade" className="font-bold underline">Política de privacidade</Link>.
+          Usamos {COM_TELEFONE ? "o número ou e-mail" : "o e-mail"} só para entrar e guardar seus dados. Veja a <Link href="/privacidade" className="font-bold underline">Política de privacidade</Link>.
         </span>
       </p>
     </main>

@@ -89,7 +89,11 @@ export const remotoSupabase: Remoto = {
 export async function enviarCodigo(destino: Destino) {
   const { error } =
     destino.tipo === "email"
-      ? await supabase().auth.signInWithOtp({ email: destino.valor, options: { shouldCreateUser: true } })
+      ? await supabase().auth.signInWithOtp({
+          email: destino.valor,
+          // se o e-mail trouxer um link em vez do código, ele volta para esta tela, no endereço em uso
+          options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/entrar` },
+        })
       : await supabase().auth.signInWithOtp({ phone: destino.valor, options: { shouldCreateUser: true } });
   if (error) throw error;
 }
@@ -101,6 +105,28 @@ export async function confirmarCodigo(destino: Destino, codigo: string) {
       ? await supabase().auth.verifyOtp({ email: destino.valor, token, type: "email" })
       : await supabase().auth.verifyOtp({ phone: destino.valor, token, type: "sms" });
   if (error) throw error;
+}
+
+/**
+ * Quem tocou no link do e-mail chega em /entrar com a sessão no endereço (#access_token ou ?code=).
+ * Termina a entrada e devolve true; "vencido" se o link não vale mais; false se não veio de um link.
+ */
+export async function concluirEntradaPeloLink(): Promise<true | false | "vencido"> {
+  const busca = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  if (hash.get("error") || busca.get("error")) return "vencido";
+  const codigo = busca.get("code");
+  if (codigo) {
+    const { error } = await supabase().auth.exchangeCodeForSession(codigo);
+    if (error) return "vencido";
+    return true;
+  }
+  if (hash.get("access_token")) {
+    // o cliente lê o token do endereço sozinho ao iniciar
+    const { data } = await supabase().auth.getSession();
+    return data.session ? true : "vencido";
+  }
+  return false;
 }
 
 export async function usuarioAtual() {
