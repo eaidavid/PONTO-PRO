@@ -584,7 +584,7 @@ test("resumo do dia: o que fez, quanto deu, alterações e atalhos para ajustar"
   await dia.getByRole("button", { name: "Ajustar o dia" }).click();
   const editor = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
   await editor.getByRole("button", { name: /^Saída/ }).click();
-  await editor.getByRole("button", { name: "5 min" }).first().click();
+  await editor.getByRole("button", { name: "Menos 5 minutos" }).click();
   await editor.getByRole("button", { name: "Salvar dia" }).click();
   await expect(page).toHaveURL(/dia=2026-11-05/);
   await dia.getByText(/Alterações \(\d+\)/).click();
@@ -670,4 +670,33 @@ test("Pro: seus direitos com os números do perfil e relatório de horas em PDF"
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: /Relatório de horas em PDF/ }).click();
   expect((await download).suggestedFilename()).toMatch(/^relatorio-de-horas-.*\.pdf$/);
+});
+
+test("ajustar horário minuto a minuto: digitar 1158 ou usar os botões de 1 minuto", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.getByRole("link", { name: "Histórico" }).click();
+  await page.getByRole("button", { name: /^qui 05/ }).click();
+  await page.getByRole("dialog", { name: /Quinta, 05 de novembro/ }).getByRole("button", { name: "Ajustar o dia" }).click();
+  const sheet = page.getByRole("dialog", { name: /Quinta, 05 de novembro/ });
+  await sheet.getByRole("button", { name: /^Almoço/ }).click();
+  const campo = sheet.getByLabel("Almoço", { exact: true });
+  await expect(campo).toHaveValue("12:00");
+  // digitar
+  await campo.click();
+  await campo.fill("1158");
+  await campo.press("Enter");
+  await expect(campo).toHaveValue("11:58");
+  await expect(sheet.getByRole("button", { name: /^Almoço 11:58/ })).toBeVisible();
+  // botões de 1 minuto
+  await sheet.getByRole("button", { name: "Mais 1 minuto" }).click();
+  await expect(campo).toHaveValue("11:59");
+  // horário inválido volta ao anterior e avisa
+  await campo.click();
+  await campo.fill("2575");
+  await campo.press("Enter");
+  await expect(campo).toHaveValue("11:59");
+  await expect(sheet.getByText("Horário inválido")).toBeVisible();
+  await sheet.getByRole("button", { name: "Salvar dia" }).click();
+  await expect(page.getByText("Dia 05/11 salvo")).toBeVisible();
 });
