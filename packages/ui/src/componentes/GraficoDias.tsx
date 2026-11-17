@@ -21,13 +21,13 @@ export function GraficoDias({ dias, hoje }: { dias: DiaGrafico[]; hoje?: string 
   return (
     <figure className="flex flex-col gap-3">
       <figcaption className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-17 font-bold">Ganho por dia</span>
-        <span className="flex gap-3 text-13 text-texto-2">
+        <span className="text-corpo font-bold">Ganho por dia</span>
+        <span className="flex gap-3 text-legenda text-texto-2">
           <span className="inline-flex items-center gap-1.5"><span aria-hidden className="size-3 rounded-sm bg-primaria" />Normal</span>
           <span className="inline-flex items-center gap-1.5"><span aria-hidden className="size-3 rounded-sm bg-extra" />Hora extra</span>
         </span>
       </figcaption>
-      <p aria-live="polite" className="numeros min-h-6 text-15 text-texto-2">
+      <p aria-live="polite" className="numeros min-h-6 text-apoio text-texto-2">
         {atual ? (
           <>
             <b className="text-texto">{seloDia(atual.data)}</b>: {formatarReais(atual.normal + atual.extra)}

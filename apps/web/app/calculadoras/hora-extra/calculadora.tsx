@@ -41,16 +41,16 @@ export function CalculadoraHoraExtra() {
       </div>
       <section aria-live="polite" aria-label="Resultado" className="flex flex-col gap-4 border-t border-borda-forte pt-5">
         <p className="flex flex-col">
-          <span className="text-15 font-bold">Suas horas extras valem, no mês</span>
+          <span className="text-apoio font-bold">Suas horas extras valem, no mês</span>
           <span className="display numeros text-[clamp(2.2rem,10vw,3rem)] leading-none text-extra-texto">{formatarReais(total)}</span>
-          <span className="numeros text-15 text-texto-2">Em um ano: {formatarReais(total * 12)}</span>
+          <span className="numeros text-apoio text-texto-2">Em um ano: {formatarReais(total * 12)}</span>
         </p>
-        <ul className="flex flex-col divide-y divide-borda rounded-2xl bg-superficie px-4 text-15">
+        <ul className="flex flex-col divide-y divide-borda rounded-2xl bg-superficie px-4 text-apoio">
           <li className="flex justify-between gap-3 py-3"><span>Sua hora normal (salário ÷ {divisor})</span><b className="numeros">{formatarReais(v.hora)}</b></li>
           <li className="flex justify-between gap-3 py-3"><span>Hora extra com 50%</span><b className="numeros">{formatarReais(v.extra)}</b></li>
           <li className="flex justify-between gap-3 py-3"><span>Hora com 100%</span><b className="numeros">{formatarReais(v.extraDomingo)}</b></li>
         </ul>
-        <p className="text-13 text-texto-2">Estimativa com os adicionais mínimos da lei. O seu acordo pode pagar mais. Sobre as extras ainda incide o reflexo no descanso semanal (DSR).</p>
+        <p className="text-legenda text-texto-2">Estimativa com os adicionais mínimos da lei. O seu acordo pode pagar mais. Sobre as extras ainda incide o reflexo no descanso semanal (DSR).</p>
       </section>
     </Caixa>
   );

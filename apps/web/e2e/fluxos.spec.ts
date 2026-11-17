@@ -30,7 +30,7 @@ test("começar com salário fixo mais produção", async ({ page }) => {
   await page.getByRole("button", { name: "Começar a usar" }).click();
   await expect(page).toHaveURL(/\/hoje$/);
   await page.goto("/conta");
-  await expect(page.getByText(/Salário \+ produção/).first()).toBeVisible();
+  await expect(page.getByText(/salário \+ produção/i).first()).toBeVisible();
 });
 
 test("bater o ponto, desfazer e funcionar sem internet", async ({ page, context }) => {
@@ -180,7 +180,7 @@ test("abre sem internet depois do primeiro acesso", async ({ page, context }) =>
   await expect(page.getByText("Bom dia, José")).toBeVisible();
   await page.goto("/ganhos");
   await expect(page.getByRole("heading", { name: "Vai pingar" })).toBeVisible();
-  await expect(page.getByText("Cai em 05/12 · em 26 dias")).toBeVisible();
+  await expect(page.getByText("Cai em 05/12, em 26 dias")).toBeVisible();
   await context.setOffline(false);
 });
 

@@ -23,8 +23,8 @@ export function EditorSemana({ minutos, onChange, passo = 30, max = 12 * 60 }: E
   return (
     <div className="flex flex-col gap-4">
       <p className="text-center">
-        <span className="display text-44">{formatarHorasCurto(total)}</span>
-        <span className="block text-15 text-texto-2">por semana</span>
+        <span className="display text-titulo-1">{formatarHorasCurto(total)}</span>
+        <span className="block text-apoio text-texto-2">por semana</span>
       </p>
       <div className="grid grid-cols-7 gap-1.5">
         {minutos.map((m, i) => (
@@ -43,8 +43,8 @@ export function EditorSemana({ minutos, onChange, passo = 30, max = 12 * 60 }: E
                 style={{ height: `${(m / alto) * 100}%` }}
               />
             </div>
-            <span className="numeros text-13 font-bold">{m > 0 ? formatarHorasCurto(m) : "folga"}</span>
-            <span className={cx("text-13", i === 0 || i === 6 ? "font-bold text-texto" : "text-texto-2")}>{DIAS[i]}</span>
+            <span className="numeros text-legenda font-bold">{m > 0 ? formatarHorasCurto(m) : "folga"}</span>
+            <span className={cx("text-legenda", i === 0 || i === 6 ? "font-bold text-texto" : "text-texto-2")}>{DIAS[i]}</span>
             <button
               type="button"
               aria-label={`Menos ${passo} minutos na ${DIAS_LONGOS[i]}`}

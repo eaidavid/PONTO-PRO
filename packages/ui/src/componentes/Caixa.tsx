@@ -21,7 +21,7 @@ export function Caixa({ marcado, onChange, children }: { marcado: boolean; onCha
           {marcado && <Check aria-hidden className="size-5" strokeWidth={3} />}
         </span>
       </button>
-      <div id={id} className="pt-0.5 text-15 leading-snug" onClick={() => onChange(!marcado)}>
+      <div id={id} className="pt-0.5 text-apoio leading-snug" onClick={() => onChange(!marcado)}>
         {children}
       </div>
     </div>

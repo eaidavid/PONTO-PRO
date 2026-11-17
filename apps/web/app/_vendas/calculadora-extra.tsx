@@ -73,13 +73,13 @@ export function CalculadoraExtra() {
   const paga = Math.ceil((plano / umaExtra) * 60);
 
   const faixa = "h-12 w-full cursor-pointer accent-[color:var(--extra)]";
-  const valor = "numeros text-17 whitespace-nowrap";
+  const valor = "numeros text-corpo whitespace-nowrap";
 
   return (
-    <div className="grid gap-6 rounded-[24px] bg-superficie-2 p-5 sm:p-7 md:grid-cols-2 md:gap-10 md:p-8">
+    <div className="grid gap-6 rounded-painel bg-superficie-2 p-5 sm:p-7 md:grid-cols-2 md:gap-10 md:p-8">
       <div className="flex flex-col gap-5">
         <div className="flex flex-col">
-          <label htmlFor={idHora} className="flex items-baseline justify-between gap-3 text-17 font-bold">
+          <label htmlFor={idHora} className="flex items-baseline justify-between gap-3 text-corpo font-bold">
             Seu ganho por hora
             <span className={valor}>{formatarReais(hora)}</span>
           </label>
@@ -94,11 +94,11 @@ export function CalculadoraExtra() {
             aria-valuetext={formatarReais(hora)}
             className={faixa}
           />
-          <p className="text-15 text-texto-2">Ganha por mês? Divida o salário por 220.</p>
+          <p className="text-apoio text-texto-2">Ganha por mês? Divida o salário por 220.</p>
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor={idExtras} className="flex items-baseline justify-between gap-3 text-17 font-bold">
+          <label htmlFor={idExtras} className="flex items-baseline justify-between gap-3 text-corpo font-bold">
             Horas extras por semana
             <span className={valor}>{horasPorExtenso(meias)}</span>
           </label>
@@ -113,24 +113,24 @@ export function CalculadoraExtra() {
             aria-valuetext={horasPorExtenso(meias)}
             className={faixa}
           />
-          <p className="text-15 text-texto-2">De meia em meia hora, a partir de 30 minutos.</p>
+          <p className="text-apoio text-texto-2">De meia em meia hora, a partir de 30 minutos.</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-borda-forte pt-5 md:border-t-0 md:border-l md:pt-0 md:pl-10">
         <p className="flex flex-col">
-          <span className="text-15 font-bold">Suas horas extras valem, por mês</span>
+          <span className="text-apoio font-bold">Suas horas extras valem, por mês</span>
           <NumeroAnimado centavos={porMes} className="display text-[clamp(2.2rem,10vw,3rem)] leading-none text-extra-texto" />
         </p>
-        <p className="numeros text-17">
+        <p className="numeros text-corpo">
           Em um ano são <b><NumeroAnimado centavos={porAno} /></b>.
         </p>
         <BotaoComecar secao="calculadora" className="numeros w-full">Anotar meus {formatarReais(porMes)}</BotaoComecar>
-        <p className="numeros text-15">
+        <p className="numeros text-apoio">
           O Pingou Pro custa <b>{formatarReais(plano)}</b> por mês. Na sua conta, ele se paga com{" "}
           <b>{minutosPorExtenso(paga)}</b> de hora extra.
         </p>
-        <p className="text-15 text-texto-2">
+        <p className="text-apoio text-texto-2">
           Conta com o adicional mínimo de 50% e {SEMANAS_NO_MES} semanas por mês. É uma estimativa: o seu acordo pode pagar mais.
         </p>
       </div>

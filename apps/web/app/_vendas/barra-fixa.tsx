@@ -47,13 +47,13 @@ export function BarraFixa() {
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-15 leading-tight font-bold">
+        <p className="text-apoio leading-tight font-bold">
           {jaUsa ? "Você já usa o Pingou" : `${DIAS_TESTE} dias grátis, sem cartão`}
         </p>
         <LinkMedido
           href={jaUsa ? "/hoje" : "/comecar"}
           secao="barra-fixa"
-          className="sombra-botao inline-flex min-h-12 shrink-0 items-center rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria"
+          className="sombra-botao inline-flex min-h-12 shrink-0 items-center rounded-full bg-primaria px-6 text-corpo font-bold text-sobre-primaria"
         >
           {jaUsa ? "Abrir o app" : "Começar"}
         </LinkMedido>

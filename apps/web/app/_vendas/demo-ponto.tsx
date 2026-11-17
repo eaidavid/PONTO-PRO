@@ -31,11 +31,11 @@ export function DemoPonto() {
         className="overflow-hidden rounded-[40px] border-[8px] border-[#0a100e] bg-fundo text-texto shadow-[0_30px_60px_-20px_rgb(0_0_0/0.6)] ring-1 ring-white/25"
       >
         <div className="fundo-marca flex flex-col px-5 pt-5 pb-11">
-          <p className="text-15 font-bold">Bom dia, José</p>
+          <p className="text-apoio font-bold">Bom dia, José</p>
           <p className="display pt-2 text-[3.7rem] leading-[0.95]" aria-label={`No exemplo, são ${passo.hora}`}>
             {passo.hora}
           </p>
-          <p className="mt-3 inline-flex items-center gap-2 self-start rounded-full bg-white/14 py-1.5 pr-4 pl-3 text-15 font-bold">
+          <p className="mt-3 inline-flex items-center gap-2 self-start rounded-full bg-white/14 py-1.5 pr-4 pl-3 text-apoio font-bold">
             <span aria-hidden className={passo.estado === "Trabalhando" ? "size-2.5 animate-pulse rounded-full bg-marca-destaque" : "size-2.5 rounded-full bg-white/70"} />
             {passo.estado}
           </p>
@@ -50,7 +50,7 @@ export function DemoPonto() {
 
           <div className="cartao flex min-h-16 items-center gap-3 px-4 py-2">
             <Wallet aria-hidden className="size-5 shrink-0 text-texto-2" />
-            <span className="flex-1 text-17 font-bold">Ganho hoje</span>
+            <span className="flex-1 text-corpo font-bold">Ganho hoje</span>
             <span key={passo.ganho} className="animate-entrar" aria-live="polite">
               <ValorDinheiro centavos={passo.ganho} />
             </span>
@@ -58,7 +58,7 @@ export function DemoPonto() {
         </div>
       </div>
 
-      <div className="flex min-h-12 items-center justify-center text-center text-15 text-sobre-marca-2">
+      <div className="flex min-h-12 items-center justify-center text-center text-apoio text-sobre-marca-2">
         {fim ? (
           <button
             type="button"

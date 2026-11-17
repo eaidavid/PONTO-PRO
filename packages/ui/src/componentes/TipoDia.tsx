@@ -20,7 +20,7 @@ export function SeloTipoDia({ tipo, texto }: { tipo: TipoDia; texto?: string }) 
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-15 font-bold",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-apoio font-bold",
         tipo === "falta" ? "bg-erro-suave text-erro-texto" : "bg-primaria-suave text-primaria-forte",
       )}
     >

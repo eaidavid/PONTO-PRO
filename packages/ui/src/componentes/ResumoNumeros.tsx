@@ -28,7 +28,7 @@ export function ResumoNumeros({ itens, rotulo, children }: { itens: ItemResumo[]
               !children && "@[19rem]:pb-3",
             )}
           >
-            <dt className="flex items-center gap-1.5 text-13 font-bold leading-tight text-texto-2">
+            <dt className="flex items-center gap-1.5 text-legenda font-bold leading-tight text-texto-2">
               <x.icone aria-hidden className="size-4 shrink-0" />
               {x.rotulo}
             </dt>

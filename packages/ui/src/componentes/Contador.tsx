@@ -17,11 +17,11 @@ export interface ContadorProps {
 
 /** Valor com botões grandes de − e +. Sem digitar. */
 export function Contador({ rotulo, valor, passo, onMenos, onMais, podeMenos = true, podeMais = true, grande }: ContadorProps) {
-  const btn = "inline-flex min-h-14 items-center justify-center gap-1.5 rounded-full bg-superficie-2 px-4 text-17 font-bold borda active:scale-[0.97] disabled:opacity-40";
+  const btn = "inline-flex min-h-14 items-center justify-center gap-1.5 rounded-full bg-superficie-2 px-4 text-corpo font-bold borda active:scale-[0.97] disabled:opacity-40";
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-15 font-bold text-texto-2">{rotulo}</span>
-      <output aria-live="polite" className={grande ? "display text-center text-44" : "display text-center text-32"}>{valor}</output>
+      <span className="text-apoio font-bold text-texto-2">{rotulo}</span>
+      <output aria-live="polite" className={grande ? "display text-center text-titulo-1" : "display text-center text-titulo-2"}>{valor}</output>
       <div className="grid grid-cols-2 gap-3">
         <button type="button" className={btn} onClick={onMenos} disabled={!podeMenos} aria-label={`Menos ${passo}`}>
           <Minus aria-hidden className="size-5" strokeWidth={2.5} /> {passo}

@@ -32,8 +32,8 @@ export function AceiteTermos({ jaAceitouAntes }: { jaAceitouAntes: boolean }) {
     <div role="dialog" aria-modal="true" aria-labelledby="aceite-titulo" className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-fundo px-5 pt-[max(32px,env(safe-area-inset-top))] pb-8">
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-5">
         <FileText aria-hidden className="size-10 text-primaria" />
-        <h1 id="aceite-titulo" className="display text-32">{jaAceitouAntes ? "Atualizamos os termos" : "Antes de continuar"}</h1>
-        <p className="text-17 text-texto-2">
+        <h1 id="aceite-titulo" className="display text-titulo-2">{jaAceitouAntes ? "Atualizamos os termos" : "Antes de continuar"}</h1>
+        <p className="text-corpo text-texto-2">
           O {MARCA.nome} é controle pessoal e os valores são estimativas. Para seguir, confirme que leu os termos e a política de privacidade.
         </p>
         <div className="flex flex-col gap-4">

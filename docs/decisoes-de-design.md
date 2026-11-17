@@ -65,7 +65,7 @@ O guia pede para fugir do visual genérico de IA. Apliquei os quatro eixos dele,
 - **Fundo com profundidade:** luz no canto mais a grade, sem gradiente chamativo. No Sol forte, grade, brilho e sombras desligam.
 
 ## 12. Tamanho ajustável e navegação compacta
-- **Tamanho da interface:** Compacto (15px), Padrão (17px) e Grande (19px). Tudo cresce ou encolhe junto (texto, espaços e botões), porque o app inteiro é medido a partir da fonte base. O Sol forte soma um nível em cada opção. A escolha vale antes da tela aparecer, sem "piscar".
+- **Tamanho da interface:** Compacto (15px), Padrão (16px) e Grande (18px). Revisado em 17/11/2026 (docs/revisao-ui-ux.md). Tudo cresce ou encolhe junto (texto, espaços e botões), porque o app inteiro é medido a partir da fonte base. O Sol forte soma um nível em cada opção. A escolha vale antes da tela aparecer, sem "piscar".
 - **Barra inferior com 4 botões:** Hoje, Registros, Ganhos e **Mais**. O "Mais" agrupa Produção, Metas e Conta, além dos ajustes rápidos de tamanho e aparência.
 - **Abas no topo:** Registros reúne Ponto e Produção em abas; Ganhos tem Resumo, Previsão e Contracheque.
 - **Hoje mais denso:** o botão de ponto vem logo abaixo das etapas, para aparecer sem rolar a tela. "Trabalhado", "Saída prevista" e "Ganho hoje" ficam num cartão só, em 3 colunas quando cabem e um item por linha quando o texto está grande.

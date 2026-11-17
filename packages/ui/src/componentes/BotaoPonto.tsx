@@ -84,7 +84,7 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som,
         aria-busy={carregando || undefined}
         aria-label={encerrado ? "Dia encerrado" : `${info.rotulo} às ${hora}`}
         className={cx(
-          "relative flex min-h-[72px] w-full items-center gap-3 overflow-hidden rounded-full pl-3 pr-6 text-left font-bold select-none transition-[transform,background-color] duration-150",
+          "relative flex min-h-16 w-full items-center gap-3 overflow-hidden rounded-full pl-3 pr-6 text-left font-bold select-none transition-[transform,background-color] duration-150",
           encerrado
             ? "bg-superficie-2 text-texto-2 borda"
             : "sombra-botao bg-primaria text-sobre-primaria active:scale-[0.98] active:bg-primaria-forte",
@@ -94,7 +94,7 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som,
         {!encerrado && (
           <span aria-hidden className="brilho-botao pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/14 to-transparent" />
         )}
-        <span aria-hidden className={cx("relative flex size-11 shrink-0 items-center justify-center rounded-full", encerrado ? "bg-superficie" : "bg-white/16")}>
+        <span aria-hidden className={cx("relative flex size-10 shrink-0 items-center justify-center rounded-full", encerrado ? "bg-superficie" : "bg-white/16")}>
         {carregando ? (
           <LoaderCircle aria-hidden className="size-7 shrink-0 animate-spin" strokeWidth={2.25} />
         ) : (
@@ -102,9 +102,9 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som,
         )}
         </span>
         <span className="flex flex-1 flex-col py-2 leading-tight">
-          <span className="text-20">{info.rotulo}</span>
+          <span className="text-destaque">{info.rotulo}</span>
           {!encerrado && mostrarHora && (
-            <span className="numeros text-15 font-normal" aria-hidden>
+            <span className="numeros text-apoio font-normal" aria-hidden>
               Registra às <b className="font-bold">{hora}</b>
             </span>
           )}
@@ -117,16 +117,16 @@ export function BotaoPonto({ etapa, hora, offline, carregando, erro, aviso, som,
             <svg viewBox="0 0 24 24" className="size-9 animate-check" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
               <path className="check-traco" d="M5 12.5l4.5 4.5L19 7.5" />
             </svg>
-            <span className="text-20">Registrado</span>
+            <span className="text-destaque">Registrado</span>
           </span>
         )}
       </button>
       {erro ? (
-        <p role="alert" className="text-center text-15 font-bold text-erro-texto">{erro}</p>
+        <p role="alert" className="text-center text-apoio font-bold text-erro-texto">{erro}</p>
       ) : aviso ? (
-        <p role="status" className="text-center text-15 font-bold text-extra-texto">{aviso}</p>
+        <p role="status" className="text-center text-apoio font-bold text-extra-texto">{aviso}</p>
       ) : offline ? (
-        <p className="flex items-center justify-center gap-2 text-15 text-texto-2">
+        <p className="flex items-center justify-center gap-2 text-apoio text-texto-2">
           <CloudOff aria-hidden className="size-5" /> Salvo no celular
         </p>
       ) : null}

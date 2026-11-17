@@ -65,14 +65,14 @@ export default function Entrar() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col gap-5 px-4 pb-8">
       <header className="pt-4">
-        <Link href="/conta" className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-15 font-bold active:bg-superficie-2">
+        <Link href="/conta" className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-apoio font-bold active:bg-superficie-2">
           <ChevronLeft aria-hidden className="size-6" /> Conta
         </Link>
       </header>
       <div className="flex flex-col gap-2">
         <Cloud aria-hidden className="size-10 text-primaria-forte" />
-        <h1 className="display text-32">{destino ? "Digite o código" : "Entrar ou criar conta"}</h1>
-        <p className="text-17 text-texto-2">
+        <h1 className="display text-titulo-2">{destino ? "Digite o código" : "Entrar ou criar conta"}</h1>
+        <p className="text-corpo text-texto-2">
           {destino
             ? `Mandamos um código de 6 números para ${destino.tipo === "email" ? destino.valor : "o seu celular"}.`
             : `Com uma conta, seus registros ficam guardados e aparecem se você trocar de celular. Sem senha: o ${MARCA.nome} manda um código.`}
@@ -90,7 +90,7 @@ export default function Entrar() {
           }}
         >
           <CampoTexto rotulo="Código" valor={codigo} onChange={setCodigo} inputMode="numeric" autoComplete="one-time-code" maxLength={8} autoFocus />
-          {erro && <p role="alert" className="text-15 font-bold text-erro-texto">{erro}</p>}
+          {erro && <p role="alert" className="text-apoio font-bold text-erro-texto">{erro}</p>}
           <BotaoPrincipal tamanho="g" type="submit" disabled={enviando || codigo.replace(/\D/g, "").length < 6}>
             {enviando ? "Conferindo…" : "Entrar"}
           </BotaoPrincipal>
@@ -107,14 +107,14 @@ export default function Entrar() {
           }}
         >
           <CampoTexto rotulo="Celular ou e-mail" valor={texto} onChange={setTexto} autoComplete="tel email" placeholder="(11) 98765-4321" autoFocus />
-          {erro && <p role="alert" className="text-15 font-bold text-erro-texto">{erro}</p>}
+          {erro && <p role="alert" className="text-apoio font-bold text-erro-texto">{erro}</p>}
           <BotaoPrincipal tamanho="g" icone={Send} type="submit" disabled={enviando || !texto.trim()}>
             {enviando ? "Enviando…" : "Mandar código"}
           </BotaoPrincipal>
         </form>
       )}
 
-      <p className="flex gap-2 text-13 text-texto-2">
+      <p className="flex gap-2 text-legenda text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
           Usamos o número ou e-mail só para entrar e guardar seus dados. Veja a <Link href="/privacidade" className="font-bold underline">Política de privacidade</Link>.

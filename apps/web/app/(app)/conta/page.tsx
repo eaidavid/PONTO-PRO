@@ -99,7 +99,7 @@ function formatarTelefone(t: string) {
 function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="px-1 text-15 font-bold text-texto-2">{titulo}</h2>
+      <h2 className="px-1 text-apoio font-bold text-texto-2">{titulo}</h2>
       <div className="cartao divide-y divide-borda overflow-hidden">{children}</div>
     </section>
   );
@@ -148,16 +148,16 @@ export default function Conta() {
   return (
     <main className="flex flex-col gap-6 px-4 pb-4">
       <header className="fundo-marca -mx-4 flex flex-col gap-3 px-5 pt-[max(8px,env(safe-area-inset-top))] pb-6">
-        <button type="button" onClick={abrirMenuMais} aria-label="Voltar ao menu Mais" className="-ml-3 inline-flex min-h-12 items-center gap-1 self-start rounded-full px-2 text-15 font-bold text-sobre-marca-2 active:bg-white/10">
+        <button type="button" onClick={abrirMenuMais} aria-label="Voltar ao menu Mais" className="-ml-3 inline-flex min-h-12 items-center gap-1 self-start rounded-full px-2 text-apoio font-bold text-sobre-marca-2 active:bg-white/10">
           <ChevronLeft aria-hidden className="size-5" /> Mais
         </button>
-        <span aria-hidden className="flex size-14 items-center justify-center rounded-full bg-white/14 text-24 font-bold">
+        <span aria-hidden className="flex size-14 items-center justify-center rounded-full bg-white/14 text-titulo-3 font-bold">
           {(estado.pessoal.nome?.trim()[0] ?? "V").toUpperCase()}
         </span>
         <div>
-          <h1 className="display text-32">{estado.pessoal.nome?.trim() || "Sua conta"}</h1>
-          <p className="text-15 text-sobre-marca-2">
-            {MODELOS[perfil.area].nome} · {NOME_FORMA[formaDe(perfil.pagamento)]}
+          <h1 className="display text-titulo-2">{estado.pessoal.nome?.trim() || "Sua conta"}</h1>
+          <p className="text-apoio text-sobre-marca-2">
+            {MODELOS[perfil.area].nome}, {NOME_FORMA[formaDe(perfil.pagamento)].toLowerCase()}
           </p>
         </div>
         <ul className="grid grid-cols-3 gap-2">
@@ -168,13 +168,13 @@ export default function Conta() {
           ].map((c) => (
             <li key={c.p}>
               <button type="button" onClick={() => abrir(c.p)} className="flex h-full w-full flex-col items-start rounded-2xl bg-white/10 px-3 py-2 text-left active:bg-white/15">
-                <span className="numeros text-17 font-bold leading-tight">{c.v}</span>
-                <span className="text-13 text-sobre-marca-2">{c.r}</span>
+                <span className="numeros text-corpo font-bold leading-tight">{c.v}</span>
+                <span className="text-legenda text-sobre-marca-2">{c.r}</span>
               </button>
             </li>
           ))}
         </ul>
-        <p className="text-15 text-sobre-marca-2">{resumoDoPerfil(perfil)}</p>
+        <p className="text-apoio text-sobre-marca-2">{resumoDoPerfil(perfil)}</p>
       </header>
 
       {(() => {
@@ -185,8 +185,8 @@ export default function Conta() {
               <Gem className="size-5" strokeWidth={2.25} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-17 font-bold">{sp.emTeste ? "Teste grátis do Pro" : `Plano ${PLANOS[sp.plano].nome}`}</span>
-              <span className="block text-15 text-texto-2">{sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}</span>
+              <span className="block text-corpo font-bold">{sp.emTeste ? "Teste grátis do Pro" : `Plano ${PLANOS[sp.plano].nome}`}</span>
+              <span className="block text-apoio text-texto-2">{sp.emTeste ? `${sp.diasDeTeste} ${sp.diasDeTeste === 1 ? "dia restante" : "dias restantes"}` : sp.aviso ?? "Ver planos e preços"}</span>
             </span>
             <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
           </button>
@@ -199,7 +199,7 @@ export default function Conta() {
         <LinhaAjuste
           icone={CalendarClock}
           rotulo="Fechamento e pagamento"
-          valor={`Fecha dia ${perfil.ciclo.diaFechamento} · ${NOME_PAGAMENTO(perfil)}`}
+          valor={`Fecha dia ${perfil.ciclo.diaFechamento} e ${NOME_PAGAMENTO(perfil)}`}
           sugestao={!perfil.diaPagamento}
           onClick={() => abrir("fechamento")}
         />
@@ -217,7 +217,7 @@ export default function Conta() {
         <LinhaAjuste
           icone={Percent}
           rotulo="Hora extra"
-          valor={`Dia útil ${formatarPercentual(perfil.adicionais.extraDiaUtil)} · sábado ${formatarPercentual(perfil.adicionais.extraSabado)} · domingo ${formatarPercentual(perfil.adicionais.extraDomingo)}`}
+          valor={`Dia útil ${formatarPercentual(perfil.adicionais.extraDiaUtil)}, sábado ${formatarPercentual(perfil.adicionais.extraSabado)}, domingo ${formatarPercentual(perfil.adicionais.extraDomingo)}`}
           sugestao={ehSugestao(perfil, "adicionais.extraSabado") || ehSugestao(perfil, "adicionais.extraDiaUtil")}
           onClick={() => abrir("extra")}
         />
@@ -230,7 +230,7 @@ export default function Conta() {
         <LinhaAjuste
           icone={Scale}
           rotulo="Compensação e saldo de horas"
-          valor={`Compensação ${perfil.jornada.compensacaoSemanal ? "ligada" : "desligada"} · saldo ${perfil.bancoHoras.ativo ? "ligado" : "desligado"}`}
+          valor={`Compensação ${perfil.jornada.compensacaoSemanal ? "ligada" : "desligada"}, saldo ${perfil.bancoHoras.ativo ? "ligado" : "desligado"}`}
           onClick={() => abrir("regras")}
         />
       </Grupo>
@@ -239,7 +239,7 @@ export default function Conta() {
         <LinhaAjuste
           icone={Briefcase}
           rotulo="Nome, cargo e empresa"
-          valor={[estado.pessoal.nome, estado.pessoal.cargo, estado.pessoal.empresa].filter(Boolean).join(" · ") || "Toque para preencher"}
+          valor={[estado.pessoal.nome, estado.pessoal.cargo, estado.pessoal.empresa].filter(Boolean).join(", ") || "Toque para preencher"}
           onClick={() => abrir("pessoal")}
         />
         <LinhaAjuste
@@ -249,7 +249,7 @@ export default function Conta() {
             { compacto: "Compacto", padrao: "Tamanho padrão", grande: "Grande" }[preferencias.tamanho],
             { auto: "automático", claro: "claro", escuro: "escuro", sol: "sol forte" }[preferencias.tema],
             preferencias.som ? "com som" : "sem som",
-          ].join(" · ")}
+          ].join(", ")}
           onClick={() => setAparencia(true)}
         />
       </Grupo>
@@ -341,19 +341,19 @@ export default function Conta() {
         />
       </Grupo>
 
-      <button type="button" onClick={() => router.push("/comecar?refazer=1")} className="inline-flex min-h-12 items-center gap-2 self-start rounded-full px-2 text-15 font-bold text-primaria-forte">
+      <button type="button" onClick={() => router.push("/comecar?refazer=1")} className="inline-flex min-h-12 items-center gap-2 self-start rounded-full px-2 text-apoio font-bold text-primaria-forte">
         <RefreshCw aria-hidden className="size-4" /> Refazer as perguntas do início
       </button>
 
       <footer className="flex flex-col gap-2 border-t border-borda pt-4">
-        <p className="text-13 text-texto-2">
+        <p className="text-legenda text-texto-2">
           O {MARCA.nome} é controle pessoal. Não é ponto eletrônico oficial (REP) e os valores são estimativas. Percentuais e regras são sugestões: confira com seu sindicato ou contador.
         </p>
         <nav aria-label="Documentos" className="-ml-2 flex flex-wrap">
-          <Link href="/termos" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-15 font-bold text-texto underline underline-offset-4">
+          <Link href="/termos" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-apoio font-bold text-texto underline underline-offset-4">
             <FileText aria-hidden className="size-4" /> Termos de uso
           </Link>
-          <Link href="/privacidade" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-15 font-bold text-texto underline underline-offset-4">
+          <Link href="/privacidade" className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-2 text-apoio font-bold text-texto underline underline-offset-4">
             <ShieldCheck aria-hidden className="size-4" /> Política de privacidade
           </Link>
         </nav>
@@ -416,13 +416,13 @@ export default function Conta() {
             />
           )}
           {salarioMensal(p.pagamento) && (
-            <p className="text-15 text-texto-2">
+            <p className="text-apoio text-texto-2">
               Valor da hora para extras: salário ÷ {salarioMensal(p.pagamento)!.divisorHoras} horas
               {lerReais(valorTxt) ? ` = ${formatarReais(Math.round((lerReais(valorTxt) ?? 0) / salarioMensal(p.pagamento)!.divisorHoras))}` : ""}.
             </p>
           )}
-          {p.pagamento.forma === "misto" && <p className="text-17">O que você lançar na aba Produção soma com {p.pagamento.base === "mensal" ? "o salário" : "as horas"}.</p>}
-          {p.pagamento.forma === "producao" && <p className="text-17">Você recebe pelo que lança na aba Produção.</p>}
+          {p.pagamento.forma === "misto" && <p className="text-corpo">O que você lançar na aba Produção soma com {p.pagamento.base === "mensal" ? "o salário" : "as horas"}.</p>}
+          {p.pagamento.forma === "producao" && <p className="text-corpo">Você recebe pelo que lança na aba Produção.</p>}
         </div>
       </BottomSheet>
 
@@ -437,10 +437,10 @@ export default function Conta() {
           {sem ? (
             <EditorSemana minutos={sem} onChange={(d, m) => setRascunho(comEscala(p, definirDia(p.escala, d, m)))} />
           ) : (
-            <p className="text-17">Escala em plantões (12x36): 12h de trabalho e 36h de descanso.</p>
+            <p className="text-corpo">Escala em plantões (12x36): 12h de trabalho e 36h de descanso.</p>
           )}
           <div className="flex flex-col gap-2">
-            <span className="text-17 font-bold">Almoço</span>
+            <span className="text-corpo font-bold">Almoço</span>
             <div role="group" aria-label="Tempo de almoço" className="flex flex-wrap gap-2">
               {[0, 30, 60, 90, 120].map((m) => (
                 <Chip key={m} selecionado={almocoAtual(p.escala) === m} onClick={() => setRascunho({ ...p, escala: definirAlmoco(p.escala, m) })}>
@@ -507,11 +507,11 @@ export default function Conta() {
             onMenos={() => mudar([], (x) => void (x.ciclo.diaFechamento -= 1))}
             onMais={() => mudar([], (x) => void (x.ciclo.diaFechamento += 1))}
           />
-          <p className="pt-3 text-center text-17 text-texto-2">
+          <p className="pt-3 text-center text-corpo text-texto-2">
             {p.ciclo.diaFechamento >= 28 ? "Fecha no fim do mês." : `Período do dia ${p.ciclo.diaFechamento + 1} ao dia ${p.ciclo.diaFechamento}.`}
           </p>
           <div className="flex flex-col gap-2 pt-6">
-            <span className="text-17 font-bold">Quando o dinheiro cai?</span>
+            <span className="text-corpo font-bold">Quando o dinheiro cai?</span>
             {!p.diaPagamento && <SeloSugestao texto="Sugestão — na CLT, até o 5º dia útil do mês seguinte" />}
             <div role="radiogroup" aria-label="Dia do pagamento" className="flex flex-wrap gap-2">
               <Chip selecionado={(p.diaPagamento?.tipo ?? "quinto-dia-util") === "quinto-dia-util"} onClick={() => mudar([], (x) => void (x.diaPagamento = { tipo: "quinto-dia-util" }))}>5º dia útil</Chip>
@@ -581,13 +581,13 @@ export default function Conta() {
               {p.descontos.map((d) => (
                 <li key={d.id} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
                   <span className="flex-1">
-                    <span className="block text-17 font-bold">{d.nome}</span>
-                    <span className="numeros block text-15 text-texto-2">{descreverDesconto(d)}</span>
+                    <span className="block text-corpo font-bold">{d.nome}</span>
+                    <span className="numeros block text-apoio text-texto-2">{descreverDesconto(d)}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => mudar(["descontos"], (x) => void (x.descontos = x.descontos.filter((y) => y.id !== d.id)))}
-                    className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-15 font-bold text-erro-texto active:bg-erro-suave"
+                    className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-apoio font-bold text-erro-texto active:bg-erro-suave"
                   >
                     <Trash2 aria-hidden className="size-5" /> Tirar
                   </button>
@@ -600,7 +600,7 @@ export default function Conta() {
             const irrf = p.descontos.find((d): d is Extract<typeof d, { tipo: "irrf" }> => d.tipo === "irrf");
             return (
               <div className="flex flex-col gap-3">
-                <span className="text-17 font-bold">Descontos da carteira assinada</span>
+                <span className="text-corpo font-bold">Descontos da carteira assinada</span>
                 <div className="flex flex-wrap gap-2">
                   {!tem("inss") && (
                     <Chip icone={Plus} onClick={() => mudar(["descontos"], (x) => void x.descontos.unshift({ id: novoId("d"), nome: "INSS", tipo: "inss" }))}>INSS (tabela oficial)</Chip>
@@ -623,12 +623,12 @@ export default function Conta() {
                     onMais={() => mudar(["descontos"], (x) => { const d = x.descontos.find((y) => y.tipo === "irrf"); if (d && d.tipo === "irrf") d.dependentes += 1; })}
                   />
                 )}
-                <p className="text-13 text-texto-2">Tabelas de {tabelaDoAno(new Date().getFullYear()).ano}: {tabelaDoAno(new Date().getFullYear()).inss.fonte}.</p>
+                <p className="text-legenda text-texto-2">Tabelas de {tabelaDoAno(new Date().getFullYear()).ano}: {tabelaDoAno(new Date().getFullYear()).inss.fonte}.</p>
               </div>
             );
           })()}
           <div className="flex flex-col gap-3 rounded-2xl bg-superficie-2 p-4">
-            <span className="text-17 font-bold">Outro desconto</span>
+            <span className="text-corpo font-bold">Outro desconto</span>
             <CampoTexto rotulo="Nome" valor={novoDesc.nome} onChange={(nome) => setNovoDesc({ ...novoDesc, nome })} placeholder="Ex.: Adiantamento" maxLength={40} />
             <div role="group" aria-label="Tipo de desconto" className="flex gap-2">
               <Chip selecionado={novoDesc.tipo === "percentual"} onClick={() => setNovoDesc({ ...novoDesc, tipo: "percentual" })}>Percentual</Chip>
@@ -705,13 +705,13 @@ export default function Conta() {
                   {lista.map((f) => (
                     <li key={f.data} className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4">
                       <span className="flex-1">
-                        <span className="block text-17 font-bold">{f.nome}</span>
-                        <span className="numeros block text-15 text-texto-2">{f.data.slice(8, 10)}/{f.data.slice(5, 7)}/{f.data.slice(0, 4)}</span>
+                        <span className="block text-corpo font-bold">{f.nome}</span>
+                        <span className="numeros block text-apoio text-texto-2">{f.data.slice(8, 10)}/{f.data.slice(5, 7)}/{f.data.slice(0, 4)}</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => salvarFeriadosLocais(lista.filter((x) => x.data !== f.data))}
-                        className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-15 font-bold text-erro-texto active:bg-erro-suave"
+                        className="inline-flex min-h-12 items-center gap-1.5 rounded-full px-3 text-apoio font-bold text-erro-texto active:bg-erro-suave"
                       >
                         <Trash2 aria-hidden className="size-5" /> Tirar
                       </button>
@@ -721,7 +721,7 @@ export default function Conta() {
               )}
               {sugestoes.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-15 font-bold text-texto-2">Pontos facultativos comuns</span>
+                  <span className="text-apoio font-bold text-texto-2">Pontos facultativos comuns</span>
                   <div className="flex flex-wrap gap-2">
                     {sugestoes.map((f) => (
                       <Chip key={f.data} icone={Plus} onClick={() => salvarFeriadosLocais([...lista, f])}>
@@ -732,7 +732,7 @@ export default function Conta() {
                 </div>
               )}
               <div className="flex flex-col gap-3 rounded-2xl bg-superficie-2 p-4">
-                <span className="text-17 font-bold">Novo feriado</span>
+                <span className="text-corpo font-bold">Novo feriado</span>
                 <CampoTexto rotulo="Nome" valor={novoFeriado.nome} onChange={(nome) => setNovoFeriado({ ...novoFeriado, nome })} placeholder="Ex.: Aniversário da cidade" maxLength={60} />
                 <CampoTexto rotulo="Dia e mês" valor={novoFeriado.dia} onChange={(dia) => setNovoFeriado({ ...novoFeriado, dia: dia.replace(/[^\d/]/g, "").slice(0, 5) })} placeholder="20/01" inputMode="numeric" />
                 <Interruptor rotulo="Repete todo ano" valor={novoFeriado.todoAno} onChange={(todoAno) => setNovoFeriado({ ...novoFeriado, todoAno })} />

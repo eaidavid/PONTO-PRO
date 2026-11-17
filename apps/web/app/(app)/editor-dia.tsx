@@ -128,12 +128,12 @@ export function EditorDia({ data, registro, perfil, obras, onFechar, focoNota }:
               </>
             )}
             <div className="flex flex-col gap-2">
-              <span className="text-17 font-bold">Tipo do dia</span>
+              <span className="text-corpo font-bold">Tipo do dia</span>
               <EscolhaTipoDia valor={ed.tipo} onChange={(tipo) => setRascunho({ ...ed, tipo })} />
             </div>
             {obras.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-17 font-bold">Obra</span>
+                <span className="text-corpo font-bold">Obra</span>
                 <div role="group" aria-label="Obra do dia" className="flex flex-wrap gap-2">
                   <Chip selecionado={!ed.obraId} onClick={() => setRascunho({ ...ed, obraId: undefined })}>Nenhuma</Chip>
                   {obras.map((o) => (
@@ -143,14 +143,14 @@ export function EditorDia({ data, registro, perfil, obras, onFechar, focoNota }:
               </div>
             )}
             <label className="flex flex-col gap-1.5">
-              <span className="text-17 font-bold">Nota do dia</span>
+              <span className="text-corpo font-bold">Nota do dia</span>
               <textarea
                 value={ed.observacao ?? ""}
                 autoFocus={focoNota}
                 onChange={(e) => setRascunho({ ...ed, observacao: e.target.value.slice(0, 200) })}
                 placeholder="Ex.: choveu, obra parada"
                 rows={2}
-                className="min-h-20 rounded-cartao border-2 border-borda-forte bg-superficie p-3 text-17 outline-none focus:border-primaria"
+                className="min-h-20 rounded-cartao border-2 border-borda-forte bg-superficie p-3 text-corpo outline-none focus:border-primaria"
               />
             </label>
             {registro && (

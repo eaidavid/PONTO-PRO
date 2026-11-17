@@ -9,9 +9,9 @@ export interface ValorDinheiroProps {
 }
 
 const TAM = {
-  m: "text-24",
-  g: "text-32",
-  gg: "text-[min(var(--text-56),12vw)]",
+  m: "text-titulo-3",
+  g: "text-titulo-2",
+  gg: "text-[min(var(--text-numero),12vw)]",
 } as const;
 
 /** Valor em reais com "R$" e centavos menores, como nos bancos digitais. Lido por inteiro no leitor de tela. */

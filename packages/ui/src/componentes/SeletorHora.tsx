@@ -18,14 +18,14 @@ export function SeletorHora({ valor, onChange, comuns, rotulo = "Horário" }: Se
   return (
     <div className="flex flex-col gap-4">
       <p className="text-center">
-        <span className="block text-15 text-texto-2">{rotulo}</span>
-        <output aria-live="polite" className="numeros block text-56 font-bold">{valor}</output>
+        <span className="block text-apoio text-texto-2">{rotulo}</span>
+        <output aria-live="polite" className="numeros block text-numero font-bold">{valor}</output>
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <button type="button" onClick={() => mudar(-5)} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-superficie-2 text-20 font-bold borda active:scale-[0.97]">
+        <button type="button" onClick={() => mudar(-5)} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-superficie-2 text-destaque font-bold borda active:scale-[0.97]">
           <Minus aria-hidden className="size-6" strokeWidth={2.5} /> 5 min
         </button>
-        <button type="button" onClick={() => mudar(5)} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-superficie-2 text-20 font-bold borda active:scale-[0.97]">
+        <button type="button" onClick={() => mudar(5)} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-superficie-2 text-destaque font-bold borda active:scale-[0.97]">
           <Plus aria-hidden className="size-6" strokeWidth={2.5} /> 5 min
         </button>
       </div>

@@ -50,7 +50,7 @@ export function Toast({ texto, desfazer, duracao = 5000, onFechar }: ToastDados 
   return (
     <div className="pointer-events-auto relative flex w-full max-w-[520px] items-center gap-3 overflow-hidden rounded-cartao bg-texto py-2 pr-2 pl-4 text-fundo shadow-painel animate-entrar">
       <CircleCheck aria-hidden className="size-6 shrink-0 text-[color:var(--primaria-suave)]" />
-      <p className="numeros flex-1 py-2 text-17 font-bold">{texto}</p>
+      <p className="numeros flex-1 py-2 text-corpo font-bold">{texto}</p>
       {desfazer && (
         <button
           type="button"
@@ -58,7 +58,7 @@ export function Toast({ texto, desfazer, duracao = 5000, onFechar }: ToastDados 
             desfazer();
             onFechar?.();
           }}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-17 font-bold text-fundo underline underline-offset-4 active:bg-white/10"
+          className="inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-corpo font-bold text-fundo underline underline-offset-4 active:bg-white/10"
         >
           <Undo2 aria-hidden className="size-5" /> Desfazer
         </button>

@@ -71,8 +71,8 @@ export default function Obras() {
                 <HardHat aria-hidden className="size-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-17 font-bold">{o.nome}</span>
-                <span className="numeros block text-15 text-texto-2">
+                <span className="block truncate text-corpo font-bold">{o.nome}</span>
+                <span className="numeros block text-apoio text-texto-2">
                   {t ? [t.horas ? `${formatarDuracao(t.horas)} no período` : null, t.producao ? formatarReais(t.producao) : null].filter(Boolean).join(" · ") : "Sem registros no período"}
                 </span>
               </span>
@@ -113,15 +113,15 @@ export default function Obras() {
             <HardHat className="size-7" />
           </span>
           <span className="flex flex-col gap-1">
-            <span className="text-17 font-bold">Nenhuma obra ainda</span>
-            <span className="text-15 text-texto-2">Trabalha em mais de um lugar? Cadastre as obras e escolha uma ao bater o ponto ou lançar produção. Depois dá para ver o histórico de cada uma.</span>
+            <span className="text-corpo font-bold">Nenhuma obra ainda</span>
+            <span className="text-apoio text-texto-2">Trabalha em mais de um lugar? Cadastre as obras e escolha uma ao bater o ponto ou lançar produção. Depois dá para ver o histórico de cada uma.</span>
           </span>
         </div>
       ) : (
         <section className="flex flex-col gap-2">
           <TituloSecao>Ativas</TituloSecao>
           <Lista lista={ativas} />
-          <Link href="/historico" className="px-1 text-15 font-bold text-primaria-forte underline underline-offset-4">Ver o histórico por obra</Link>
+          <Link href="/historico" className="px-1 text-apoio font-bold text-primaria-forte underline underline-offset-4">Ver o histórico por obra</Link>
         </section>
       )}
       {arquivadas.length > 0 && (

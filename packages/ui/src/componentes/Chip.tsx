@@ -24,7 +24,7 @@ export function Chip({ selecionado, icone: Icone, tom = "primaria", className, c
       aria-pressed={selecionado}
       {...resto}
       className={cx(
-        "inline-flex min-h-12 items-center gap-2 rounded-full border-[length:var(--borda-largura)] px-4 text-17 font-bold transition-colors duration-150 active:scale-[0.97] disabled:opacity-60",
+        "inline-flex min-h-12 items-center gap-2 rounded-full border-[length:var(--borda-largura)] px-4 text-corpo font-bold transition-colors duration-150 active:scale-[0.97] disabled:opacity-60",
         selecionado ? SEL[tom] : "border-borda-forte bg-superficie text-texto active:bg-superficie-2",
         className,
       )}

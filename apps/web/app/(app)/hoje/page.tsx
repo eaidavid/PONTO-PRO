@@ -110,7 +110,7 @@ export default function Hoje() {
     status.estado === "trabalhando" || status.estado === "encerrado"
       ? [previstoMin ? `${formatarHorasCurto(dia.trabalhadoMin)} de ${formatarHorasCurto(previstoMin)}` : `${formatarHorasCurto(dia.trabalhadoMin)} trabalhadas`, status.estado === "trabalhando" && saida && previstoMin ? `sai às ${saida}` : status.estado === "encerrado" ? status.detalhe.replace(/\.$/, "") : null]
           .filter(Boolean)
-          .join(" · ")
+          .join(", ")
       : status.detalhe.replace(/\.$/, "");
 
   async function bater() {
@@ -150,21 +150,21 @@ export default function Hoje() {
     <main>
       <section className="fundo-marca flex flex-col px-5 pt-[max(16px,env(safe-area-inset-top))] pb-12">
         <div className="flex items-center justify-between gap-3">
-          <p className="truncate text-17 font-bold">{saudacao(agora.minutos)}{nome ? `, ${nome}` : ""}</p>
+          <p className="truncate text-corpo font-bold">{saudacao(agora.minutos)}{nome ? `, ${nome}` : ""}</p>
           <StatusSync estado={seloSync(nuvem, estado.pendentes)} sobreMarca />
         </div>
         <p className="display pt-4 text-relogio" aria-label={`Agora são ${agora.hora}`}>{agora.hora}</p>
-        <p className="pt-1 text-17 text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>
+        <p className="pt-1 text-corpo text-sobre-marca-2 first-letter:uppercase">{dataPorExtenso(agora.data)}</p>
         <div aria-live="polite" className="mt-4 inline-flex items-center gap-2 self-start rounded-full bg-white/14 py-2 pr-4 pl-3">
           <span aria-hidden className={status.estado === "trabalhando" ? "size-2.5 rounded-full bg-marca-destaque animate-pulse" : "size-2.5 rounded-full bg-white/70"} />
-          <h1 className="text-17 font-bold">{pilula}</h1>
+          <h1 className="text-corpo font-bold">{pilula}</h1>
         </div>
       </section>
 
       <div className="entrada-escalonada relative -mt-8 flex flex-col gap-4 rounded-t-painel bg-fundo px-4 pt-4">
         {lembretes.map((l) => (
-          <div key={l.id} role="status" className="cartao flex flex-col gap-3 border-l-4 border-l-[color:var(--extra)]! p-4">
-            <p className="flex gap-2 text-17">
+          <div key={l.id} role="status" className="flex flex-col gap-3 rounded-grande bg-extra-suave p-4">
+            <p className="flex gap-2 text-corpo">
               <BellRing aria-hidden className="mt-0.5 size-5 shrink-0 text-extra-texto" />
               {l.texto}
             </p>
@@ -188,22 +188,22 @@ export default function Hoje() {
           {status.estado === "trabalhando" && previstoMin > 0 ? (
             <dl className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <dt className="text-13 text-texto-2">Trabalhado</dt>
-                <dd className="numeros text-20 font-bold">{formatarHorasCurto(dia.trabalhadoMin)}</dd>
+                <dt className="text-legenda text-texto-2">Trabalhado</dt>
+                <dd className="numeros text-destaque font-bold">{formatarHorasCurto(dia.trabalhadoMin)}</dd>
               </div>
               <div>
-                <dt className="text-13 text-texto-2">{dia.trabalhadoMin >= previstoMin ? "Hora extra" : "Falta"}</dt>
-                <dd className={dia.trabalhadoMin >= previstoMin ? "numeros text-20 font-bold text-extra-texto" : "numeros text-20 font-bold"}>
+                <dt className="text-legenda text-texto-2">{dia.trabalhadoMin >= previstoMin ? "Hora extra" : "Falta"}</dt>
+                <dd className={dia.trabalhadoMin >= previstoMin ? "numeros text-destaque font-bold text-extra-texto" : "numeros text-destaque font-bold"}>
                   {dia.trabalhadoMin >= previstoMin ? `+${formatarHorasCurto(dia.trabalhadoMin - previstoMin)}` : formatarHorasCurto(previstoMin - dia.trabalhadoMin)}
                 </dd>
               </div>
               <div>
-                <dt className="text-13 text-texto-2">Saída prevista</dt>
-                <dd className="numeros text-20 font-bold">{saida ?? "--:--"}</dd>
+                <dt className="text-legenda text-texto-2">Saída prevista</dt>
+                <dd className="numeros text-destaque font-bold">{saida ?? "--:--"}</dd>
               </div>
             </dl>
           ) : (
-            <p className="numeros text-17 font-bold">{apoio}</p>
+            <p className="numeros text-corpo font-bold">{apoio}</p>
           )}
         </section>
 
@@ -223,7 +223,7 @@ export default function Hoje() {
           <li>
             <button type="button" onClick={() => setPorQue(true)} className={linha}>
               <Wallet aria-hidden className="size-5 shrink-0 text-texto-2" />
-              <span className="flex-1 text-17 font-bold">Ganho hoje</span>
+              <span className="flex-1 text-corpo font-bold">Ganho hoje</span>
               <ValorDinheiro centavos={r.bruto} />
               <ChevronRight aria-hidden className="size-5 text-texto-2" />
             </button>
@@ -232,7 +232,7 @@ export default function Hoje() {
             <li>
               <Link href="/producao" className={linha}>
                 <PackagePlus aria-hidden className="size-5 shrink-0 text-texto-2" />
-                <span className="flex-1 text-17 font-bold">Lançar produção</span>
+                <span className="flex-1 text-corpo font-bold">Lançar produção</span>
                 <ChevronRight aria-hidden className="size-5 text-texto-2" />
               </Link>
             </li>
@@ -241,8 +241,8 @@ export default function Hoje() {
             <li>
               <button type="button" onClick={() => setEscolherObra(true)} className={linha}>
                 <HardHat aria-hidden className="size-5 shrink-0 text-texto-2" />
-                <span className="flex-1 text-17 font-bold">Obra</span>
-                <span className="text-15 text-texto-2">{obraAtual?.nome ?? "Escolher"}</span>
+                <span className="flex-1 text-corpo font-bold">Obra</span>
+                <span className="text-apoio text-texto-2">{obraAtual?.nome ?? "Escolher"}</span>
                 <ChevronRight aria-hidden className="size-5 text-texto-2" />
               </button>
             </li>
@@ -252,8 +252,8 @@ export default function Hoje() {
         {ultimos.length > 0 && (
           <section aria-labelledby="ultimos-dias" className="mb-2 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2 pl-1">
-              <h2 id="ultimos-dias" className="text-15 font-bold text-texto-2">Últimos dias</h2>
-              <Link href="/historico" className="inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-15 font-bold text-primaria-forte">
+              <h2 id="ultimos-dias" className="text-apoio font-bold text-texto-2">Últimos dias</h2>
+              <Link href="/historico" className="inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-apoio font-bold text-primaria-forte">
                 <History aria-hidden className="size-4" /> Ver tudo
               </Link>
             </div>
@@ -265,10 +265,10 @@ export default function Hoje() {
                 return (
                   <li key={u.data}>
                     <Link href={`/historico?dia=${u.data}`} className="flex min-h-16 items-center gap-3 px-4 py-2 active:bg-superficie-2">
-                    <span className="numeros w-14 shrink-0 text-15 font-bold capitalize">{seloDia(u.data)}</span>
+                    <span className="numeros w-14 shrink-0 text-apoio font-bold capitalize">{seloDia(u.data)}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="numeros block text-17">{tipo ? tipo[0]!.toUpperCase() + tipo.slice(1) : (horario ?? "Só produção")}</span>
-                      {u.trabalhadoMin > 0 && <span className="numeros block text-13 text-texto-2">{formatarHorasCurto(u.trabalhadoMin)} trabalhadas</span>}
+                      <span className="numeros block text-corpo">{tipo ? tipo[0]!.toUpperCase() + tipo.slice(1) : (horario ?? "Só produção")}</span>
+                      {u.trabalhadoMin > 0 && <span className="numeros block text-legenda text-texto-2">{formatarHorasCurto(u.trabalhadoMin)} trabalhadas</span>}
                     </span>
                     <ValorDinheiro centavos={u.bruto} />
                     <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />

@@ -100,7 +100,7 @@ export function ConviteCelular({ jaBateuPonto }: { jaBateuPonto: boolean }) {
     medir("convite_fechado", { tipo: k });
     setTipo(null);
   };
-  const caixa = "relative flex flex-col gap-3 rounded-[20px] bg-primaria-suave p-4 pr-12";
+  const caixa = "relative flex flex-col gap-3 rounded-grande bg-primaria-suave p-4 pr-12";
   const botaoFechar = (k: string) => (
     <button type="button" aria-label="Agora não" onClick={() => sair(k)} className="absolute top-1 right-1 flex size-12 items-center justify-center rounded-full text-texto-2 active:bg-superficie">
       <X aria-hidden className="size-5" />
@@ -111,14 +111,14 @@ export function ConviteCelular({ jaBateuPonto }: { jaBateuPonto: boolean }) {
     return (
       <section aria-label="Instalar o app" className={caixa}>
         {botaoFechar("instalar")}
-        <p className="text-17"><b>Deixe o Pingou na tela inicial.</b> Abre com um toque, mesmo sem internet, como um app.</p>
+        <p className="text-corpo"><b>Deixe o Pingou na tela inicial.</b> Abre com um toque, mesmo sem internet, como um app.</p>
         <button
           type="button"
           onClick={async () => {
             medir("instalar", { origem: "hoje" });
             if (await instalarApp()) medir("instalado", { origem: "hoje" });
           }}
-          className="inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria"
+          className="inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria"
         >
           <Download aria-hidden className="size-5" /> Instalar o app
         </button>
@@ -129,8 +129,8 @@ export function ConviteCelular({ jaBateuPonto }: { jaBateuPonto: boolean }) {
     return (
       <section aria-label="Instalar o app no iPhone" className={caixa}>
         {botaoFechar("instalar")}
-        <p className="text-17"><b>Deixe o Pingou na tela inicial do iPhone.</b> Assim ele abre como app e pode te avisar da saída.</p>
-        <ol className="flex flex-col gap-2 text-15">
+        <p className="text-corpo"><b>Deixe o Pingou na tela inicial do iPhone.</b> Assim ele abre como app e pode te avisar da saída.</p>
+        <ol className="flex flex-col gap-2 text-apoio">
           <li className="flex items-center gap-2">
             <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-superficie font-bold">1</span>
             Toque em <Share aria-label="Compartilhar" className="size-5 text-primaria-forte" /> <b>Compartilhar</b>, embaixo no Safari
@@ -147,15 +147,15 @@ export function ConviteCelular({ jaBateuPonto }: { jaBateuPonto: boolean }) {
     return (
       <section aria-label="Avisos no celular" className={caixa}>
         {botaoFechar("avisos")}
-        <p className="text-17"><b>Quer um aviso quando esquecer a saída?</b> Crie sua conta: os dados ficam guardados e o Pingou pode te avisar.</p>
-        <Link href="/entrar" className="inline-flex min-h-12 items-center self-start rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Criar conta</Link>
+        <p className="text-corpo"><b>Quer um aviso quando esquecer a saída?</b> Crie sua conta: os dados ficam guardados e o Pingou pode te avisar.</p>
+        <Link href="/entrar" className="inline-flex min-h-12 items-center self-start rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Criar conta</Link>
       </section>
     );
   }
   return (
     <section aria-label="Avisos no celular" className={caixa}>
       {botaoFechar("avisos")}
-      <p className="text-17"><b>Ligar os avisos?</b> O Pingou lembra quando você esquecer de bater a saída e avisa no dia do pagamento.</p>
+      <p className="text-corpo"><b>Ligar os avisos?</b> O Pingou lembra quando você esquecer de bater a saída e avisa no dia do pagamento.</p>
       <button
         type="button"
         onClick={async () => {
@@ -168,7 +168,7 @@ export function ConviteCelular({ jaBateuPonto }: { jaBateuPonto: boolean }) {
             /* sem rede: o convite continua */
           }
         }}
-        className="inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria"
+        className="inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria"
       >
         <Bell aria-hidden className="size-5" /> Ligar avisos
       </button>

@@ -134,7 +134,12 @@ function Historico() {
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora || !periodo || !regs) return null;
     const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: regs, feriadosLocais: estado.feriadosLocais, agora });
-    const ateHoje = r.dias.filter((d) => d.data <= agora.data);
+    // o histórico começa no primeiro dia de uso (ou no registro mais antigo, para quem trouxe dados):
+    // antes disso o app não cobra "dia sem registro"
+    const primeiroRegistro = regs.reduce<string | null>((m, x) => (m === null || x.data < m ? x.data : m), null);
+    const inicioUso = [estado.inicioUso ?? agora.data, primeiroRegistro ?? agora.data].sort()[0]!;
+    const desdeInicio = r.dias.filter((d) => d.data >= inicioUso);
+    const ateHoje = desdeInicio.filter((d) => d.data <= agora.data);
     // quanto rendeu cada dia (bruto), como no app antigo
     const fimValores = periodo.fim < agora.data ? periodo.fim : agora.data;
     const valores =
@@ -148,8 +153,9 @@ function Historico() {
       valores,
       producaoDia: (lancs ?? []).reduce((m, l) => m.set(l.data, (m.get(l.data) ?? 0) + valorProducao(l.quantidade, l.precoUnitario)), new Map<string, number>()),
       semanas: agruparPorSemana(filtrarDias([...ateHoje].reverse(), { filtro, busca, obraId, registros: regs, obras: estado.obras })),
-      pendencias: pendenciasDoPeriodo(r.dias, agora.data),
-      completar: completarComEscala(estado.perfil, r.dias, agora.data),
+      pendencias: pendenciasDoPeriodo(desdeInicio, agora.data),
+      completar: completarComEscala(estado.perfil, desdeInicio, agora.data),
+      comecouHoje: inicioUso === agora.data,
     };
   }, [estado, agora, periodo?.inicio, regs, lancs, filtro, busca, obraId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -167,7 +173,7 @@ function Historico() {
   if (!estado?.perfil || !agora || !periodo || !calc || !regs || !lancs) return <Carregando />;
   const { perfil, itens, obras, obrasAtivas } = estado;
   const plano = situacaoAtual(estado);
-  const { r, semanas, pendencias, completar, valores, producaoDia } = calc;
+  const { r, semanas, pendencias, completar, valores, producaoDia, comecouHoje } = calc;
   const atual = agora.data >= periodo.inicio && agora.data <= periodo.fim;
   /** O Grátis vê o período atual e o anterior; os mais antigos são do Pro. */
   const anterior = periodo.fim === periodoVizinho(periodoDaData(agora.data, fech), -1, fech).fim;
@@ -232,14 +238,14 @@ function Historico() {
               type="button"
               onClick={() => setBuscaAberta(true)}
               aria-expanded={buscaVisivel}
-              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-13 font-bold text-texto-2 active:bg-superficie-2"
+              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-legenda font-bold text-texto-2 active:bg-superficie-2"
             >
               <Search aria-hidden className="size-5" /> Buscar
             </button>
             <button
               type="button"
               onClick={() => setOpcoes(true)}
-              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-13 font-bold text-texto-2 active:bg-superficie-2"
+              className="inline-flex min-h-12 flex-col items-center justify-center rounded-2xl px-2 text-legenda font-bold text-texto-2 active:bg-superficie-2"
             >
               <Ellipsis aria-hidden className="size-5" /> Opções
             </button>
@@ -260,7 +266,7 @@ function Historico() {
               definir({ q: e.target.value || null });
             }}
             placeholder={aba === "ponto" ? "Dia, nota ou obra" : "Serviço"}
-            className="min-w-0 flex-1 bg-transparent text-17 outline-none placeholder:text-texto-2"
+            className="min-w-0 flex-1 bg-transparent text-corpo outline-none placeholder:text-texto-2"
           />
           <button
             type="button"
@@ -295,7 +301,7 @@ function Historico() {
         if (aba === "ponto" && filtro !== "todos") ativos.push({ rotulo: nomesFiltro.get(filtro) ?? filtro, limpar: () => definir({ f: null }) });
         if (aba === "producao" && area) ativos.push({ rotulo: area, limpar: () => definir({ cat: null }) });
         if (obraId) ativos.push({ rotulo: nomeObra.get(obraId) ?? "Obra", limpar: () => definir({ obra: null }) });
-        const pilula = "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2";
+        const pilula = "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-borda-forte bg-superficie px-4 text-apoio font-bold active:bg-superficie-2";
         return (
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setPeriodos(true)} className={pilula} aria-label={`Período ${rotuloPeriodo(periodo)}${atual ? ", atual" : ""}. Trocar período`}>
@@ -305,7 +311,7 @@ function Historico() {
             </button>
             <button type="button" onClick={() => setFiltros(true)} className={pilula}>
               <SlidersHorizontal aria-hidden className="size-4" /> Filtrar
-              {ativos.length > 0 && <span className="rounded-full bg-primaria px-2 text-13 text-sobre-primaria">{ativos.length}</span>}
+              {ativos.length > 0 && <span className="rounded-full bg-primaria px-2 text-legenda text-sobre-primaria">{ativos.length}</span>}
             </button>
             {ativos.map((a) => (
               <button
@@ -313,7 +319,7 @@ function Historico() {
                 type="button"
                 onClick={a.limpar}
                 aria-label={`Tirar o filtro ${a.rotulo}`}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primaria-suave px-4 text-15 font-bold text-primaria-forte"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primaria-suave px-4 text-apoio font-bold text-primaria-forte"
               >
                 {a.rotulo} <X aria-hidden className="size-4" />
               </button>
@@ -324,35 +330,35 @@ function Historico() {
 
       {aba === "ponto" && (
         <section aria-label="Resumo do período" className="grid grid-cols-2 gap-2">
-          <div className="fundo-marca col-span-2 flex items-center justify-between gap-3 rounded-[20px] px-4 py-3">
+          <div className="fundo-marca col-span-2 flex items-center justify-between gap-3 rounded-grande px-4 py-3">
             <span className="flex flex-col">
-              <span className="text-13 font-bold text-sobre-marca-2">Ganho até {atual ? "hoje" : "o fechamento"}</span>
-              <span className="numeros text-24 font-bold">{formatarReais([...valores.values()].reduce((t, v) => t + v, 0))}</span>
+              <span className="text-legenda font-bold text-sobre-marca-2">Ganho até {atual ? "hoje" : "o fechamento"}</span>
+              <span className="numeros text-titulo-3 font-bold">{formatarReais([...valores.values()].reduce((t, v) => t + v, 0))}</span>
             </span>
             {!filtrando && (
               pendencias.length === 0 ? (
-                <span role="status" className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-13 font-bold">
+                <span role="status" className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-legenda font-bold">
                   <CircleCheck aria-hidden className="size-4 text-marca-destaque" /> tudo certo
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-13 font-bold">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/14 px-3 py-1 text-legenda font-bold">
                   <TriangleAlert aria-hidden className="size-4 text-marca-destaque" /> {pendencias.length} para ver
                 </span>
               )
             )}
           </div>
           <div className="cartao flex flex-col px-3 py-2">
-            <span className="numeros text-20 font-bold">{formatarDuracao(r.horas.trabalhadoMin)}</span>
-            <span className="text-13 text-texto-2">trabalhadas</span>
+            <span className="numeros text-destaque font-bold">{formatarDuracao(r.horas.trabalhadoMin)}</span>
+            <span className="text-legenda text-texto-2">trabalhadas</span>
           </div>
           <div className="cartao flex flex-col px-3 py-2">
-            <span className={cx("numeros text-20 font-bold", r.horas.extraMin > 0 ? "text-extra-texto" : "")}>{r.horas.extraMin > 0 ? "+" : ""}{formatarDuracao(r.horas.extraMin)}</span>
-            <span className="text-13 text-texto-2">de hora extra</span>
+            <span className={cx("numeros text-destaque font-bold", r.horas.extraMin > 0 ? "text-extra-texto" : "")}>{r.horas.extraMin > 0 ? "+" : ""}{formatarDuracao(r.horas.extraMin)}</span>
+            <span className="text-legenda text-texto-2">de hora extra</span>
           </div>
           {r.horas.deficitMin > 0 && (
             <div className="cartao col-span-2 flex items-center justify-between gap-3 px-3 py-2">
-              <span className="text-13 text-texto-2">faltaram nas horas da escala</span>
-              <span className="numeros text-17 font-bold text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</span>
+              <span className="text-legenda text-texto-2">faltaram nas horas da escala</span>
+              <span className="numeros text-corpo font-bold text-erro-texto">−{formatarDuracao(r.horas.deficitMin)}</span>
             </div>
           )}
         </section>
@@ -362,14 +368,14 @@ function Historico() {
         <Bloqueio
           titulo="Períodos mais antigos"
           texto="No Grátis você vê o período atual e o anterior. No Pro, todos os que já fecharam, para conferir e conversar com quem paga."
-          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
       ) : aba === "ponto" ? (
         <>
           {!filtrando &&
             (pendencias.length === 0 ? null : (
-              <section aria-label="Dias que precisam de atenção" className="cartao flex flex-col gap-3 border-l-4 border-l-[color:var(--extra)]! p-4">
-                <p className="flex items-center gap-2 text-17 font-bold">
+              <section aria-label="Dias que precisam de atenção" className="flex flex-col gap-3 rounded-grande bg-extra-suave p-4">
+                <p className="flex items-center gap-2 text-corpo font-bold">
                   <TriangleAlert aria-hidden className="size-5 shrink-0 text-extra-texto" />
                   {pendencias.length === 1 ? "1 dia precisa de atenção" : `${pendencias.length} dias precisam de atenção`}
                 </p>
@@ -386,6 +392,11 @@ function Historico() {
               </section>
             ))}
 
+          {comecouHoje && !filtrando && semanas.length <= 1 && (
+            <p className="rounded-grande bg-primaria-suave px-4 py-3 text-apoio">
+              <b>Seu histórico começa hoje.</b> Cada dia que você bater o ponto aparece aqui, com as horas e quanto rendeu.
+            </p>
+          )}
           {semanas.length === 0 ? (
             <EstadoVazio icone={SearchX} frase="Nada encontrado com esse filtro" acao={{ rotulo: "Limpar filtros", onClick: () => { setTexto(""); definir({ f: null, q: null, obra: null }); } }} />
           ) : (
@@ -393,8 +404,8 @@ function Historico() {
               <section key={s.inicio} aria-label={s.rotulo} className="flex flex-col gap-2">
                 <div className="sticky top-0 z-10 -mx-4 flex items-end justify-between gap-3 bg-fundo/95 px-5 py-2 backdrop-blur">
                   <span className="flex flex-col">
-                    <h2 className="text-15 font-bold text-texto-2">{s.rotulo}</h2>
-                    <span className="numeros text-13 text-texto-2">
+                    <h2 className="text-apoio font-bold text-texto-2">{s.rotulo}</h2>
+                    <span className="numeros text-legenda text-texto-2">
                       {formatarDuracao(s.trabalhadoMin)} trabalhadas
                       {s.saldoMin !== 0 && (
                         <b className={s.saldoMin > 0 ? "text-extra-texto" : "text-erro-texto"}> · {formatarDuracao(s.saldoMin, { sinal: true })}</b>
@@ -403,7 +414,7 @@ function Historico() {
                   </span>
                   {(() => {
                     const v = s.itens.reduce((t, d) => t + (valores.get(d.data) ?? 0), 0);
-                    return v > 0 ? <span className="numeros text-17 font-bold">{formatarReais(v)}</span> : null;
+                    return v > 0 ? <span className="numeros text-corpo font-bold">{formatarReais(v)}</span> : null;
                   })()}
                 </div>
                 <ul className="cartao divide-y divide-borda overflow-hidden">
@@ -438,13 +449,13 @@ function Historico() {
         </>
       ) : (
         <>
-          <section aria-label="Resumo da produção" className="fundo-marca flex flex-col gap-3 rounded-[20px] p-4">
+          <section aria-label="Resumo da produção" className="fundo-marca flex flex-col gap-3 rounded-grande p-4">
             <span className="flex items-end justify-between gap-3">
               <span className="flex flex-col">
-                <span className="text-13 font-bold text-sobre-marca-2">Produção no período</span>
-                <span className="numeros text-24 font-bold">{formatarReais(totalProducao)}</span>
+                <span className="text-legenda font-bold text-sobre-marca-2">Produção no período</span>
+                <span className="numeros text-titulo-3 font-bold">{formatarReais(totalProducao)}</span>
               </span>
-              <span className="numeros text-15 text-sobre-marca-2">
+              <span className="numeros text-apoio text-sobre-marca-2">
                 {lancsFiltrados.length} {lancsFiltrados.length === 1 ? "lançamento" : "lançamentos"}
               </span>
             </span>
@@ -455,7 +466,7 @@ function Historico() {
                 <ul className="flex flex-col gap-1.5">
                   {areas.slice(0, 4).map((a) => (
                     <li key={a.area} className="flex flex-col gap-1">
-                      <span className="numeros flex justify-between gap-3 text-13">
+                      <span className="numeros flex justify-between gap-3 text-legenda">
                         <span className="truncate">{a.area}</span>
                         <b>{formatarReais(a.valor)}</b>
                       </span>
@@ -470,7 +481,7 @@ function Historico() {
           </section>
           <Link
             href="/producao"
-            className="sombra-botao inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria"
+            className="sombra-botao inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-primaria px-6 text-corpo font-bold text-sobre-primaria"
           >
             <PackagePlus aria-hidden className="size-6" /> Lançar produção
           </Link>
@@ -481,10 +492,10 @@ function Historico() {
               <section key={g.inicio} aria-label={g.rotulo} className="flex flex-col gap-2">
                 <div className="sticky top-0 z-10 -mx-4 flex items-end justify-between gap-3 bg-fundo/95 px-5 py-2 backdrop-blur">
                   <span className="flex flex-col">
-                    <h2 className="text-15 font-bold text-texto-2">{g.rotulo}</h2>
-                    <span className="numeros text-13 text-texto-2">{g.itens.length} {g.itens.length === 1 ? "lançamento" : "lançamentos"}</span>
+                    <h2 className="text-apoio font-bold text-texto-2">{g.rotulo}</h2>
+                    <span className="numeros text-legenda text-texto-2">{g.itens.length} {g.itens.length === 1 ? "lançamento" : "lançamentos"}</span>
                   </span>
-                  <span className="numeros text-17 font-bold">{formatarReais(g.itens.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0))}</span>
+                  <span className="numeros text-corpo font-bold">{formatarReais(g.itens.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0))}</span>
                 </div>
                 <ul className="cartao divide-y divide-borda overflow-hidden">
                   {g.itens.map((l) => {
@@ -493,18 +504,18 @@ function Historico() {
                       <li key={l.id} className="flex min-h-16 items-center gap-1 py-2 pr-3 pl-4">
                         <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"} de ${seloDia(l.data)}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left active:bg-superficie-2">
                         <span className="flex w-11 shrink-0 flex-col items-center">
-                          <span className="text-13 font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
-                          <span className="numeros text-20 font-bold leading-none">{l.data.slice(8, 10)}</span>
+                          <span className="text-legenda font-bold text-texto-2">{seloDia(l.data).split(" ")[0]}</span>
+                          <span className="numeros text-destaque font-bold leading-none">{l.data.slice(8, 10)}</span>
                         </span>
                         <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="line-clamp-2 text-17 font-bold leading-snug">{item?.nome ?? "Serviço"}</span>
-                          <span className="numeros text-15 text-texto-2">
+                          <span className="line-clamp-2 text-corpo font-bold leading-snug">{item?.nome ?? "Serviço"}</span>
+                          <span className="numeros text-apoio text-texto-2">
                             {formatarQuantidade(l.quantidade)} {rotuloUnidade(item?.unidade ?? "un")} × {formatarReais(l.precoUnitario)}
                             {l.obraId && nomeObra.get(l.obraId) ? ` · ${nomeObra.get(l.obraId)}` : ""}
                           </span>
-                          {l.descricao && <span className="text-15 text-texto">{l.descricao}</span>}
+                          {l.descricao && <span className="text-apoio text-texto">{l.descricao}</span>}
                         </span>
-                        <span className="numeros text-17 font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                        <span className="numeros text-corpo font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
                         </button>
                         <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
                       </li>
@@ -531,8 +542,8 @@ function Historico() {
             >
               <Download aria-hidden className="size-5 text-primaria-forte" />
               <span className="flex-1">
-                <span className="block text-17 font-bold">Baixar planilha do período</span>
-                <span className="block text-15 text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Pro"}</span>
+                <span className="block text-corpo font-bold">Baixar planilha do período</span>
+                <span className="block text-apoio text-texto-2">{plano.pode("exportar") ? "Para mostrar ao patrão ou ao contador" : "Do plano Pro"}</span>
               </span>
             </button>
           </li>
@@ -548,8 +559,8 @@ function Historico() {
             >
               <FileText aria-hidden className="size-5 text-primaria-forte" />
               <span className="flex-1">
-                <span className="block text-17 font-bold">Relatório de horas em PDF</span>
-                <span className="block text-15 text-texto-2">{plano.pode("pdf") ? "Para o RH, o sindicato ou o advogado" : "Do plano Pro"}</span>
+                <span className="block text-corpo font-bold">Relatório de horas em PDF</span>
+                <span className="block text-apoio text-texto-2">{plano.pode("pdf") ? "Para o RH, o sindicato ou o advogado" : "Do plano Pro"}</span>
               </span>
             </button>
           </li>
@@ -558,8 +569,8 @@ function Historico() {
               <button type="button" onClick={() => { setOpcoes(false); completarDias(); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
                 <Wand2 aria-hidden className="size-5 text-primaria-forte" />
                 <span className="flex-1">
-                  <span className="block text-17 font-bold">Completar {completar.length === 1 ? "1 dia" : `${completar.length} dias`} como a escala</span>
-                  <span className="block text-15 text-texto-2">Preenche os dias de trabalho sem registro</span>
+                  <span className="block text-corpo font-bold">Completar {completar.length === 1 ? "1 dia" : `${completar.length} dias`} como a escala</span>
+                  <span className="block text-apoio text-texto-2">Preenche os dias de trabalho sem registro</span>
                 </span>
               </button>
             </li>
@@ -568,7 +579,7 @@ function Historico() {
             <li>
               <button type="button" onClick={() => { setOpcoes(false); definir({ p: null }); }} className="flex min-h-16 w-full items-center gap-3 px-4 text-left active:bg-superficie-2">
                 <CalendarDays aria-hidden className="size-5 text-primaria-forte" />
-                <span className="flex-1 text-17 font-bold">Voltar ao período atual</span>
+                <span className="flex-1 text-corpo font-bold">Voltar ao período atual</span>
               </button>
             </li>
           )}
@@ -636,7 +647,7 @@ function Historico() {
 
       <BottomSheet aberto={periodos} onFechar={() => setPeriodos(false)} titulo="Períodos" subtitulo="Últimos 12 períodos. Toque para abrir.">
         {!listaPeriodos ? (
-          <p className="py-6 text-center text-15 text-texto-2">Calculando…</p>
+          <p className="py-6 text-center text-apoio text-texto-2">Calculando…</p>
         ) : (
           <ul className="cartao mb-2 divide-y divide-borda overflow-hidden">
             {listaPeriodos.map((p) => (
@@ -651,10 +662,10 @@ function Historico() {
                   aria-current={p.inicio === periodo.inicio ? "true" : undefined}
                 >
                   <span className="flex-1">
-                    <span className="numeros block text-17 font-bold">{rotuloPeriodo(p)}</span>
-                    <span className="numeros block text-15 text-texto-2">{p.trabalhadoMin ? `${formatarDuracao(p.trabalhadoMin)} trabalhadas` : "Sem registros"}</span>
+                    <span className="numeros block text-corpo font-bold">{rotuloPeriodo(p)}</span>
+                    <span className="numeros block text-apoio text-texto-2">{p.trabalhadoMin ? `${formatarDuracao(p.trabalhadoMin)} trabalhadas` : "Sem registros"}</span>
                   </span>
-                  <span className="numeros text-17 font-bold">{formatarReais(p.liquido)}</span>
+                  <span className="numeros text-corpo font-bold">{formatarReais(p.liquido)}</span>
                 </button>
               </li>
             ))}

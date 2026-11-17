@@ -61,8 +61,8 @@ export function MenuLancar({ aberto, onFechar, estado }: { aberto: boolean; onFe
           className="sombra-botao flex min-h-16 items-center gap-3 rounded-full bg-primaria px-5 text-left text-sobre-primaria active:scale-[0.98] disabled:bg-superficie-2 disabled:text-texto-2 disabled:shadow-none"
         >
           <Acao aria-hidden className="size-6 shrink-0" strokeWidth={2.25} />
-          <span className="flex-1 text-20 font-bold">{etapa ? ROTULO[etapa].texto : "Dia encerrado"}</span>
-          {etapa && <span className="numeros text-17 font-bold">{agora.hora}</span>}
+          <span className="flex-1 text-destaque font-bold">{etapa ? ROTULO[etapa].texto : "Dia encerrado"}</span>
+          {etapa && <span className="numeros text-corpo font-bold">{agora.hora}</span>}
         </button>
 
         <ul className="cartao divide-y divide-borda overflow-hidden">
@@ -70,7 +70,7 @@ export function MenuLancar({ aberto, onFechar, estado }: { aberto: boolean; onFe
             <li>
               <button type="button" onClick={() => ir("/producao")} className={linha}>
                 <PackagePlus aria-hidden className="size-6 shrink-0 text-primaria-forte" />
-                <span className="flex-1 text-17 font-bold">Lançar produção</span>
+                <span className="flex-1 text-corpo font-bold">Lançar produção</span>
                 <ChevronRight aria-hidden className="size-5 text-texto-2" />
               </button>
             </li>
@@ -78,7 +78,7 @@ export function MenuLancar({ aberto, onFechar, estado }: { aberto: boolean; onFe
           <li>
             <button type="button" onClick={() => ir(`/historico?editar=${agora.data}`)} className={linha}>
               <NotebookPen aria-hidden className="size-6 shrink-0 text-primaria-forte" />
-              <span className="flex-1 text-17 font-bold">Anotar no dia de hoje</span>
+              <span className="flex-1 text-corpo font-bold">Anotar no dia de hoje</span>
               <ChevronRight aria-hidden className="size-5 text-texto-2" />
             </button>
           </li>

@@ -61,10 +61,10 @@ export function MenuMais({
             <span className="flex items-center gap-3">
               <Gem aria-hidden className="size-6 shrink-0 text-marca-destaque" />
               <span className="min-w-0 flex-1">
-                <span className="block text-17 font-bold">{plano.nome}</span>
-                {plano.detalhe && <span className="block text-15 text-sobre-marca-2">{plano.detalhe}</span>}
+                <span className="block text-corpo font-bold">{plano.nome}</span>
+                {plano.detalhe && <span className="block text-apoio text-sobre-marca-2">{plano.detalhe}</span>}
               </span>
-              <span className="text-15 font-bold whitespace-nowrap text-marca-destaque">Ver planos</span>
+              <span className="text-apoio font-bold whitespace-nowrap text-marca-destaque">Ver planos</span>
             </span>
             {plano.emTeste && plano.progressoTeste !== undefined && (
               <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-[color:var(--marca-trilho)]">
@@ -86,8 +86,8 @@ export function MenuMais({
                   <a.icone className="size-6" strokeWidth={2.25} />
                 </span>
                 <span className="flex flex-col">
-                  <span className="text-17 font-bold leading-tight">{a.rotulo}</span>
-                  <span className="text-13 leading-snug text-texto-2">{a.descricao}</span>
+                  <span className="text-corpo font-bold leading-tight">{a.rotulo}</span>
+                  <span className="text-legenda leading-snug text-texto-2">{a.descricao}</span>
                 </span>
               </button>
             </li>
@@ -99,8 +99,8 @@ export function MenuMais({
             <User className="size-6" strokeWidth={2.25} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-17 font-bold">Conta e regras</span>
-            <span className="block text-13 text-texto-2">Valor da hora, semana, feriados, descontos e seus dados</span>
+            <span className="block text-corpo font-bold">Conta e regras</span>
+            <span className="block text-legenda text-texto-2">Valor da hora, semana, feriados, descontos e seus dados</span>
           </span>
           <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
         </button>
@@ -109,8 +109,8 @@ export function MenuMais({
           <button type="button" onClick={() => instalarApp()} className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-dashed border-primaria px-4 text-left active:bg-primaria-suave">
             <Smartphone aria-hidden className="size-6 shrink-0 text-primaria-forte" />
             <span className="flex-1">
-              <span className="block text-17 font-bold">Instalar o app</span>
-              <span className="block text-13 text-texto-2">Abre da tela inicial, mesmo sem internet</span>
+              <span className="block text-corpo font-bold">Instalar o app</span>
+              <span className="block text-legenda text-texto-2">Abre da tela inicial, mesmo sem internet</span>
             </span>
           </button>
         )}

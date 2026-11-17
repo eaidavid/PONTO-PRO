@@ -87,8 +87,8 @@ function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) =
   return (
     <section aria-labelledby="de-onde" className="flex flex-col gap-2">
       <div className="flex items-end justify-between gap-3 px-1">
-        <h2 id="de-onde" className="text-15 font-bold text-texto-2">De onde vem</h2>
-        <span className="numeros text-15 text-texto-2">
+        <h2 id="de-onde" className="text-apoio font-bold text-texto-2">De onde vem</h2>
+        <span className="numeros text-apoio text-texto-2">
           ganho <b className="text-texto">{formatarReais(r.bruto)}</b>
         </span>
       </div>
@@ -106,15 +106,15 @@ function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) =
                 <button type="button" onClick={() => onToque(g)} className="flex w-full flex-col gap-1.5 rounded-2xl px-2 py-3 text-left active:bg-superficie-2">
                   <span className="flex w-full items-center gap-3">
                     <span aria-hidden className={cx("size-3 shrink-0 rounded-sm", g.cor)} />
-                    <span className="min-w-0 flex-1 text-17 leading-snug">{g.rotulo}</span>
-                    <span className={cx("numeros text-17 font-bold whitespace-nowrap", g.id === "extra" ? "text-extra-texto" : "text-texto")}>{formatarReais(g.valor)}</span>
+                    <span className="min-w-0 flex-1 text-corpo leading-snug">{g.rotulo}</span>
+                    <span className={cx("numeros text-corpo font-bold whitespace-nowrap", g.id === "extra" ? "text-extra-texto" : "text-texto")}>{formatarReais(g.valor)}</span>
                     <ChevronRight aria-hidden className="size-4 shrink-0 text-texto-2" />
                   </span>
                   <span className="flex items-center gap-3 pl-6">
                     <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-superficie-2">
                       <span className={cx("block h-full rounded-full", g.cor)} style={{ width: `${pct}%` }} />
                     </span>
-                    <span className="numeros w-10 text-right text-13 font-bold text-texto-2">{pct}%</span>
+                    <span className="numeros w-10 text-right text-legenda font-bold text-texto-2">{pct}%</span>
                     <span className="w-4" />
                   </span>
                 </button>
@@ -125,13 +125,13 @@ function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) =
         {descontos && (
           <button type="button" onClick={() => onToque(descontos)} className="flex min-h-14 w-full items-center gap-3 border-t border-borda bg-erro-suave/50 px-4 text-left active:bg-erro-suave">
             <span aria-hidden className={cx("size-3 shrink-0 rounded-sm", descontos.cor)} />
-            <span className="flex-1 text-17">Descontos</span>
-            <span className="numeros text-17 font-bold text-erro-texto">−{formatarReais(descontos.valor)}</span>
+            <span className="flex-1 text-corpo">Descontos</span>
+            <span className="numeros text-corpo font-bold text-erro-texto">−{formatarReais(descontos.valor)}</span>
             <ChevronRight aria-hidden className="size-4 shrink-0 text-texto-2" />
           </button>
         )}
         <div className="fundo-marca flex min-h-16 items-center justify-between gap-3 px-4">
-          <span className="text-17 font-bold">Você deve receber</span>
+          <span className="text-corpo font-bold">Você deve receber</span>
           <ValorDinheiro centavos={r.liquido} />
         </div>
       </div>
@@ -144,40 +144,40 @@ function Composicao({ r, onToque }: { r: ResultadoPeriodo; onToque: (g: Grupo) =
 function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Estado; onTermo: (t: string) => void }) {
   const cc = gerarContracheque(r, estado.pessoal);
   return (
-    <div className="entrada-escalonada flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <article aria-label="Contracheque estimado" className="cartao overflow-hidden print:shadow-none">
         <header className="fundo-marca flex items-start justify-between gap-3 p-5">
           <div>
-            <p className="text-13 font-bold text-sobre-marca-2">Contracheque estimado</p>
-            <p className="display text-24">{cc.empresa}</p>
+            <p className="text-legenda font-bold text-sobre-marca-2">Contracheque estimado</p>
+            <p className="display text-titulo-3">{cc.empresa}</p>
           </div>
-          <span className="numeros shrink-0 whitespace-nowrap rounded-full bg-white/12 px-3 py-1 text-13 font-bold">{cc.referencia}</span>
+          <span className="numeros shrink-0 whitespace-nowrap rounded-full bg-white/12 px-3 py-1 text-legenda font-bold">{cc.referencia}</span>
         </header>
         <div className="grid grid-cols-2 gap-3 border-b border-borda p-4">
           <div>
-            <p className="text-13 text-texto-2">Trabalhador</p>
-            <p className="text-17 font-bold">{cc.funcionario}</p>
+            <p className="text-legenda text-texto-2">Trabalhador</p>
+            <p className="text-corpo font-bold">{cc.funcionario}</p>
           </div>
           <div>
-            <p className="text-13 text-texto-2">Cargo</p>
-            <p className="text-17 font-bold">{cc.cargo || "—"}</p>
+            <p className="text-legenda text-texto-2">Cargo</p>
+            <p className="text-corpo font-bold">{cc.cargo || "—"}</p>
           </div>
         </div>
         <ul className="divide-y divide-borda print:hidden">
           {cc.itens.map((i) => (
             <li key={i.codigo + i.descricao} className="flex items-center gap-3 px-4 py-3">
-              <span className="numeros w-9 shrink-0 text-13 font-bold text-texto-2">{i.codigo}</span>
+              <span className="numeros w-9 shrink-0 text-legenda font-bold text-texto-2">{i.codigo}</span>
               <span className="min-w-0 flex-1">
-                <span className="block text-17 font-bold">{i.descricao}</span>
-                <span className="numeros block text-15 text-texto-2">Ref. {i.referencia}</span>
+                <span className="block text-corpo font-bold">{i.descricao}</span>
+                <span className="numeros block text-apoio text-texto-2">Ref. {i.referencia}</span>
               </span>
-              <span className={cx("numeros text-17 font-bold", i.desconto ? "text-erro-texto" : "text-texto")}>
+              <span className={cx("numeros text-corpo font-bold", i.desconto ? "text-erro-texto" : "text-texto")}>
                 {i.desconto ? `−${formatarReais(i.desconto)}` : formatarReais(i.provento ?? 0)}
               </span>
             </li>
           ))}
         </ul>
-        <table className="hidden w-full border-collapse text-15 print:table">
+        <table className="hidden w-full border-collapse text-apoio print:table">
           <thead>
             <tr className="border-b border-borda text-left">
               <th className="p-2">Cód.</th><th className="p-2">Descrição</th><th className="p-2">Referência</th><th className="p-2 text-right">Ganhos</th><th className="p-2 text-right">Descontos</th>
@@ -194,20 +194,20 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
           </tbody>
         </table>
         <dl className="flex flex-col gap-2 border-t border-borda p-4">
-          <div className="flex justify-between text-17">
+          <div className="flex justify-between text-corpo">
             <dt><button type="button" onClick={() => onTermo("Proventos")} className="underline decoration-dotted underline-offset-4">Ganhos</button></dt>
             <dd className="numeros font-bold">{formatarReais(cc.totalProventos)}</dd>
           </div>
-          <div className="flex justify-between text-17">
+          <div className="flex justify-between text-corpo">
             <dt><button type="button" onClick={() => onTermo("Descontos")} className="underline decoration-dotted underline-offset-4">Descontos</button></dt>
             <dd className="numeros font-bold text-erro-texto">−{formatarReais(cc.totalDescontos)}</dd>
           </div>
           <div className="mt-2 flex items-center justify-between rounded-2xl bg-primaria-suave p-4">
-            <dt><button type="button" onClick={() => onTermo("Líquido")} className="text-17 font-bold underline decoration-dotted underline-offset-4">Líquido</button></dt>
+            <dt><button type="button" onClick={() => onTermo("Líquido")} className="text-corpo font-bold underline decoration-dotted underline-offset-4">Líquido</button></dt>
             <dd><ValorDinheiro centavos={cc.liquido} tamanho="g" className="text-primaria-forte" /></dd>
           </div>
         </dl>
-        <p className="flex items-center gap-2 border-t border-borda bg-extra-suave px-4 py-3 text-15 font-bold text-extra-texto">
+        <p className="flex items-center gap-2 border-t border-borda bg-extra-suave px-4 py-3 text-apoio font-bold text-extra-texto">
           <FileText aria-hidden className="size-5 shrink-0" /> Estimativa — sem validade legal
         </p>
       </article>
@@ -215,12 +215,12 @@ function Contracheque({ r, estado, onTermo }: { r: ResultadoPeriodo; estado: Est
         {situacaoAtual(estado).pode("pdf") ? (
           <BotaoPrincipal tamanho="g" icone={Download} onClick={() => baixarArquivo(pdfContracheque(cc, MARCA.nome), nomeArquivoContracheque(cc))}>Baixar PDF</BotaoPrincipal>
         ) : (
-          <Link href="/planos" className="inline-flex min-h-16 items-center justify-center gap-3 rounded-full border-2 border-primaria px-6 text-17 font-bold text-primaria">
+          <Link href="/planos" className="inline-flex min-h-16 items-center justify-center gap-3 rounded-full border-2 border-primaria px-6 text-corpo font-bold text-primaria">
             <Download aria-hidden className="size-6" /> PDF no plano Pro
           </Link>
         )}
         <Compartilhar texto={textoContracheque(cc, MARCA.nome)} oque="contracheque" />
-        <p className="text-13 text-texto-2">Calculado pela sua escala até o fechamento. Horas: {formatarDuracao(r.horas.trabalhadoMin)}.</p>
+        <p className="text-legenda text-texto-2">Calculado pela sua escala até o fechamento. Horas: {formatarDuracao(r.horas.trabalhadoMin)}.</p>
       </div>
     </div>
   );
@@ -251,14 +251,14 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
     return res;
   }, [longo, perfil, fech, agora, estado.itens, estado.feriadosLocais]);
 
-  if (!lista) return <p className="py-6 text-center text-15 text-texto-2">Calculando…</p>;
+  if (!lista) return <p className="py-6 text-center text-apoio text-texto-2">Calculando…</p>;
   const conf = new Map<string, ConferenciaSalva>(estado.conferencias.map((c) => [c.fim, c]));
   const recebido = lerReais(recebidoTxt);
   const resultado = conferindo && recebido !== null ? conferirPagamento(conferindo.r, recebido) : null;
 
   return (
-    <div className="entrada-escalonada flex flex-col gap-4">
-      <p className="px-1 text-15 text-texto-2">Confira o que você recebeu em cada período fechado. O app compara com a estimativa e mostra de onde a diferença pode vir.</p>
+    <div className="flex flex-col gap-4">
+      <p className="px-1 text-apoio text-texto-2">Confira o que você recebeu em cada período fechado. O app compara com a estimativa e mostra de onde a diferença pode vir.</p>
       <ul className="cartao divide-y divide-borda overflow-hidden">
         {(todos ? lista : lista.slice(0, 1)).map(({ periodo, r }) => {
           const c = conf.get(periodo.fim);
@@ -274,14 +274,14 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
                 className="flex min-h-16 w-full items-center gap-3 px-4 py-2 text-left active:bg-superficie-2"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="numeros block text-17 font-bold">{rotuloPeriodo(periodo)}</span>
-                  <span className={cx("numeros block text-15", !c ? "text-texto-2" : Math.abs(dif) <= 100 ? "text-sucesso-texto" : "text-extra-texto")}>
+                  <span className="numeros block text-corpo font-bold">{rotuloPeriodo(periodo)}</span>
+                  <span className={cx("numeros block text-apoio", !c ? "text-texto-2" : Math.abs(dif) <= 100 ? "text-sucesso-texto" : "text-extra-texto")}>
                     {!c ? (r.horas.trabalhadoMin ? "Toque para conferir o pagamento" : "Sem registros") : Math.abs(dif) <= 100 ? "Pagamento conferido: bate" : `Recebido ${formatarReais(c.recebido)} · ${dif < 0 ? "faltou" : "sobrou"} ${formatarReais(Math.abs(dif))}`}
                   </span>
                 </span>
-                <span className="numeros text-right text-17 font-bold">
+                <span className="numeros text-right text-corpo font-bold">
                   {formatarReais(r.liquido)}
-                  <span className="block text-13 font-normal text-texto-2">estimado</span>
+                  <span className="block text-legenda font-normal text-texto-2">estimado</span>
                 </span>
               </button>
             </li>
@@ -293,7 +293,7 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
         aberto={!!conferindo}
         onFechar={() => setConferindo(null)}
         titulo="Conferir pagamento"
-        subtitulo={conferindo ? `Período ${rotuloPeriodo(conferindo.periodo)} · estimado ${formatarReais(conferindo.r.liquido)}` : undefined}
+        subtitulo={conferindo ? `Período ${rotuloPeriodo(conferindo.periodo)}, estimado em ${formatarReais(conferindo.r.liquido)}` : undefined}
         rodape={
           <BotaoPrincipal
             tamanho="g"
@@ -313,19 +313,19 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
           <CampoNumero rotulo="Quanto você recebeu?" prefixo="R$" valor={recebidoTxt} onChange={setRecebidoTxt} placeholder="0,00" ajuda="O valor que caiu na conta ou veio no contracheque." />
           {resultado && (
             <div role="status" className={cx("flex flex-col gap-2 rounded-2xl p-4", resultado.situacao === "igual" ? "bg-sucesso-suave" : "bg-extra-suave")}>
-              <p className="flex items-center gap-2 text-17 font-bold">
+              <p className="flex items-center gap-2 text-corpo font-bold">
                 {resultado.situacao === "igual" ? <CircleCheck aria-hidden className="size-5 text-sucesso-texto" /> : <TriangleAlert aria-hidden className="size-5 text-extra-texto" />}
                 {resultado.frase}
               </p>
               {resultado.pistas.length > 0 && !detalhe && (
                 <div className="flex flex-col items-start gap-2 border-t border-borda-forte pt-3">
-                  <p className="text-15">
+                  <p className="text-apoio">
                     O Pro mostra, linha por linha, o que pode não ter sido {resultado.situacao === "a-menos" ? "pago" : "descontado"}: {resultado.pistas.length === 1 ? "achamos 1 pista" : `achamos ${resultado.pistas.length} pistas`} neste período.
                   </p>
                   <Link
                     href="/planos"
                     onClick={() => medir("oferta_pro", { origem: "conferir" })}
-                    className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria"
+                    className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria"
                   >
                     Ver onde está a diferença
                   </Link>
@@ -333,13 +333,13 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
               )}
               {resultado.pistas.length > 0 && detalhe && (
                 <>
-                  <p className="text-15">{resultado.situacao === "a-menos" ? "Pode ser que não tenham pago:" : "Pode ser que não tenham descontado:"}</p>
-                  <ul className="list-disc pl-5 text-15">
+                  <p className="text-apoio">{resultado.situacao === "a-menos" ? "Pode ser que não tenham pago:" : "Pode ser que não tenham descontado:"}</p>
+                  <ul className="list-disc pl-5 text-apoio">
                     {resultado.pistas.map((p) => (
                       <li key={p}>{p}</li>
                     ))}
                   </ul>
-                  <p className="text-13 text-texto-2">É uma pista, não uma certeza. Converse com quem paga ou com seu sindicato.</p>
+                  <p className="text-legenda text-texto-2">É uma pista, não uma certeza. Converse com quem paga ou com seu sindicato.</p>
                 </>
               )}
             </div>
@@ -347,9 +347,9 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
         </div>
       </BottomSheet>
       {!todos && lista.length > 1 && (
-        <Link href="/planos" className="flex min-h-14 items-center gap-3 rounded-[20px] bg-primaria-suave px-4 py-3 text-15">
+        <Link href="/planos" className="flex min-h-14 items-center gap-3 rounded-grande bg-primaria-suave px-4 py-3 text-apoio">
           <span className="flex-1">
-            <b className="block text-17">Mais {lista.length - 1} períodos guardados</b>
+            <b className="block text-corpo">Mais {lista.length - 1} períodos guardados</b>
             No Pro você confere todos os períodos que já fecharam.
           </span>
           <ChevronRight aria-hidden className="size-5 shrink-0 text-primaria-forte" />
@@ -386,12 +386,12 @@ function Ganhos() {
   const dias = diasEntre(agora.data, periodo.fim);
   const fecha = dias === 0 ? "fecha hoje" : dias === 1 ? "fecha amanhã" : `fecha em ${dias} dias`;
   const pagamento = dataDePagamento(estado.perfil, periodo, estado.feriadosLocais);
-  const quandoCai = `Cai em ${dataCurta(pagamento)} · ${quandoFalta(agora.data, pagamento)}`;
+  const quandoCai = `Cai em ${dataCurta(pagamento)}, ${quandoFalta(agora.data, pagamento)}`;
   const complemento = falta.dias > 0 ? `faltam ${falta.dias} ${falta.dias === 1 ? "dia" : "dias"} de trabalho` : "período completo";
 
   return (
     <main className="flex flex-col gap-4 px-4">
-      <CabecalhoTela titulo="Ganhos" subtitulo={`Período ${rotuloPeriodo(periodo)} · ${fecha}`} />
+      <CabecalhoTela titulo="Ganhos" subtitulo={`Período ${rotuloPeriodo(periodo)}, ${fecha}`} />
       <CartaoDinheiro
         valor={previsto.liquido}
         jaGanhou={realizado.liquido}
@@ -414,13 +414,13 @@ function Ganhos() {
       </div>
 
       {aba === "resumo" && (
-        <div className="entrada-escalonada flex flex-col gap-5">
+        <div className="flex flex-col gap-5">
           {previsto.avisos.map((a) => (
             <Banner key={a.id} tom={a.id === "descontos-maiores" ? "aviso" : "info"} texto={a.texto} />
           ))}
           <Composicao r={previsto} onToque={setGrupo} />
           <details className="cartao group overflow-hidden">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 text-17 font-bold [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 text-corpo font-bold [&::-webkit-details-marker]:hidden">
               <ChartColumn aria-hidden className="size-5 text-texto-2" />
               <span className="flex-1">Ver ganho por dia</span>
               <ChevronRight aria-hidden className="size-5 text-texto-2 transition-transform group-open:rotate-90" />
@@ -440,7 +440,7 @@ function Ganhos() {
               marca: MARCA.nome,
             })}
           />
-          <Link href="/metas" className="mb-2 inline-flex min-h-12 items-center gap-2 self-center rounded-full px-3 text-17 font-bold text-primaria-forte underline underline-offset-4">
+          <Link href="/metas" className="mb-2 inline-flex min-h-12 items-center gap-2 self-center rounded-full px-3 text-corpo font-bold text-primaria-forte underline underline-offset-4">
             <Target aria-hidden className="size-5" /> Quero receber mais
           </Link>
         </div>
@@ -456,15 +456,15 @@ function Ganhos() {
           <ul className="flex flex-col gap-3 pb-4">
             {grupo.linhas.map((l) => (
               <li key={l.codigo + l.descricao} className="flex flex-col gap-1 rounded-2xl bg-superficie-2 p-4">
-                <span className="text-15 text-texto-2">{l.explicacao}</span>
-                <span className="numeros text-17 font-bold">{l.conta}</span>
+                <span className="text-apoio text-texto-2">{l.explicacao}</span>
+                <span className="numeros text-corpo font-bold">{l.conta}</span>
               </li>
             ))}
           </ul>
         )}
       </BottomSheet>
       <BottomSheet aberto={!!termo} onFechar={() => setTermo(null)} titulo={termo === "Proventos" ? "Ganhos" : (termo ?? "")}>
-        <p className="pb-4 text-20">{termo ? GLOSSARIO[termo] : ""}</p>
+        <p className="pb-4 text-destaque">{termo ? GLOSSARIO[termo] : ""}</p>
       </BottomSheet>
     </main>
   );

@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DEPOIMENTOS } from "../lib/depoimentos";
 import { MARCA } from "../lib/marca";
+import { CALCULADORAS } from "../lib/site";
 import { Animacoes } from "./_vendas/animacoes";
 import { BarraFixa } from "./_vendas/barra-fixa";
 import { BotaoCabecalho } from "./_vendas/botao-cabecalho";
@@ -127,11 +128,11 @@ const DUVIDAS: { pergunta: string; resposta: string }[] = [
 /** A mesma moldura de celular em toda a página: o produto aparece sempre do mesmo jeito. */
 function Tela({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col overflow-hidden rounded-[30px] border-[6px] border-[#0a100e] bg-fundo text-texto shadow-[0_24px_48px_-28px_rgb(0_0_0/0.5)]">
+    <div className="flex flex-1 flex-col overflow-hidden rounded-painel border-[6px] border-[#0a100e] bg-fundo text-texto shadow-[0_24px_48px_-28px_rgb(0_0_0/0.5)]">
       <div className="fundo-marca px-4 pt-4 pb-9">
-        <p className="text-15 font-bold">{titulo}</p>
+        <p className="text-apoio font-bold">{titulo}</p>
       </div>
-      <div className="relative -mt-5 flex flex-1 flex-col gap-3 rounded-t-[20px] bg-fundo p-3">{children}</div>
+      <div className="relative -mt-5 flex flex-1 flex-col gap-3 rounded-t-grande bg-fundo p-3">{children}</div>
     </div>
   );
 }
@@ -141,8 +142,8 @@ function Recurso({ titulo, texto, tela, children }: { titulo: string; texto: str
   return (
     <li data-barra className="flex w-[84%] shrink-0 snap-center flex-col gap-4 md:w-auto">
       <div className="flex flex-col gap-1.5 md:min-h-[7.5rem]">
-        <h3 className="display text-20 md:text-24">{titulo}</h3>
-        <p className="text-17 text-texto-2">{texto}</p>
+        <h3 className="display text-destaque md:text-titulo-3">{titulo}</h3>
+        <p className="text-corpo text-texto-2">{texto}</p>
       </div>
       <Tela titulo={tela}>{children}</Tela>
     </li>
@@ -153,21 +154,21 @@ function Recurso({ titulo, texto, tela, children }: { titulo: string; texto: str
 function ConferirExemplo() {
   return (
     <div className="cartao flex flex-col gap-3 p-4">
-      <dl className="numeros flex flex-col divide-y divide-borda text-15">
+      <dl className="numeros flex flex-col divide-y divide-borda text-apoio">
         <div className="flex items-baseline justify-between gap-4 pb-2.5">
           <dt>O Pingou calculou</dt>
-          <dd className="text-17 font-bold">{formatarReais(CALCULADO)}</dd>
+          <dd className="text-corpo font-bold">{formatarReais(CALCULADO)}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-4 pt-2.5">
           <dt>Caiu na sua conta</dt>
-          <dd className="text-17 font-bold">{formatarReais(RECEBIDO)}</dd>
+          <dd className="text-corpo font-bold">{formatarReais(RECEBIDO)}</dd>
         </div>
       </dl>
       <p className="flex flex-col rounded-2xl bg-erro-suave px-4 py-3 text-erro-texto">
-        <span className="text-15 font-bold">Faltou</span>
-        <span className="display numeros text-32 leading-none">{formatarReais(CALCULADO - RECEBIDO)}</span>
+        <span className="text-apoio font-bold">Faltou</span>
+        <span className="display numeros text-titulo-2 leading-none">{formatarReais(CALCULADO - RECEBIDO)}</span>
       </p>
-      <p className="numeros text-15">
+      <p className="numeros text-apoio">
         <b>Pode ser:</b> sábado, 5h com 50% = {formatarReais(CALCULADO - RECEBIDO)}
       </p>
     </div>
@@ -185,11 +186,14 @@ export default function Vendas() {
 
       <header className="sticky top-0 z-20 bg-[color:var(--marca)] text-sobre-marca">
         <div className={cx(LARGURA, "flex min-h-14 items-center justify-between gap-3")}>
-          <Link href="/" className="display inline-flex min-h-12 items-center gap-1.5 text-20" aria-label={`${MARCA.nome}, início`}>
+          <Link href="/" className="display inline-flex min-h-12 items-center gap-1.5 text-destaque" aria-label={`${MARCA.nome}, início`}>
             <Gota className="size-7" />
             {MARCA.nome}
           </Link>
-          <nav aria-label="Principal" className="flex items-center gap-1 text-15">
+          <nav aria-label="Principal" className="flex items-center gap-1 text-apoio">
+            <Link href="/calculadoras" className="hidden min-h-12 items-center rounded-full px-3 text-sobre-marca-2 active:bg-white/10 sm:inline-flex">
+              Calculadoras
+            </Link>
             <a href="#planos" className="hidden min-h-12 items-center rounded-full px-3 text-sobre-marca-2 active:bg-white/10 sm:inline-flex">
               Planos
             </a>
@@ -205,7 +209,7 @@ export default function Vendas() {
         <section data-heroi className="fundo-marca overflow-hidden">
           <div className={cx(LARGURA, "grid items-center gap-7 pt-6 pb-10 md:grid-cols-[1.2fr_1fr] md:gap-10 md:pt-12 md:pb-16")}>
             <div className="flex flex-col gap-3.5 md:gap-5">
-              <p className="display text-20 leading-none md:text-24">
+              <p className="display text-destaque leading-none md:text-titulo-3">
                 <span aria-hidden data-assinatura>
                   Bateu o ponto, <span data-gota className="text-marca-destaque">pingou.</span>
                 </span>
@@ -214,22 +218,22 @@ export default function Vendas() {
               <h1 data-titulo="heroi" className="display text-[clamp(2rem,8.7vw,3.3rem)] leading-[1]">
                 Saiba quanto vai cair antes do dia do pagamento.
               </h1>
-              <p data-heroi-item className="max-w-[38ch] text-17 leading-snug text-sobre-marca-2 md:text-20">
+              <p data-heroi-item className="max-w-[38ch] text-corpo leading-snug text-sobre-marca-2 md:text-destaque">
                 Bata o ponto no celular. O Pingou soma suas horas, extras e descontos e mostra o valor do mês, todo dia.
               </p>
               <div data-heroi-item className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
                 <BotaoComecar secao="abertura" sobreMarca />
-                <a href="#planos" className="hidden min-h-12 items-center justify-center rounded-full px-4 text-15 font-bold underline decoration-white/50 underline-offset-4 active:bg-white/10 sm:inline-flex">
+                <a href="#planos" className="hidden min-h-12 items-center justify-center rounded-full px-4 text-apoio font-bold underline decoration-white/50 underline-offset-4 active:bg-white/10 sm:inline-flex">
                   Ver os planos
                 </a>
               </div>
-              <p data-heroi-item className="text-15 text-sobre-marca-2">
+              <p data-heroi-item className="text-apoio text-sobre-marca-2">
                 Leva 1 minuto. Não pede cartão nem senha.{" "}
                 <Link href="/entrar" className="font-bold whitespace-nowrap text-sobre-marca underline decoration-white/50 underline-offset-4 sm:hidden">
                   Já tenho conta
                 </Link>
               </p>
-              <ul data-heroi-item className="flex flex-wrap gap-x-5 gap-y-1 text-15 font-bold">
+              <ul data-heroi-item className="flex flex-wrap gap-x-5 gap-y-1 text-apoio font-bold">
                 {GARANTIAS.map((g) => (
                   <li key={g} className="flex items-center gap-1.5">
                     <Check aria-hidden className="size-4 shrink-0 text-marca-destaque" strokeWidth={3.5} />
@@ -249,32 +253,47 @@ export default function Vendas() {
             <h2 id="t-extra" data-titulo="secao" className={cx(TITULO_SECAO, "max-w-[22ch]")}>
               Hora extra que ninguém anota é dinheiro que não pinga.
             </h2>
-            <p data-revelar className="max-w-[36ch] text-17 text-texto-2">
+            <p data-revelar className="max-w-[36ch] text-corpo text-texto-2">
               Meia hora a mais por dia parece pouco. Mexa nos números e veja quanto dá no fim do mês.
             </p>
           </div>
           <div data-revelar>
             <CalculadoraExtra />
           </div>
+          <nav aria-label="Outras contas grátis" className="flex flex-col gap-3 rounded-grande border border-borda p-4 md:flex-row md:items-center md:gap-6 md:p-5">
+            <p className="text-apoio md:max-w-[22ch]">
+              <b className="block text-corpo">Outras contas, sem cadastro</b>
+              Abertas para qualquer pessoa, com o passo a passo.
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {CALCULADORAS.filter((c) => c.caminho !== "/calculadoras/hora-extra").map((c) => (
+                <li key={c.caminho}>
+                  <Link href={c.caminho} className="inline-flex min-h-12 items-center rounded-full bg-superficie-2 px-4 text-apoio font-bold active:bg-primaria-suave">
+                    {c.nome}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </section>
 
         <section aria-labelledby="t-compara" className={cx(LARGURA, "flex flex-col gap-6 pb-12 md:gap-8 md:pb-20")}>
           <h2 id="t-compara" data-titulo="secao" className={cx(TITULO_SECAO, "max-w-[22ch]")}>
             O mês de quem anota e o mês de quem não anota.
           </h2>
-          <div className="overflow-hidden rounded-[24px] border border-borda">
-            <div aria-hidden className="hidden grid-cols-2 text-17 font-bold md:grid">
+          <div className="overflow-hidden rounded-painel border border-borda">
+            <div aria-hidden className="hidden grid-cols-2 text-corpo font-bold md:grid">
               <p className="bg-superficie-2 px-7 py-4 text-texto-2">Sem o Pingou</p>
-              <p className="display bg-primaria-suave px-7 py-4 text-20">Com o Pingou</p>
+              <p className="display bg-primaria-suave px-7 py-4 text-destaque">Com o Pingou</p>
             </div>
             <ul data-revelar-grupo className="flex flex-col divide-y divide-borda">
               {COMPARA.map((c) => (
                 <li key={c.sem} className="grid md:grid-cols-2">
-                  <p className="flex items-start gap-2.5 bg-superficie-2 px-4 pt-3.5 pb-1.5 text-15 text-texto-2 md:px-7 md:py-4 md:text-17">
+                  <p className="flex items-start gap-2.5 bg-superficie-2 px-4 pt-3.5 pb-1.5 text-apoio text-texto-2 md:px-7 md:py-4 md:text-corpo">
                     <X aria-hidden className="mt-0.5 size-4 shrink-0 text-erro-texto md:size-5" strokeWidth={3} />
                     <span><span className="sr-only">Sem o Pingou: </span>{c.sem}</span>
                   </p>
-                  <p className="flex items-start gap-2.5 bg-superficie-2 px-4 pt-1.5 pb-3.5 text-17 font-bold md:bg-primaria-suave md:px-7 md:py-4">
+                  <p className="flex items-start gap-2.5 bg-superficie-2 px-4 pt-1.5 pb-3.5 text-corpo font-bold md:bg-primaria-suave md:px-7 md:py-4">
                     <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-sucesso-texto" strokeWidth={3} />
                     <span><span className="sr-only">Com o Pingou: </span>{c.com}</span>
                   </p>
@@ -290,7 +309,7 @@ export default function Vendas() {
               <h2 id="t-recursos" data-titulo="secao" className={TITULO_SECAO}>
                 Chega de fazer conta de cabeça.
               </h2>
-              <p className="text-15 text-texto-2 md:hidden">Arraste para o lado para ver as três telas.</p>
+              <p className="text-apoio text-texto-2 md:hidden">Arraste para o lado para ver as três telas.</p>
             </div>
 
             <ul
@@ -300,7 +319,7 @@ export default function Vendas() {
             >
               <Recurso titulo="Quanto vai pingar, e quando" texto="Cada ponto batido atualiza o valor do mês. Você vê quanto já ganhou e quanto falta." tela="Ganhos do mês">
                 <CartaoDinheiro valor={512444} jaGanhou={336472} progresso={0.66} quando="Cai em 05/12, daqui a 26 dias" complemento="faltam 9 dias de trabalho" />
-                <ul className="cartao numeros flex flex-col divide-y divide-borda px-4 text-15">
+                <ul className="cartao numeros flex flex-col divide-y divide-borda px-4 text-apoio">
                   {ULTIMOS_DIAS.map((d) => (
                     <li key={d.dia} className="flex items-baseline justify-between gap-3 py-2.5 whitespace-nowrap">
                       <span>
@@ -325,10 +344,9 @@ export default function Vendas() {
             </ul>
 
             <div data-revelar className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-10">
-              <p className="max-w-[52ch] text-17">
+              <p className="max-w-[52ch] text-corpo">
                 <b>Ganha por produção?</b> Lance o metro, a entrega ou a diária. O Pingou soma com as horas e separa por obra.
               </p>
-              <BotaoComecar secao="recursos" className="shrink-0 self-start md:self-auto" />
             </div>
           </div>
         </section>
@@ -344,19 +362,19 @@ export default function Vendas() {
                   <Icone className="size-5" strokeWidth={2.25} />
                 </span>
                 <div className="flex flex-col gap-0.5">
-                  <h3 className="text-17 font-bold">{titulo}</h3>
-                  <p className="text-15 text-texto-2">{texto}</p>
+                  <h3 className="text-corpo font-bold">{titulo}</h3>
+                  <p className="text-apoio text-texto-2">{texto}</p>
                 </div>
               </li>
             ))}
           </ul>
-          <div data-revelar className="flex flex-col gap-4 rounded-[24px] bg-primaria-suave p-5 md:p-8">
+          <div data-revelar className="flex flex-col gap-4 rounded-painel bg-primaria-suave p-5 md:p-8">
             <p className="display flex flex-wrap gap-x-3 gap-y-0.5 text-[clamp(1.25rem,5.2vw,1.9rem)] leading-tight">
               {PROFISSOES.map((nome, k) => (
                 <span key={nome} className={k % 2 ? "text-primaria" : "text-texto"}>{nome}</span>
               ))}
             </p>
-            <p className="max-w-[60ch] text-17">
+            <p className="max-w-[60ch] text-corpo">
               Por hora, por mês, por diária ou por produção. Escolha um modelo pronto e ajuste o que for diferente no seu serviço.
             </p>
           </div>
@@ -370,8 +388,8 @@ export default function Vendas() {
             <ul data-revelar-grupo className="grid gap-x-10 md:grid-cols-3">
               {SO_SEU.map((s) => (
                 <li key={s.titulo} className="flex flex-col gap-1 border-t border-current/25 py-4 md:py-5">
-                  <h3 className="text-17 font-bold">{s.titulo}</h3>
-                  <p className="text-15 opacity-85">{s.texto}</p>
+                  <h3 className="text-corpo font-bold">{s.titulo}</h3>
+                  <p className="text-apoio opacity-85">{s.texto}</p>
                 </li>
               ))}
             </ul>
@@ -387,8 +405,8 @@ export default function Vendas() {
               <li key={p.titulo} className="flex gap-4 md:flex-col md:gap-2">
                 <span aria-hidden className="display w-9 shrink-0 text-[3rem] leading-[0.85] text-primaria md:text-[3.5rem]">{i + 1}</span>
                 <div className="flex flex-col gap-0.5">
-                  <h3 className="text-17 font-bold">{p.titulo}</h3>
-                  <p className="text-15 text-texto-2">{p.texto}</p>
+                  <h3 className="text-corpo font-bold">{p.titulo}</h3>
+                  <p className="text-apoio text-texto-2">{p.texto}</p>
                 </div>
               </li>
             ))}
@@ -405,8 +423,8 @@ export default function Vendas() {
               {DEPOIMENTOS.map((d) => (
                 <li key={d.nome + d.texto}>
                   <figure className="flex flex-col gap-3 border-t border-borda-forte pt-4">
-                    <blockquote className="text-17">“{d.texto}”</blockquote>
-                    <figcaption className="text-15 text-texto-2">
+                    <blockquote className="text-corpo">“{d.texto}”</blockquote>
+                    <figcaption className="text-apoio text-texto-2">
                       <b className="text-texto">{d.nome}</b>, {d.funcao}
                       {d.cidade ? `, ${d.cidade}` : ""}
                     </figcaption>
@@ -423,7 +441,7 @@ export default function Vendas() {
               <h2 id="t-planos" data-titulo="secao" className={cx(TITULO_SECAO, "max-w-[24ch]")}>
                 Menos de {CENTAVOS_DIA} centavos por dia. E começa de graça.
               </h2>
-              <p className="max-w-[56ch] text-17 text-texto-2">
+              <p className="max-w-[56ch] text-corpo text-texto-2">
                 Todo mundo ganha {DIAS_TESTE} dias com tudo liberado. Depois você decide: assina ou continua no Grátis.
               </p>
             </div>
@@ -436,27 +454,27 @@ export default function Vendas() {
                   <section
                     key={id}
                     aria-labelledby={`plano-${id}`}
-                    className={cx("flex flex-col gap-4 rounded-[24px] p-5 md:p-6", destaque ? "fundo-marca order-first md:order-none" : "bg-superficie")}
+                    className={cx("flex flex-col gap-4 rounded-painel p-5 md:p-6", destaque ? "fundo-marca order-first md:order-none" : "bg-superficie")}
                   >
                     <div className="flex flex-col gap-1">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 id={`plano-${id}`} className="text-17 font-bold">{p.nome}</h3>
+                        <h3 id={`plano-${id}`} className="text-corpo font-bold">{p.nome}</h3>
                         {destaque && (
-                          <span className="rounded-full bg-marca-destaque px-3 py-0.5 text-15 font-bold text-[color:var(--marca)]">{DIAS_TESTE} dias grátis</span>
+                          <span className="rounded-full bg-marca-destaque px-3 py-0.5 text-apoio font-bold text-[color:var(--marca)]">{DIAS_TESTE} dias grátis</span>
                         )}
-                        {emBreve && <span className="rounded-full bg-primaria-suave px-3 py-0.5 text-15 font-bold text-primaria-forte">em breve</span>}
+                        {emBreve && <span className="rounded-full bg-primaria-suave px-3 py-0.5 text-apoio font-bold text-primaria-forte">em breve</span>}
                       </div>
                       <p className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="display text-32">{p.preco ? formatarReais(p.preco) : "R$ 0"}</span>
-                        <span className={cx("text-15", destaque ? "text-sobre-marca-2" : "text-texto-2")}>
+                        <span className="display text-titulo-2">{p.preco ? formatarReais(p.preco) : "R$ 0"}</span>
+                        <span className={cx("text-apoio", destaque ? "text-sobre-marca-2" : "text-texto-2")}>
                           {!p.preco ? "para sempre" : p.precoAnual ? `por mês, ou ${formatarReais(p.precoAnual)} por ano` : "por mês"}
                         </span>
                       </p>
-                      <p className={cx("text-15", destaque ? "text-sobre-marca-2" : "text-texto-2")}>{p.para}</p>
+                      <p className={cx("text-apoio", destaque ? "text-sobre-marca-2" : "text-texto-2")}>{p.para}</p>
                     </div>
                     <ul className="flex flex-col gap-1.5">
                       {p.resumo.map((r) => (
-                        <li key={r} className="flex items-start gap-2 text-15">
+                        <li key={r} className="flex items-start gap-2 text-apoio">
                           <Check aria-hidden className={cx("mt-0.5 size-4 shrink-0", destaque ? "text-marca-destaque" : "text-primaria")} strokeWidth={3} />
                           {r}
                         </li>
@@ -466,7 +484,7 @@ export default function Vendas() {
                       secao={`plano-${id}`}
                       href={emBreve ? "#lista-turma" : "/comecar"}
                       className={cx(
-                        "mt-auto inline-flex min-h-12 items-center justify-center rounded-full px-6 text-17 font-bold",
+                        "mt-auto inline-flex min-h-12 items-center justify-center rounded-full px-6 text-corpo font-bold",
                         destaque ? "bg-white text-[color:var(--marca)]" : "borda border-primaria! text-primaria",
                       )}
                     >
@@ -477,10 +495,10 @@ export default function Vendas() {
               })}
             </div>
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-10">
-              <p data-revelar className="numeros max-w-[52ch] text-15">
+              <p data-revelar className="numeros max-w-[52ch] text-apoio">
                 No anual, o Pro sai por <b>{formatarReais(PRECO_ANUAL)}</b>, ou {formatarReais(Math.round(PRECO_ANUAL / 12))} por mês. Um único erro de pagamento desse tamanho, achado com a ajuda do Pingou, já paga o ano inteiro.
               </p>
-              <ul className="grid shrink-0 gap-x-6 gap-y-1 text-15 font-bold sm:grid-cols-2">
+              <ul className="grid shrink-0 gap-x-6 gap-y-1 text-apoio font-bold sm:grid-cols-2">
                 {SEM_RISCO.map((r) => (
                   <li key={r} className="flex items-start gap-2">
                     <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-sucesso-texto" strokeWidth={3} />
@@ -493,10 +511,10 @@ export default function Vendas() {
         </section>
 
         <section id="lista-turma" aria-labelledby="t-turma" className={cx(LARGURA, "scroll-mt-14 pt-12 md:pt-20")}>
-          <div className="fundo-marca flex flex-col gap-5 rounded-[24px] p-5 md:flex-row md:items-start md:gap-10 md:p-8">
+          <div className="fundo-marca flex flex-col gap-5 rounded-painel p-5 md:flex-row md:items-start md:gap-10 md:p-8">
             <div className="flex flex-col gap-2 md:max-w-[34ch]">
               <h2 id="t-turma" className="display text-[clamp(1.5rem,6vw,2rem)] leading-[1.08] text-balance">Tem uma turma? O plano Turma está chegando.</h2>
-              <p className="text-17 text-sobre-marca-2">
+              <p className="text-corpo text-sobre-marca-2">
                 Convite pelo WhatsApp, aprovação do ponto e da produção e a folha da semana pronta. {formatarReais(PLANOS.equipe.preco)} por mês para até 5 pessoas.
               </p>
             </div>
@@ -513,11 +531,11 @@ export default function Vendas() {
           <div className="divide-y divide-borda-forte border-y border-borda-forte">
             {DUVIDAS.map((d) => (
               <details key={d.pergunta} className="group">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-2.5 text-17 font-bold [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-2.5 text-corpo font-bold [&::-webkit-details-marker]:hidden">
                   {d.pergunta}
                   <ChevronDown aria-hidden className="size-5 shrink-0 text-texto-2 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="max-w-[62ch] pb-4 text-15 text-texto-2">{d.resposta}</p>
+                <p className="max-w-[62ch] pb-4 text-apoio text-texto-2">{d.resposta}</p>
               </details>
             ))}
           </div>
@@ -528,14 +546,14 @@ export default function Vendas() {
             <h2 id="t-final" data-titulo="secao" className="display text-[clamp(2rem,8.7vw,3.3rem)] leading-[1] text-balance">
               Quanto vai pingar este mês?
             </h2>
-            <p data-revelar className="max-w-[40ch] text-17 text-sobre-marca-2 md:text-20">Bata o primeiro ponto hoje e descubra antes do dia do pagamento.</p>
+            <p data-revelar className="max-w-[40ch] text-corpo text-sobre-marca-2 md:text-destaque">Bata o primeiro ponto hoje e descubra antes do dia do pagamento.</p>
             <BotaoComecar secao="final" sobreMarca className="mt-2" />
-            <p className="text-15 text-sobre-marca-2">Sem cartão. Sem senha. 1 minuto.</p>
+            <p className="text-apoio text-sobre-marca-2">Sem cartão. Sem senha. 1 minuto.</p>
           </div>
         </section>
       </main>
 
-      <footer className={cx(LARGURA, "flex flex-col gap-3 py-6 text-15 text-texto-2 sm:flex-row sm:items-center sm:justify-between")}>
+      <footer className={cx(LARGURA, "flex flex-col gap-3 py-6 text-apoio text-texto-2 sm:flex-row sm:items-center sm:justify-between")}>
         <p>
           {MARCA.nome}. {MARCA.slogan} Os valores mostrados no app são estimativas.
         </p>

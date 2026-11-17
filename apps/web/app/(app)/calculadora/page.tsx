@@ -32,11 +32,11 @@ function Horario({ rotulo, valor, onChange }: { rotulo: string; valor: string; o
   const botao = "inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-superficie-2 borda active:scale-[0.96]";
   return (
     <div className="flex min-h-16 items-center gap-3">
-      <span className="flex-1 text-17 font-bold">{rotulo}</span>
+      <span className="flex-1 text-corpo font-bold">{rotulo}</span>
       <button type="button" onClick={() => mudar(-15)} className={botao} aria-label={`${rotulo}: 15 minutos antes`}>
         <Minus aria-hidden className="size-5" strokeWidth={2.5} />
       </button>
-      <output aria-live="polite" aria-label={rotulo} className="numeros w-20 text-center text-24 font-bold">{valor}</output>
+      <output aria-live="polite" aria-label={rotulo} className="numeros w-20 text-center text-titulo-3 font-bold">{valor}</output>
       <button type="button" onClick={() => mudar(15)} className={botao} aria-label={`${rotulo}: 15 minutos depois`}>
         <Plus aria-hidden className="size-5" strokeWidth={2.5} />
       </button>
@@ -47,8 +47,8 @@ function Horario({ rotulo, valor, onChange }: { rotulo: string; valor: string; o
 function Resultado({ rotulo, valor, destaque }: { rotulo: string; valor: string; destaque?: boolean }) {
   return (
     <div className={destaque ? "rounded-2xl bg-primaria-suave p-3" : "rounded-2xl bg-superficie-2 p-3"}>
-      <dt className="text-13 text-texto-2">{rotulo}</dt>
-      <dd className="numeros text-17 font-bold whitespace-nowrap">{valor}</dd>
+      <dt className="text-legenda text-texto-2">{rotulo}</dt>
+      <dd className="numeros text-corpo font-bold whitespace-nowrap">{valor}</dd>
     </div>
   );
 }
@@ -101,13 +101,13 @@ export default function Calculadora() {
         <div className="cartao flex flex-col gap-4 p-4">
           <CampoNumero rotulo="Salário mensal" prefixo="R$" valor={salarioTxt ?? paraTexto(salarioPerfil)} onChange={setSalarioTxt} placeholder="0,00" />
           <div className="flex flex-col gap-2">
-            <span className="text-15 font-bold">Horas por semana</span>
+            <span className="text-apoio font-bold">Horas por semana</span>
             <div className="flex flex-wrap gap-2" role="group" aria-label="Horas por semana">
               {SEMANAS.map((h) => (
                 <Chip key={h} selecionado={semana === h} onClick={() => setSemana(h)}>{h}h</Chip>
               ))}
             </div>
-            <p className="text-13 text-texto-2">O salário é dividido por {divisorDaSemana(semana)} horas no mês.</p>
+            <p className="text-legenda text-texto-2">O salário é dividido por {divisorDaSemana(semana)} horas no mês.</p>
           </div>
           <dl className="grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2">
             <Resultado rotulo="Hora" valor={formatarReais(v.hora)} destaque />
@@ -130,7 +130,7 @@ export default function Calculadora() {
             <Horario rotulo="Saída" valor={saida} onChange={setSaida} />
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-15 font-bold">Almoço</span>
+            <span className="text-apoio font-bold">Almoço</span>
             <div className="flex flex-wrap gap-2" role="group" aria-label="Almoço">
               {ALMOCOS.map((m) => (
                 <Chip key={m} selecionado={almoco === m} onClick={() => setAlmoco(m)}>{m ? formatarHorasCurto(m).replace(/^0h/, "") + (m < 60 ? " min" : "") : "Sem"}</Chip>
@@ -138,7 +138,7 @@ export default function Calculadora() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-15 font-bold">Jornada do dia</span>
+            <span className="text-apoio font-bold">Jornada do dia</span>
             <div className="flex flex-wrap gap-2" role="group" aria-label="Jornada do dia">
               {JORNADAS.map((m) => (
                 <Chip key={m} selecionado={jornada === m} onClick={() => setJornada(m)}>{formatarHorasCurto(m)}</Chip>
@@ -151,7 +151,7 @@ export default function Calculadora() {
             <Resultado rotulo="Hora extra" valor={formatarHorasCurto(dia.extraMin)} />
             <Resultado rotulo="Valor do dia" valor={formatarReais(dia.valor)} destaque />
           </dl>
-          <p className="text-13 text-texto-2">Hora extra com +{pctExtra}%, como nas suas regras. Saída antes da entrada conta como plantão que vira a noite.</p>
+          <p className="text-legenda text-texto-2">Hora extra com +{pctExtra}%, como nas suas regras. Saída antes da entrada conta como plantão que vira a noite.</p>
         </div>
       </section>
     </main>

@@ -10,8 +10,8 @@ export default function Erro({ error, reset }: { error: Error; reset: () => void
   useEffect(() => reportarErro(error), [error]);
   return (
     <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center gap-4 px-6">
-      <h1 className="display text-32">Algo deu errado nesta tela</h1>
-      <p className="text-17 text-texto-2">Seus registros continuam guardados no celular. Tente de novo.</p>
+      <h1 className="display text-titulo-2">Algo deu errado nesta tela</h1>
+      <p className="text-corpo text-texto-2">Seus registros continuam guardados no celular. Tente de novo.</p>
       <BotaoPrincipal tamanho="g" icone={RefreshCw} onClick={reset}>Tentar de novo</BotaoPrincipal>
     </main>
   );

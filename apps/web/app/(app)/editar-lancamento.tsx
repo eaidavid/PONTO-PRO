@@ -46,16 +46,16 @@ export function EditarLancamento({ lancamento, item, onFechar, comDesfazer = tru
         <div className="flex flex-col gap-4 pb-2">
           <CampoNumero rotulo="Quantidade" sufixo={un} valor={qtd} onChange={setQtd} erro={quantidade === null ? "Digite quanto você fez. Ex.: 4" : undefined} />
           <label className="flex flex-col gap-1.5">
-            <span className="text-17 font-bold">Observação</span>
+            <span className="text-corpo font-bold">Observação</span>
             <textarea
               value={obs}
               onChange={(e) => setObs(e.target.value.slice(0, 200))}
               placeholder="Ex.: lado da portaria, 2º andar"
               rows={2}
-              className="min-h-20 rounded-cartao border-2 border-borda-forte bg-superficie p-3 text-17 outline-none focus:border-primaria"
+              className="min-h-20 rounded-cartao border-2 border-borda-forte bg-superficie p-3 text-corpo outline-none focus:border-primaria"
             />
           </label>
-          <p className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-20 font-bold">
+          <p className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-destaque font-bold">
             {quantidade !== null ? `${formatarQuantidade(quantidade)} ${un} × ${formatarReais(lancamento.precoUnitario)} = ${formatarReais(valorProducao(quantidade, lancamento.precoUnitario))}` : "—"}
           </p>
           <BotaoPrincipal

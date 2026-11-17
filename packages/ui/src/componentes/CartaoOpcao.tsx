@@ -27,8 +27,8 @@ export function CartaoOpcao({ icone: Icone, titulo, descricao, selecionado, onCl
         <Icone aria-hidden className="size-6" strokeWidth={2.25} />
       </span>
       <span className="flex-1">
-        <span className="block text-20 font-bold">{titulo}</span>
-        {descricao && <span className="block text-15 text-texto-2">{descricao}</span>}
+        <span className="block text-destaque font-bold">{titulo}</span>
+        {descricao && <span className="block text-apoio text-texto-2">{descricao}</span>}
       </span>
       <span aria-hidden className={cx("flex size-7 shrink-0 items-center justify-center rounded-full border-2", selecionado ? "border-primaria bg-primaria text-sobre-primaria" : "border-borda-forte")}>
         {selecionado && <Check className="size-4" strokeWidth={3} />}

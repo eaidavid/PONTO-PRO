@@ -91,16 +91,16 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
       <div className="flex flex-col gap-5">
         <div className="flex items-start gap-3 rounded-cartao bg-primaria-suave p-4">
           <div className="flex-1">
-            <p className="text-13 font-bold text-primaria-forte">{escolhido ? escolhido.area : "Serviço novo"}</p>
-            <p className="text-20 font-bold">{nome}</p>
+            <p className="text-legenda font-bold text-primaria-forte">{escolhido ? escolhido.area : "Serviço novo"}</p>
+            <p className="text-destaque font-bold">{nome}</p>
             {escolhido && (
-              <p className="numeros text-15 text-texto-2">
+              <p className="numeros text-apoio text-texto-2">
                 {formatarReais(escolhido.preco)} por {rotuloUnidade(escolhido.unidade)}
                 {escolhido.exemplo && " · preço de exemplo, edite se precisar"}
               </p>
             )}
           </div>
-          <button type="button" onClick={recomecar} className="-mr-2 min-h-12 rounded-full px-3 text-15 font-bold text-primaria-forte underline underline-offset-4">
+          <button type="button" onClick={recomecar} className="-mr-2 min-h-12 rounded-full px-3 text-apoio font-bold text-primaria-forte underline underline-offset-4">
             Trocar
           </button>
         </div>
@@ -108,7 +108,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
         {criando !== null && (
           <>
             <div className="flex flex-col gap-2">
-              <span className="text-17 font-bold" id="rotulo-unidade">Unidade</span>
+              <span className="text-corpo font-bold" id="rotulo-unidade">Unidade</span>
               <div role="group" aria-labelledby="rotulo-unidade" className="flex flex-wrap gap-2">
                 {[...UNIDADES_CHIPS, "outra"].map((u) => (
                   <Chip key={u} selecionado={unidade === u} onClick={() => setUnidade(u)}>
@@ -122,7 +122,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
                   value={outra}
                   onChange={(e) => setOutra(e.target.value.slice(0, 12))}
                   placeholder="Ex.: balde, viagem"
-                  className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-20 outline-none focus:border-primaria"
+                  className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-destaque outline-none focus:border-primaria"
                 />
               )}
             </div>
@@ -147,16 +147,16 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
         />
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-17 font-bold">Observação <span className="font-normal text-texto-2">(opcional)</span></span>
+          <span className="text-corpo font-bold">Observação <span className="font-normal text-texto-2">(opcional)</span></span>
           <input
             value={observacao}
             onChange={(e) => setObservacao(e.target.value.slice(0, 200))}
             placeholder="Ex.: lado da portaria, 2º andar"
-            className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-17 outline-none focus:border-primaria"
+            className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-corpo outline-none focus:border-primaria"
           />
         </label>
 
-        <p aria-live="polite" className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-20 font-bold">
+        <p aria-live="polite" className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-destaque font-bold">
           {previa ? previa.texto : `0 ${un} × ${precoCentavos !== null ? formatarReais(precoCentavos) : "R$ 0,00"} = R$ 0,00`}
         </p>
 
@@ -178,11 +178,11 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           onChange={(e) => setTexto(e.target.value)}
           placeholder="Digite o serviço"
           enterKeyHint="search"
-          className="min-w-0 flex-1 bg-transparent text-20 outline-none placeholder:text-texto-2"
+          className="min-w-0 flex-1 bg-transparent text-destaque outline-none placeholder:text-texto-2"
         />
       </label>
       {!texto.trim() && entreBuscaELista}
-      {!texto.trim() && <p className="px-1 text-15 text-texto-2">Seus favoritos e os mais usados primeiro</p>}
+      {!texto.trim() && <p className="px-1 text-apoio text-texto-2">Seus favoritos e os mais usados primeiro</p>}
       <ul className="flex flex-col divide-y divide-borda overflow-hidden cartao" aria-label="Serviços encontrados">
         {resultado.itens.map((i) => (
           <li key={i.id} className="flex items-stretch">
@@ -199,12 +199,12 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
             )}
             <button type="button" onClick={() => setEscolhido(i)} className={`flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pr-4 text-left active:bg-superficie-2 ${onFavoritar ? "pl-1" : "pl-4"}`}>
               <span className="min-w-0 flex-1">
-                <span className="block text-17 font-bold">{i.nome}</span>
-                <span className="block text-15 text-texto-2">{i.area}</span>
+                <span className="block text-corpo font-bold">{i.nome}</span>
+                <span className="block text-apoio text-texto-2">{i.area}</span>
               </span>
-              <span className="numeros text-right text-17 font-bold text-primaria">
+              <span className="numeros text-right text-corpo font-bold text-primaria">
                 {formatarReais(i.preco)}
-                <span className="block text-13 font-normal text-texto-2">por {rotuloUnidade(i.unidade)}</span>
+                <span className="block text-legenda font-normal text-texto-2">por {rotuloUnidade(i.unidade)}</span>
               </span>
             </button>
           </li>
@@ -213,7 +213,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
           <li>
             <button type="button" onClick={() => setCriando(resultado.criar)} className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left font-bold text-primaria active:bg-primaria-suave">
               <Plus aria-hidden className="size-6" strokeWidth={2.5} />
-              <span className="text-17">Criar “{resultado.criar}”</span>
+              <span className="text-corpo">Criar “{resultado.criar}”</span>
             </button>
           </li>
         )}

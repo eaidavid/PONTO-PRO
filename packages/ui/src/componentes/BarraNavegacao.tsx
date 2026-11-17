@@ -77,14 +77,14 @@ export function BarraNavegacao({ abas, ativa, link: Link = "a" as unknown as Com
               <span className="sombra-botao -mt-5 flex size-14 items-center justify-center rounded-full bg-primaria text-sobre-primaria ring-4 ring-[color:var(--superficie)] transition-transform duration-150 active:scale-95">
                 <Icone aria-hidden className="size-7" strokeWidth={2.5} />
               </span>
-              <span className="text-13 font-bold leading-none text-primaria">{a.rotulo}</span>
+              <span className="text-legenda font-bold leading-none text-primaria">{a.rotulo}</span>
             </>
           ) : (
             <>
               <span className={cx("flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200", ativo ? "sombra-botao bg-primaria text-sobre-primaria" : "text-texto-2")}>
                 <Icone aria-hidden className="size-5" strokeWidth={ativo ? 2.5 : 2} />
               </span>
-              <span className={cx("text-13 leading-none", ativo ? "font-bold text-primaria" : "text-texto-2")}>{a.rotulo}</span>
+              <span className={cx("text-legenda leading-none", ativo ? "font-bold text-primaria" : "text-texto-2")}>{a.rotulo}</span>
             </>
           );
           const cls = "flex min-h-[60px] w-full flex-col items-center justify-center gap-1 px-1 py-1.5";

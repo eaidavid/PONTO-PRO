@@ -26,8 +26,8 @@ export function AvisoTeste({ estado, hoje }: { estado: Estado; hoje: string }) {
   const depois = momento === "acabou" ? "Você continua no Grátis, com o ponto, o valor do mês e a conferência do pagamento." : "Se não assinar, você continua no Grátis sem perder nada.";
 
   return (
-    <section role="status" aria-label="Teste grátis" className="flex flex-col gap-3 rounded-[20px] bg-primaria-suave p-4">
-      <p className="flex gap-2 text-17">
+    <section role="status" aria-label="Teste grátis" className="flex flex-col gap-3 rounded-grande bg-primaria-suave p-4">
+      <p className="flex gap-2 text-corpo">
         <Sparkles aria-hidden className="mt-0.5 size-5 shrink-0 text-primaria-forte" />
         <span>
           <b>{quando}</b> {feito} {depois}
@@ -36,7 +36,7 @@ export function AvisoTeste({ estado, hoje }: { estado: Estado; hoje: string }) {
       <Link
         href="/planos"
         onClick={() => medir("oferta_pro", { origem: `teste-${momento}` })}
-        className="inline-flex min-h-12 items-center justify-center self-start rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria"
+        className="inline-flex min-h-12 items-center justify-center self-start rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria"
       >
         Ver o Pro
       </Link>

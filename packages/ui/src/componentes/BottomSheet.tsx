@@ -74,13 +74,13 @@ export function BottomSheet({ aberto, onFechar, titulo, subtitulo, children, rod
         <span aria-hidden className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-borda-forte" />
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h2 id={idTitulo} className="display text-24">{titulo}</h2>
-            {subtitulo && <p className="text-15 text-texto-2">{subtitulo}</p>}
+            <h2 id={idTitulo} className="display text-titulo-3">{titulo}</h2>
+            {subtitulo && <p className="text-apoio text-texto-2">{subtitulo}</p>}
           </div>
           <button
             type="button"
             onClick={onFechar}
-            className="-mr-2 inline-flex min-h-12 items-center gap-1 rounded-full px-3 text-15 font-bold text-texto-2 active:bg-superficie-2"
+            className="-mr-2 inline-flex min-h-12 items-center gap-1 rounded-full px-3 text-apoio font-bold text-texto-2 active:bg-superficie-2"
           >
             <X aria-hidden className="size-5" /> Fechar
           </button>

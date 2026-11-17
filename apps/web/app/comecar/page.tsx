@@ -190,28 +190,28 @@ export default function Comecar() {
         <header className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-fundo/95 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 backdrop-blur">
           <div className="flex items-center justify-between">
             {passo > 0 ? (
-              <button type="button" onClick={() => setPasso(passo - 1)} className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-17 font-bold active:bg-superficie-2">
+              <button type="button" onClick={() => setPasso(passo - 1)} className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-corpo font-bold active:bg-superficie-2">
                 <ChevronLeft aria-hidden className="size-6" /> Voltar
               </button>
             ) : (
-              <span className="leading-tight"><span className="display block text-20 text-primaria-forte">{MARCA.nome}</span><span className="text-13 text-texto-2">{MARCA.slogan}</span></span>
+              <span className="leading-tight"><span className="display block text-destaque text-primaria-forte">{MARCA.nome}</span><span className="text-legenda text-texto-2">{MARCA.slogan}</span></span>
             )}
             {p && (
-              <button type="button" onClick={() => setPasso(5)} className="min-h-12 rounded-full px-3 text-17 font-bold text-texto-2 active:bg-superficie-2">
+              <button type="button" onClick={() => setPasso(5)} className="min-h-12 rounded-full px-3 text-corpo font-bold text-texto-2 active:bg-superficie-2">
                 Pular
               </button>
             )}
           </div>
           <BarraProgresso valor={(passo + 1) / PASSOS.length} rotulo={`Passo ${passo + 1} de ${PASSOS.length}`} />
-          <p className="text-15 text-texto-2">Passo {passo + 1} de {PASSOS.length} · {PASSOS[passo]}</p>
+          <p className="text-apoio text-texto-2">Passo {passo + 1} de {PASSOS.length}: {PASSOS[passo]?.toLowerCase()}</p>
         </header>
       )}
 
-      <div key={passo} className="entrada-escalonada flex flex-1 flex-col gap-4 pt-2 pb-36">
+      <div key={passo} className="flex flex-1 flex-col gap-4 pt-2 pb-36">
         {passo === 0 && (
           <>
-            <h1 className="display text-32">Em que você trabalha?</h1>
-            <p className="text-17 text-texto-2">Assim o app já vem com a semana e as regras mais comuns da sua área. Dá para mudar tudo depois.</p>
+            <h1 className="display text-titulo-2">Em que você trabalha?</h1>
+            <p className="text-corpo text-texto-2">Assim o app já vem com a semana e as regras mais comuns da sua área. Dá para mudar tudo depois.</p>
             <div role="radiogroup" aria-label="Sua área" className="flex flex-col gap-3">
               {AREAS.map((a) => (
                 <CartaoOpcao key={a.id} icone={a.icone} titulo={MODELOS[a.id].nome} descricao={a.descricao} selecionado={p?.area === a.id} onClick={() => escolherArea(a.id)} />
@@ -222,7 +222,7 @@ export default function Comecar() {
 
         {passo === 1 && p && (
           <>
-            <h1 className="display text-32">Como você recebe?</h1>
+            <h1 className="display text-titulo-2">Como você recebe?</h1>
             <div role="radiogroup" aria-label="Como você recebe" className="flex flex-col gap-3">
               {FORMAS.map((f) => (
                 <CartaoOpcao key={f.id} icone={f.icone} titulo={NOME_FORMA[f.id]} descricao={f.descricao} selecionado={formaDe(p.pagamento) === f.id} onClick={() => escolherForma(f.id)} />
@@ -233,7 +233,7 @@ export default function Comecar() {
 
         {passo === 2 && p && (
           <>
-            <h1 className="display text-32">Como é a sua semana?</h1>
+            <h1 className="display text-titulo-2">Como é a sua semana?</h1>
             <div role="group" aria-label="Escalas prontas" className="flex flex-wrap gap-2">
               {PRESETS.map((x) => (
                 <Chip key={x.id} selecionado={p.escala.preset === x.id || (x.id === "seg-sex-40" && p.escala.preset === "personalizada" && horasSemanais(p.escala) === 2400)} onClick={() => setPerfil(aplicarPreset(p, x.id, hoje))}>
@@ -245,14 +245,14 @@ export default function Comecar() {
               {minutosDaSemana(p.escala) ? (
                 <EditorSemana minutos={minutosDaSemana(p.escala)!} onChange={(d, m) => setPerfil(comEscala(p, definirDia(p.escala, d, m)))} />
               ) : (
-                <p className="text-17">
-                  <span className="display block text-32">12x36</span>
+                <p className="text-corpo">
+                  <span className="display block text-titulo-2">12x36</span>
                   12 horas de plantão e 36 horas de descanso. Os dias de trabalho se alternam a partir de hoje.
                 </p>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-17 font-bold">Almoço</span>
+              <span className="text-corpo font-bold">Almoço</span>
               <div role="group" aria-label="Tempo de almoço" className="flex flex-wrap gap-2">
                 {[0, 30, 60, 90, 120].map((m) => (
                   <Chip key={m} selecionado={almocoAtual(p.escala) === m} onClick={() => setPerfil({ ...p, escala: definirAlmoco(p.escala, m) })}>
@@ -266,7 +266,7 @@ export default function Comecar() {
 
         {passo === 3 && p && (
           <>
-            <h1 className="display text-32">Hora extra e fechamento</h1>
+            <h1 className="display text-titulo-2">Hora extra e fechamento</h1>
             <SeloSugestao />
             <div className="cartao grid grid-cols-1 gap-6 p-4 min-[420px]:grid-cols-2">
               {(
@@ -319,7 +319,7 @@ export default function Comecar() {
 
         {passo === 4 && p && (
           <>
-            <h1 className="display text-32">Quanto você ganha?</h1>
+            <h1 className="display text-titulo-2">Quanto você ganha?</h1>
             {vp && (
               <div className="cartao flex flex-col gap-3 p-4">
                 <CampoNumero rotulo={vp.rotulo} prefixo="R$" valor={valorTxt} onChange={setValorTxt} placeholder="0,00" erro={!valorOk ? "Digite um valor maior que zero" : undefined} ajuda="Valor de exemplo. Troque pelo seu." />
@@ -337,8 +337,8 @@ export default function Comecar() {
             )}
             {usaProducao && (
               <div className="flex flex-col gap-2">
-                <span className="text-17 font-bold">Serviços que você faz</span>
-                <p className="text-15 text-texto-2">Vêm com preços de exemplo. Você ajusta em Produção.</p>
+                <span className="text-corpo font-bold">Serviços que você faz</span>
+                <p className="text-apoio text-texto-2">Vêm com preços de exemplo. Você ajusta em Produção.</p>
                 <div role="group" aria-label="Pacotes de serviços" className="flex flex-wrap gap-2">
                   {pacotesArea.map((pk) => {
                     const sel = p.producao.pacotes.includes(pk.id);
@@ -363,7 +363,7 @@ export default function Comecar() {
               </div>
             )}
             <div className="flex flex-col gap-2">
-              <span className="text-17 font-bold">Descontos no pagamento</span>
+              <span className="text-corpo font-bold">Descontos no pagamento</span>
               <div role="radiogroup" aria-label="Descontos" className="flex flex-col gap-2">
                 {(
                   [
@@ -404,8 +404,8 @@ export default function Comecar() {
                           : "cartao flex min-h-16 flex-col justify-center px-4 py-3 text-left active:scale-[0.98]"
                       }
                     >
-                      <span className="text-17 font-bold">{o.titulo}</span>
-                      <span className="text-15 text-texto-2">{o.descricao}</span>
+                      <span className="text-corpo font-bold">{o.titulo}</span>
+                      <span className="text-apoio text-texto-2">{o.descricao}</span>
                     </button>
                   );
                 })}
@@ -431,8 +431,8 @@ export default function Comecar() {
               <span className="flex size-16 items-center justify-center rounded-full bg-white/14 text-marca-destaque animate-check">
                 <CircleCheckBig aria-hidden className="size-9" strokeWidth={2.25} />
               </span>
-              <h1 className="display text-44">Pronto!</h1>
-              <p className="text-20">{resumoDoPerfil(aplicarValor(p))}</p>
+              <h1 className="display text-titulo-1">Pronto!</h1>
+              <p className="text-destaque">{resumoDoPerfil(aplicarValor(p))}</p>
             </div>
             <CampoTexto rotulo="Como quer ser chamado?" valor={nome} onChange={setNome} placeholder="Seu nome (opcional)" autoComplete="given-name" maxLength={60} />
             <div className="cartao divide-y divide-borda overflow-hidden">
@@ -447,7 +447,7 @@ export default function Comecar() {
                 onClick={() => setPasso(3)}
               />
             </div>
-            <p className="text-13 text-texto-2">O {MARCA.nome} é controle pessoal, não é ponto eletrônico oficial. Seus dados ficam guardados neste celular.</p>
+            <p className="text-legenda text-texto-2">O {MARCA.nome} é controle pessoal, não é ponto eletrônico oficial. Seus dados ficam guardados neste celular.</p>
             <div className="flex flex-col gap-4 pt-2">
               <Caixa marcado={aceito} onChange={setAceito}>
                 <TextoAceite />

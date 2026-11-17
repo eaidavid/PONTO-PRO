@@ -21,11 +21,11 @@ export function Interruptor({ rotulo, descricao, valor, onChange }: InterruptorP
       className="flex min-h-16 w-full items-center gap-4 py-2 text-left"
     >
       <span className="flex-1">
-        <span className="block text-17 font-bold">{rotulo}</span>
-        {descricao && <span className="block text-15 text-texto-2">{descricao}</span>}
+        <span className="block text-corpo font-bold">{rotulo}</span>
+        {descricao && <span className="block text-apoio text-texto-2">{descricao}</span>}
       </span>
       <span className="flex items-center gap-2">
-        <span className="text-15 font-bold text-texto-2">{valor ? "Sim" : "Não"}</span>
+        <span className="text-apoio font-bold text-texto-2">{valor ? "Sim" : "Não"}</span>
         <span className={cx("relative h-8 w-14 rounded-full transition-colors duration-200", valor ? "bg-primaria" : "bg-borda-forte")}>
           <span className={cx("absolute top-1 size-6 rounded-full bg-white shadow transition-transform duration-200", valor ? "translate-x-7" : "translate-x-1")} />
         </span>

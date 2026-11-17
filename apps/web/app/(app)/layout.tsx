@@ -69,7 +69,7 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
               setMais(true);
             }}
             aria-label="Voltar ao menu Mais"
-            className="ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 pt-[env(safe-area-inset-top)] text-15 font-bold text-texto-2 active:bg-superficie-2"
+            className="ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 pt-[env(safe-area-inset-top)] text-apoio font-bold text-texto-2 active:bg-superficie-2"
           >
             <ChevronLeft aria-hidden className="size-5" /> Mais
           </button>

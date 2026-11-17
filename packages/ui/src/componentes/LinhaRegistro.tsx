@@ -50,16 +50,16 @@ export function LinhaRegistro({
   const discreto = !horarios && !especial && !hoje && !producao;
 
   const principal = especial ? (
-    <span className={cx("inline-flex items-center gap-1.5 text-17 font-bold", tipo === "falta" ? "text-erro-texto" : "text-texto")}>
+    <span className={cx("inline-flex items-center gap-1.5 text-corpo font-bold", tipo === "falta" ? "text-erro-texto" : "text-texto")}>
       <especial.icone aria-hidden className="size-4.5" strokeWidth={2.25} />
       {feriado && tipo === "normal" ? feriado : especial.rotulo}
     </span>
   ) : horarios ? (
-    <span className="numeros text-17 font-bold">{horarios}</span>
+    <span className="numeros text-corpo font-bold">{horarios}</span>
   ) : producao ? (
-    <span className="text-17 font-bold">Só produção</span>
+    <span className="text-corpo font-bold">Só produção</span>
   ) : (
-    <span className="text-15 text-texto-2">{folgaDaEscala ? "Folga" : "Sem registro"}</span>
+    <span className="text-apoio text-texto-2">{folgaDaEscala ? "Folga" : "Sem registro"}</span>
   );
 
   const apoio = [
@@ -83,12 +83,12 @@ export function LinhaRegistro({
       )}
     >
       <span className={cx("flex w-10 shrink-0 flex-col items-center leading-none", (fimDeSemana || discreto) && !hoje && "text-texto-2")}>
-        <span className="text-13 font-bold">{hoje ? "hoje" : dia}</span>{" "}
-        <span className={cx("display mt-0.5", discreto ? "text-17" : "text-24")}>{num}</span>
+        <span className="text-legenda font-bold">{hoje ? "hoje" : dia}</span>{" "}
+        <span className={cx("display mt-0.5", discreto ? "text-corpo" : "text-titulo-3")}>{num}</span>
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         {principal}
-        {apoio.length > 0 && <span className="numeros line-clamp-2 text-15 text-texto-2">{apoio.join(" · ")}</span>}
+        {apoio.length > 0 && <span className="numeros line-clamp-2 text-apoio text-texto-2">{apoio.join(" · ")}</span>}
       </span>
       {(() => {
         const etiqueta =
@@ -96,7 +96,7 @@ export function LinhaRegistro({
             <span
               className={cx(
                 "numeros shrink-0 rounded-full px-2.5 py-1 font-bold",
-                valor ? "text-13" : "text-15",
+                valor ? "text-legenda" : "text-apoio",
                 saldoMin > 0 ? "bg-extra-suave text-extra-texto" : "bg-erro-suave text-erro-texto",
               )}
             >
@@ -107,7 +107,7 @@ export function LinhaRegistro({
         if (!valor) return etiqueta;
         return (
           <span className="flex shrink-0 flex-col items-end gap-1">
-            <span className="numeros text-17 font-bold">
+            <span className="numeros text-corpo font-bold">
               {formatarReais(valor)}
               <span className="sr-only"> no dia</span>
             </span>

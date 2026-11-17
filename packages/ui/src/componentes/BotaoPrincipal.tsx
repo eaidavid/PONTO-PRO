@@ -40,7 +40,7 @@ export function BotaoPrincipal({
       aria-busy={carregando || undefined}
       className={cx(
         "inline-flex items-center justify-center gap-3 rounded-full px-6 font-bold transition-[transform,background-color] duration-150 active:scale-[0.98] select-none",
-        tamanho === "g" ? "min-h-16 text-20" : "min-h-14 text-17",
+        tamanho === "g" ? "min-h-14 text-destaque" : "min-h-12 text-corpo",
         larguraTotal && "w-full",
         inativo && !carregando
           ? "bg-superficie-2 text-texto-2 borda active:scale-100"
@@ -49,9 +49,9 @@ export function BotaoPrincipal({
       )}
     >
       {carregando ? (
-        <LoaderCircle aria-hidden className="size-6 animate-spin" strokeWidth={2.25} />
+        <LoaderCircle aria-hidden className="size-5 animate-spin" strokeWidth={2.25} />
       ) : (
-        Icone && <Icone aria-hidden className="size-6 shrink-0" strokeWidth={2.25} />
+        Icone && <Icone aria-hidden className="size-5 shrink-0" strokeWidth={2.25} />
       )}
       <span>{carregando ? "Salvando…" : children}</span>
     </button>

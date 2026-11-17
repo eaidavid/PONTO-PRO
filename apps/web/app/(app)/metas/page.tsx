@@ -62,7 +62,7 @@ export default function Metas() {
         <Bloqueio
           titulo="Quanto quero receber?"
           texto="Diga quanto quer ganhar no período e veja quantas horas extras, sábados ou serviços faltam."
-          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
       </main>
     );
@@ -85,14 +85,14 @@ export default function Metas() {
           <span aria-hidden className="h-2.5 overflow-hidden rounded-full bg-superficie-2">
             <span className={previsto >= meta ? "block h-full rounded-full bg-sucesso" : "block h-full rounded-full bg-primaria"} style={{ width: `${Math.min(100, Math.round((previsto / Math.max(1, meta)) * 100))}%` }} />
           </span>
-          <p className="numeros flex justify-between gap-3 text-15 text-texto-2">
+          <p className="numeros flex justify-between gap-3 text-apoio text-texto-2">
             <span>Pela sua escala: <b className="text-texto">{formatarReais(previsto)}</b></span>
             <span className="font-bold">{Math.min(100, Math.round((previsto / Math.max(1, meta)) * 100))}%</span>
           </p>
         </div>
       </section>
 
-      <p aria-live="polite" className="px-1 text-20 font-bold leading-snug">{r.frase}</p>
+      <p aria-live="polite" className="px-1 text-destaque font-bold leading-snug">{r.frase}</p>
 
       {r.observacao && <Banner tom="info" texto={r.observacao} />}
 
@@ -106,13 +106,13 @@ export default function Metas() {
                 <li key={o.tipo} className="flex min-h-16 items-center gap-3 px-4 py-3">
                   <Icone aria-hidden className="size-5 shrink-0 text-extra-texto" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-17 font-bold first-letter:uppercase">{o.texto}</span>
-                    <span className="numeros block text-15 text-texto-2">
+                    <span className="block text-corpo font-bold first-letter:uppercase">{o.texto}</span>
+                    <span className="numeros block text-apoio text-texto-2">
                       cada {o.tipo === "producao" && item ? rotuloUnidade(item.unidade) : o.tipo === "horas-extras" ? "hora" : o.tipo === "sabados" ? "sábado" : "folga"} rende {formatarReais(o.valorCada)}
                     </span>
                   </span>
                   {o.tipo === "producao" && favoritos.length > 1 && (
-                    <button type="button" onClick={() => setTrocar(true)} className="min-h-12 shrink-0 rounded-full px-3 text-15 font-bold text-primaria-forte underline underline-offset-4">
+                    <button type="button" onClick={() => setTrocar(true)} className="min-h-12 shrink-0 rounded-full px-3 text-apoio font-bold text-primaria-forte underline underline-offset-4">
                       Trocar serviço
                     </button>
                   )}
@@ -120,7 +120,7 @@ export default function Metas() {
               );
             })}
           </ul>
-          <p className="px-1 text-13 text-texto-2">Valores antes dos descontos. A conta já considera os descontos que você cadastrou.</p>
+          <p className="px-1 text-legenda text-texto-2">Valores antes dos descontos. A conta já considera os descontos que você cadastrou.</p>
         </section>
       )}
 

@@ -5,8 +5,8 @@ export function CabecalhoTela({ titulo, subtitulo, acao }: { titulo: string; sub
   return (
     <header className="flex items-end justify-between gap-3 pt-6 pb-2">
       <div className="min-w-0">
-        <h1 className="display text-32">{titulo}</h1>
-        {subtitulo && <p className="text-15 text-texto-2">{subtitulo}</p>}
+        <h1 className="display text-titulo-2">{titulo}</h1>
+        {subtitulo && <p className="text-apoio text-texto-2">{subtitulo}</p>}
       </div>
       {acao}
     </header>

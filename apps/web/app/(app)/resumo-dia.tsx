@@ -77,7 +77,7 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
   }
 
   const secao = "flex flex-col gap-2";
-  const tituloSecao = "text-15 font-bold text-texto-2";
+  const tituloSecao = "text-apoio font-bold text-texto-2";
 
   return (
     <>
@@ -93,7 +93,7 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
             {usaProducao && (
               <Link
                 href={`/producao?dia=${data}`}
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-primaria bg-superficie px-4 text-17 font-bold text-primaria"
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-primaria bg-superficie px-4 text-corpo font-bold text-primaria"
               >
                 <PackagePlus aria-hidden className="size-5 shrink-0" /> Produção
               </Link>
@@ -105,10 +105,10 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
       {aberto && r && d && data && (
         <div className="flex flex-col gap-6 pb-2">
           {/* quanto rendeu */}
-          <section aria-label="Quanto o dia rendeu" className="fundo-marca flex flex-col gap-1 rounded-[20px] p-4">
-            <span className="text-15 font-bold text-sobre-marca-2">O dia rendeu</span>
+          <section aria-label="Quanto o dia rendeu" className="fundo-marca flex flex-col gap-1 rounded-grande p-4">
+            <span className="text-apoio font-bold text-sobre-marca-2">O dia rendeu</span>
             <ValorDinheiro centavos={r.bruto} tamanho="g" />
-            <span className="numeros text-15 text-sobre-marca-2">
+            <span className="numeros text-apoio text-sobre-marca-2">
               {d.trabalhadoMin > 0 ? `${formatarDuracao(d.trabalhadoMin)} trabalhadas` : tipo === "falta" ? "Dia de falta" : "Sem horas registradas"}
               {r.horas.extraMin > 0 ? ` · ${formatarDuracao(r.horas.extraMin)} de hora extra` : ""}
               {r.horas.deficitMin > 0 && tipo !== "falta" ? ` · faltaram ${formatarDuracao(r.horas.deficitMin)}` : ""}
@@ -119,7 +119,7 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
           <section aria-labelledby="t-fez" className={secao}>
             <h3 id="t-fez" className={tituloSecao}>O que você fez</h3>
             {passos.length === 0 && lancamentos.length === 0 && !registro?.observacao ? (
-              <p className="rounded-2xl bg-superficie-2 p-4 text-17 text-texto-2">
+              <p className="rounded-2xl bg-superficie-2 p-4 text-corpo text-texto-2">
                 {tipo !== "normal" ? `Dia marcado como ${NOME_TIPO[tipo].toLowerCase()}.` : "Nada registrado neste dia."}
               </p>
             ) : (
@@ -133,15 +133,15 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                           return <I className="size-5" strokeWidth={2.25} />;
                         })()}
                       </span>
-                      <span className="flex-1 text-17">{p.texto}</span>
-                      <span className="numeros text-20 font-bold">{p.hora}</span>
+                      <span className="flex-1 text-corpo">{p.texto}</span>
+                      <span className="numeros text-destaque font-bold">{p.hora}</span>
                     </li>
                   ) : (
                     <li key={i} className="flex items-center gap-3 py-0.5">
                       <span aria-hidden className="flex w-9 shrink-0 justify-center">
                         <span className={cx("h-6 w-0.5 rounded-full", p.almoco ? "bg-borda-forte" : "bg-primaria")} />
                       </span>
-                      <span className={cx("numeros text-15", p.almoco ? "text-texto-2" : "font-bold text-primaria-forte")}>{p.texto}</span>
+                      <span className={cx("numeros text-apoio", p.almoco ? "text-texto-2" : "font-bold text-primaria-forte")}>{p.texto}</span>
                     </li>
                   ),
                 )}
@@ -153,17 +153,17 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                         <PackagePlus className="size-5" strokeWidth={2.25} />
                       </span>
                       <button type="button" onClick={() => setEditLanc(l)} aria-label={`Editar ${item?.nome ?? "lançamento"}`} className="flex min-w-0 flex-1 flex-col rounded-xl pt-1 text-left active:bg-superficie-2">
-                        <span className="text-17 font-bold">{item?.nome ?? "Serviço"}</span>
+                        <span className="text-corpo font-bold">{item?.nome ?? "Serviço"}</span>
                         <span className="flex items-baseline justify-between gap-2">
-                          <span className="numeros text-15 whitespace-nowrap text-texto-2">
+                          <span className="numeros text-apoio whitespace-nowrap text-texto-2">
                             {formatarQuantidade(l.quantidade)} {item ? rotuloUnidade(item.unidade) : ""} × {formatarReais(l.precoUnitario)}
                           </span>
-                          <span className="numeros text-17 font-bold whitespace-nowrap">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                          <span className="numeros text-corpo font-bold whitespace-nowrap">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
                         </span>
                         {l.descricao ? (
-                          <span className="text-15 text-texto">{l.descricao}</span>
+                          <span className="text-apoio text-texto">{l.descricao}</span>
                         ) : (
-                          <span className="text-13 font-bold text-primaria-forte">+ observação</span>
+                          <span className="text-legenda font-bold text-primaria-forte">+ observação</span>
                         )}
                       </button>
                       <button type="button" onClick={() => apagar(l.id)} aria-label={`Apagar ${item?.nome ?? "lançamento"}`} className="-mr-2 flex size-12 shrink-0 items-center justify-center rounded-full text-texto-2 active:bg-superficie-2">
@@ -175,21 +175,21 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                 {registro?.obraId && (
                   <li className="flex min-h-12 items-center gap-3 border-t border-borda">
                     <HardHat aria-hidden className="size-5 shrink-0 text-texto-2" />
-                    <span className="text-17">Obra: <b>{nomeObra(registro.obraId)}</b></span>
+                    <span className="text-corpo">Obra: <b>{nomeObra(registro.obraId)}</b></span>
                   </li>
                 )}
               </ol>
             )}
             {apagado && (
               <div role="status" className="flex min-h-14 items-center justify-between gap-3 rounded-2xl bg-texto px-4 text-fundo">
-                <span className="text-15 font-bold">Lançamento apagado</span>
+                <span className="text-apoio font-bold">Lançamento apagado</span>
                 <button
                   type="button"
                   onClick={async () => {
                     await lancarProducao(apagado);
                     setApagado(null);
                   }}
-                  className="inline-flex min-h-12 items-center rounded-full px-3 text-17 font-bold underline underline-offset-4"
+                  className="inline-flex min-h-12 items-center rounded-full px-3 text-corpo font-bold underline underline-offset-4"
                 >
                   Desfazer
                 </button>
@@ -198,10 +198,10 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
             {registro?.observacao ? (
               <button type="button" onClick={() => onAjustar(data, true)} className="flex items-start gap-3 rounded-2xl bg-superficie-2 p-4 text-left">
                 <NotebookPen aria-hidden className="mt-0.5 size-5 shrink-0 text-texto-2" />
-                <span className="text-17">{registro.observacao}</span>
+                <span className="text-corpo">{registro.observacao}</span>
               </button>
             ) : (
-              <button type="button" onClick={() => onAjustar(data, true)} className="inline-flex min-h-12 items-center gap-2 self-start rounded-full px-2 text-15 font-bold text-primaria-forte">
+              <button type="button" onClick={() => onAjustar(data, true)} className="inline-flex min-h-12 items-center gap-2 self-start rounded-full px-2 text-apoio font-bold text-primaria-forte">
                 <NotebookPen aria-hidden className="size-4" /> Escrever uma nota do dia
               </button>
             )}
@@ -218,19 +218,19 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
           {/* alterações */}
           {alteracoes.length > 0 && (
             <details className="group rounded-2xl bg-superficie-2">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-2 px-4 text-17 font-bold [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-2 px-4 text-corpo font-bold [&::-webkit-details-marker]:hidden">
                 <History aria-hidden className="size-5 text-texto-2" />
                 <span className="flex-1">Alterações ({alteracoes.length})</span>
-                <span className="text-15 font-normal text-texto-2 group-open:hidden">ver</span>
+                <span className="text-apoio font-normal text-texto-2 group-open:hidden">ver</span>
               </summary>
               <ol className="flex flex-col gap-3 px-4 pb-4">
                 {alteracoes.map((a, i) => (
                   <li key={a.em + i} className="flex gap-3">
                     <Clock aria-hidden className="mt-1 size-4 shrink-0 text-texto-2" />
                     <span className="flex flex-col">
-                      <span className="numeros text-13 font-bold text-texto-2">{a.quando}</span>
+                      <span className="numeros text-legenda font-bold text-texto-2">{a.quando}</span>
                       {a.mudancas.map((m) => (
-                        <span key={m} className="numeros text-15">{m}</span>
+                        <span key={m} className="numeros text-apoio">{m}</span>
                       ))}
                     </span>
                   </li>

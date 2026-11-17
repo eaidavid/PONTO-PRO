@@ -16,7 +16,7 @@ export function StatusSync({ estado, className, sobreMarca }: { estado: EstadoSy
   const Icone = i.icone;
   return (
     <span role="status" className={cx(
-        "inline-flex items-center gap-1.5 text-13",
+        "inline-flex items-center gap-1.5 text-legenda",
         sobreMarca ? "rounded-full bg-white/12 px-3 py-1.5 font-bold text-sobre-marca" : estado === "erro" ? "font-bold text-erro-texto" : "text-texto-2",
         className,
       )}>

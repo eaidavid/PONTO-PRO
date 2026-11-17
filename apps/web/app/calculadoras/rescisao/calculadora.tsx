@@ -9,14 +9,14 @@ function CampoData({ rotulo, valor, onChange, max }: { rotulo: string; valor: st
   const id = useId();
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-17 font-bold">{rotulo}</label>
+      <label htmlFor={id} className="text-corpo font-bold">{rotulo}</label>
       <input
         id={id}
         type="date"
         value={valor}
         max={max}
         onChange={(e) => onChange(e.target.value)}
-        className="numeros min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-20 font-bold outline-none focus:border-primaria"
+        className="numeros min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-destaque font-bold outline-none focus:border-primaria"
       />
     </div>
   );
@@ -79,7 +79,7 @@ export function CalculadoraRescisao({ inicial }: { inicial?: { salario?: number;
           rotulo="Você recebe na rescisão"
           extra={
             r.fgts.saque > 0 ? (
-              <p className="rounded-2xl bg-superficie p-3 text-15">
+              <p className="rounded-2xl bg-superficie p-3 text-apoio">
                 No FGTS, você pode sacar cerca de <b className="numeros">{formatarReais(r.fgts.saque)}</b>
                 {r.fgts.multa > 0 ? `, já com a multa de ${formatarReais(r.fgts.multa)}` : ""}.
               </p>
@@ -87,7 +87,7 @@ export function CalculadoraRescisao({ inicial }: { inicial?: { salario?: number;
           }
         />
       ) : (
-        <p role="alert" className="text-15 font-bold text-erro-texto">A data de admissão precisa ser antes do último dia de trabalho.</p>
+        <p role="alert" className="text-apoio font-bold text-erro-texto">A data de admissão precisa ser antes do último dia de trabalho.</p>
       )}
     </Caixa>
   );

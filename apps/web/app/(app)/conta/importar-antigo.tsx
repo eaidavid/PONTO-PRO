@@ -104,13 +104,13 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
       }
     >
       <div className="flex flex-col gap-4 pb-2">
-        <ol className="flex list-decimal flex-col gap-1 pl-5 text-17">
+        <ol className="flex list-decimal flex-col gap-1 pl-5 text-corpo">
           <li>Abra o Ponto Pro antigo, vá em <b>Conta</b> e toque em <b>Levar meus dados para o Pingou</b>.</li>
           <li>Toque em <b>Copiar</b> (ou baixe o arquivo).</li>
           <li>Volte aqui e cole no campo abaixo.</li>
         </ol>
         <label className="flex flex-col gap-2">
-          <span className="text-15 font-bold">Dados copiados</span>
+          <span className="text-apoio font-bold">Dados copiados</span>
           <textarea
             value={texto}
             onChange={(e) => {
@@ -119,7 +119,7 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
             }}
             rows={4}
             placeholder="Cole aqui"
-            className="numeros w-full rounded-2xl border-2 border-borda-forte bg-superficie p-3 text-15 outline-none focus:border-primaria"
+            className="numeros w-full rounded-2xl border-2 border-borda-forte bg-superficie p-3 text-apoio outline-none focus:border-primaria"
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -139,24 +139,24 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
           }}
         />
 
-        {(erro || erroPrevia) && <p role="alert" className="text-15 font-bold text-erro-texto">{erro ?? erroPrevia}</p>}
+        {(erro || erroPrevia) && <p role="alert" className="text-apoio font-bold text-erro-texto">{erro ?? erroPrevia}</p>}
 
         {previa && (
-          <section aria-label="O que vai entrar" className="flex flex-col gap-2 rounded-2xl bg-superficie-2 p-4 text-17">
+          <section aria-label="O que vai entrar" className="flex flex-col gap-2 rounded-2xl bg-superficie-2 p-4 text-corpo">
             <p className="font-bold">
               {semDados ? "Não há dias nem lançamentos novos para trazer." : `Vai entrar: ${pl(previa.registros.length, "dia de ponto", "dias de ponto")} e ${pl(previa.lancamentos.length, "lançamento de produção", "lançamentos de produção")}.`}
             </p>
             {previa.resumo.primeiro && previa.resumo.ultimo && (
-              <p className="numeros text-15 text-texto-2">De {dataCurta(previa.resumo.primeiro)} a {dataCurta(previa.resumo.ultimo)}.</p>
+              <p className="numeros text-apoio text-texto-2">De {dataCurta(previa.resumo.primeiro)} a {dataCurta(previa.resumo.ultimo)}.</p>
             )}
-            {previa.itensNovos.length > 0 && <p className="text-15 text-texto-2">{pl(previa.itensNovos.length, "serviço novo entra", "serviços novos entram")} na sua lista.</p>}
+            {previa.itensNovos.length > 0 && <p className="text-apoio text-texto-2">{pl(previa.itensNovos.length, "serviço novo entra", "serviços novos entram")} na sua lista.</p>}
             {previa.resumo.jaExistem > 0 && (
-              <p className="text-15 text-texto-2">{pl(previa.resumo.jaExistem, "dia já está", "dias já estão")} no Pingou e {previa.resumo.jaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.jaExistem === 1 ? "está" : "estão"}.</p>
+              <p className="text-apoio text-texto-2">{pl(previa.resumo.jaExistem, "dia já está", "dias já estão")} no Pingou e {previa.resumo.jaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.jaExistem === 1 ? "está" : "estão"}.</p>
             )}
             {previa.resumo.lancamentosJaExistem > 0 && (
-              <p className="text-15 text-texto-2">{pl(previa.resumo.lancamentosJaExistem, "lançamento já está", "lançamentos já estão")} no Pingou e {previa.resumo.lancamentosJaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.lancamentosJaExistem === 1 ? "está" : "estão"}.</p>
+              <p className="text-apoio text-texto-2">{pl(previa.resumo.lancamentosJaExistem, "lançamento já está", "lançamentos já estão")} no Pingou e {previa.resumo.lancamentosJaExistem === 1 ? "fica" : "ficam"} como {previa.resumo.lancamentosJaExistem === 1 ? "está" : "estão"}.</p>
             )}
-            {previa.resumo.ignorados > 0 && <p className="text-15 text-texto-2">{pl(previa.resumo.ignorados, "linha com erro fica", "linhas com erro ficam")} de fora.</p>}
+            {previa.resumo.ignorados > 0 && <p className="text-apoio text-texto-2">{pl(previa.resumo.ignorados, "linha com erro fica", "linhas com erro ficam")} de fora.</p>}
             {(previa.resumo.exemplos > 0 || exemplos) && (
               <Caixa marcado={exemplos} onChange={setExemplos}>
                 <b>Trazer também os dias de exemplo.</b> O app antigo criava sozinho {previa.resumo.exemplos > 0 ? pl(previa.resumo.exemplos, "dia de exemplo", "dias de exemplo") : "alguns dias de exemplo"} em outubro e novembro. Marque só se você trabalhou exatamente nesses horários.
@@ -170,12 +170,12 @@ export function ImportarAntigo({ aberto, onFechar, estado }: { aberto: boolean; 
             <Caixa marcado={usarRegras} onChange={setUsarRegras}>
               <b>Calcular igual ao app antigo.</b> Os valores e os dias trabalhados batem com o que você via lá. Muda isto nas suas regras:
             </Caixa>
-            <ul className="flex list-disc flex-col gap-1 pl-5 text-15">
+            <ul className="flex list-disc flex-col gap-1 pl-5 text-apoio">
               {regras.mudancas.map((m) => (
                 <li key={m}>{m}</li>
               ))}
             </ul>
-            <p className="text-13 text-texto-2">Dá para mudar tudo depois em Conta e regras.</p>
+            <p className="text-legenda text-texto-2">Dá para mudar tudo depois em Conta e regras.</p>
           </section>
         )}
       </div>

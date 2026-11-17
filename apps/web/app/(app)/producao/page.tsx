@@ -37,7 +37,7 @@ import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
 
 const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]: "Anteontem" };
-const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-15 font-bold active:bg-superficie-2";
+const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-apoio font-bold active:bg-superficie-2";
 
 /** Tela de lançar produção: favoritos primeiro, categorias, obra e dia. */
 function LancarProducao() {
@@ -136,20 +136,20 @@ function LancarProducao() {
   return (
     <main className="flex flex-col gap-5 px-4">
       <header className="flex items-center justify-between gap-2 pt-4">
-        <Link href="/historico?aba=producao" className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-15 font-bold active:bg-superficie-2">
+        <Link href="/historico?aba=producao" className="-ml-2 inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-apoio font-bold active:bg-superficie-2">
           <ChevronLeft aria-hidden className="size-6" /> Produção
         </Link>
-        <button type="button" onClick={() => setPrecos(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-15 font-bold text-primaria-forte active:bg-primaria-suave">
+        <button type="button" onClick={() => setPrecos(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-apoio font-bold text-primaria-forte active:bg-primaria-suave">
           <Tags aria-hidden className="size-5" /> Preços
         </button>
       </header>
       <div>
-        <h1 className="display text-32">Lançar produção</h1>
-        <p className="numeros text-15 text-texto-2">No período: {formatarReais(total)}</p>
+        <h1 className="display text-titulo-2">Lançar produção</h1>
+        <p className="numeros text-apoio text-texto-2">No período: {formatarReais(total)}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-15 font-bold text-texto-2">Para</span>
+        <span className="text-apoio font-bold text-texto-2">Para</span>
         <button type="button" onClick={() => setEscolherDia(true)} className={pilula}>
           {diaFixo && diaFixo <= agora.data ? dataCurta(diaFixo) : ROTULO_DIA[quando]} <ChevronDown aria-hidden className="size-4" />
         </button>
@@ -165,7 +165,7 @@ function LancarProducao() {
         <Bloqueio
           titulo={`Você chegou a ${LIMITE_PRODUCAO_GRATIS} lançamentos neste período`}
           texto="No plano Grátis dá para lançar até 20 serviços por período. No Pro, é sem limite."
-          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
       )}
 
@@ -195,16 +195,16 @@ function LancarProducao() {
             {porArea.map((a) => (
               <li key={a.area} className="flex min-h-14 items-center gap-3 px-4 py-2">
                 <span className="min-w-0 flex-1">
-                  <span className="block text-17 font-bold">{a.area}</span>
-                  <span className="block text-13 text-texto-2">{a.lancamentos === 1 ? "1 lançamento" : `${a.lancamentos} lançamentos`}</span>
+                  <span className="block text-corpo font-bold">{a.area}</span>
+                  <span className="block text-legenda text-texto-2">{a.lancamentos === 1 ? "1 lançamento" : `${a.lancamentos} lançamentos`}</span>
                 </span>
-                <span className="numeros text-17 font-bold">{formatarReais(a.valor)}</span>
+                <span className="numeros text-corpo font-bold">{formatarReais(a.valor)}</span>
               </li>
             ))}
             {porArea.length > 1 && (
               <li className="flex min-h-14 items-center justify-between gap-3 bg-superficie-2 px-4">
-                <span className="text-17 font-bold">Total de produção</span>
-                <span className="numeros text-17 font-bold">{formatarReais(total)}</span>
+                <span className="text-corpo font-bold">Total de produção</span>
+                <span className="numeros text-corpo font-bold">{formatarReais(total)}</span>
               </li>
             )}
           </ul>
@@ -247,7 +247,7 @@ function LancarProducao() {
           <label className="flex min-h-14 items-center gap-3 rounded-full border-2 border-borda-forte bg-superficie px-4 focus-within:border-primaria">
             <Search aria-hidden className="size-5 text-texto-2" />
             <span className="sr-only">Filtrar serviços</span>
-            <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar" className="min-w-0 flex-1 bg-transparent text-17 outline-none" />
+            <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar" className="min-w-0 flex-1 bg-transparent text-corpo outline-none" />
           </label>
           <ul className="cartao divide-y divide-borda overflow-hidden">
             {listaPrecos.map((i) => {
@@ -266,22 +266,22 @@ function LancarProducao() {
                     className="flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 text-left active:bg-superficie-2"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block text-17 font-bold">{i.nome}</span>
-                      <span className="block text-13 text-texto-2">{i.area}{i.exemplo ? " · preço de exemplo" : ""}</span>
+                      <span className="block text-corpo font-bold">{i.nome}</span>
+                      <span className="block text-legenda text-texto-2">{i.area}{i.exemplo ? " · preço de exemplo" : ""}</span>
                     </span>
                     <Pencil aria-hidden className="size-4 shrink-0 text-texto-2" />
                   </button>
                   <label className={`flex min-h-12 w-32 shrink-0 items-center gap-1 rounded-xl border-2 bg-superficie px-2 focus-within:border-primaria ${invalido ? "border-erro" : rascunho[i.id] !== undefined ? "border-primaria" : "border-borda-forte"}`}>
-                    <span aria-hidden className="text-13 text-texto-2">R$</span>
+                    <span aria-hidden className="text-legenda text-texto-2">R$</span>
                     <input
                       inputMode="decimal"
                       value={texto}
                       onChange={(e) => setRascunho((r) => ({ ...r, [i.id]: e.target.value }))}
                       aria-label={`Preço de ${i.nome} por ${rotuloUnidade(i.unidade)}`}
                       aria-invalid={invalido || undefined}
-                      className="numeros w-full min-w-0 bg-transparent text-right text-17 font-bold outline-none"
+                      className="numeros w-full min-w-0 bg-transparent text-right text-corpo font-bold outline-none"
                     />
-                    <span aria-hidden className="text-13 whitespace-nowrap text-texto-2">/{rotuloUnidade(i.unidade)}</span>
+                    <span aria-hidden className="text-legenda whitespace-nowrap text-texto-2">/{rotuloUnidade(i.unidade)}</span>
                   </label>
                 </li>
               );
@@ -301,7 +301,7 @@ function LancarProducao() {
           <div className="flex flex-col gap-4 pb-2">
             {editandoItem.exemplo && <SeloSugestao texto="Preço de exemplo — confira o valor que você cobra" />}
             <div className="flex flex-col gap-2">
-              <span className="text-15 font-bold">Unidade</span>
+              <span className="text-apoio font-bold">Unidade</span>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Unidade">
                 {[...new Set([editandoItem.unidade, ...UNIDADES_CHIPS])].map((u) => (
                   <Chip key={u} selecionado={(unidade || editandoItem.unidade) === u} onClick={() => setUnidade(u)}>{rotuloUnidade(u)}</Chip>
@@ -309,7 +309,7 @@ function LancarProducao() {
               </div>
             </div>
             <CampoNumero rotulo={`Preço por ${rotuloUnidade(unidade || editandoItem.unidade)}`} prefixo="R$" valor={precoTxt} onChange={setPrecoTxt} />
-            <p className="text-15 text-texto-2">Lançamentos antigos mantêm o preço da época.</p>
+            <p className="text-apoio text-texto-2">Lançamentos antigos mantêm o preço da época.</p>
             <BotaoPrincipal
               variante="perigo"
               icone={Trash2}

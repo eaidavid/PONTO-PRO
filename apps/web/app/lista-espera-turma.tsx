@@ -46,7 +46,7 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
 
   if (estado === "ok") {
     return (
-      <p role="status" className={cx("flex items-start gap-2 rounded-2xl p-4 text-17 font-bold", sobreMarca ? "bg-white/12" : "bg-sucesso-suave")}>
+      <p role="status" className={cx("flex items-start gap-2 rounded-2xl p-4 text-corpo font-bold", sobreMarca ? "bg-white/12" : "bg-sucesso-suave")}>
         <CircleCheck aria-hidden className={cx("mt-0.5 size-5 shrink-0", sobreMarca ? "text-marca-destaque" : "text-sucesso-texto")} />
         Pronto. Avisamos no seu WhatsApp quando a Turma abrir.
       </p>
@@ -54,10 +54,10 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
   }
 
   const campo = cx(
-    "min-h-12 w-full rounded-xl border px-3 text-17 outline-none focus-visible:ring-2",
+    "min-h-12 w-full rounded-xl border px-3 text-corpo outline-none focus-visible:ring-2",
     sobreMarca ? "border-white/30 bg-white/10 text-sobre-marca placeholder:text-white/60 focus-visible:ring-marca-destaque" : "border-borda-forte bg-superficie text-texto focus-visible:ring-primaria",
   );
-  const rotulo = "flex flex-col gap-1 text-15 font-bold";
+  const rotulo = "flex flex-col gap-1 text-apoio font-bold";
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-3" noValidate>
@@ -76,7 +76,7 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
         </label>
       </div>
       {erro && (
-        <p role="alert" className={cx("text-15 font-bold", sobreMarca ? "text-sobre-marca" : "text-erro-texto")}>
+        <p role="alert" className={cx("text-apoio font-bold", sobreMarca ? "text-sobre-marca" : "text-erro-texto")}>
           {erro}
         </p>
       )}
@@ -84,13 +84,13 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
         type="submit"
         disabled={estado === "enviando"}
         className={cx(
-          "inline-flex min-h-12 items-center justify-center self-start rounded-full px-6 text-17 font-bold disabled:opacity-60",
+          "inline-flex min-h-12 items-center justify-center self-start rounded-full px-6 text-corpo font-bold disabled:opacity-60",
           sobreMarca ? "bg-white text-[color:var(--marca)]" : "bg-primaria text-sobre-primaria",
         )}
       >
         {estado === "enviando" ? "Enviando…" : "Quero ser avisado"}
       </button>
-      <p className={cx("text-13", sobreMarca ? "text-sobre-marca-2" : "text-texto-2")}>Usamos seu nome e WhatsApp só para avisar quando a Turma abrir.</p>
+      <p className={cx("text-legenda", sobreMarca ? "text-sobre-marca-2" : "text-texto-2")}>Usamos seu nome e WhatsApp só para avisar quando a Turma abrir.</p>
     </form>
   );
 }

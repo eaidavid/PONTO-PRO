@@ -23,7 +23,7 @@ export function Abas<T extends string>({ opcoes, valor, onChange, rotulo }: Abas
             aria-selected={ativo}
             onClick={() => onChange(o.id)}
             className={cx(
-              "min-h-12 flex-1 rounded-full px-2 text-15 font-bold transition-colors duration-150",
+              "min-h-12 flex-1 rounded-full px-2 text-apoio font-bold transition-colors duration-150",
               ativo ? "cartao text-texto shadow-min" : "text-texto-2 active:bg-superficie",
             )}
           >

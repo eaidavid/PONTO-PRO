@@ -12,16 +12,16 @@ export function CampoTexto({ rotulo, valor, onChange, ajuda, ...resto }: CampoTe
   const id = useId();
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-17 font-bold">{rotulo}</label>
+      <label htmlFor={id} className="text-corpo font-bold">{rotulo}</label>
       <input
         id={id}
         value={valor}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-20 outline-none focus:border-primaria"
+        className="min-h-14 rounded-cartao border-2 border-borda-forte bg-superficie px-4 text-destaque outline-none focus:border-primaria"
         aria-describedby={ajuda ? `${id}-a` : undefined}
         {...resto}
       />
-      {ajuda && <p id={`${id}-a`} className="text-15 text-texto-2">{ajuda}</p>}
+      {ajuda && <p id={`${id}-a`} className="text-apoio text-texto-2">{ajuda}</p>}
     </div>
   );
 }

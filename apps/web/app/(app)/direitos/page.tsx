@@ -55,9 +55,9 @@ export default function Direitos() {
         <Bloqueio
           titulo="Com os seus números"
           texto="No Pro, o Pingou calcula férias, 13º e rescisão com o seu salário e a média das suas horas extras, tirada dos seus registros."
-          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-17 font-bold text-sobre-primaria">Ver planos</Link>}
+          acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
-        <p className="px-1 text-15 text-texto-2">
+        <p className="px-1 text-apoio text-texto-2">
           Quer fazer a conta à mão? Use as <Link href="/calculadoras" className="font-bold text-primaria-forte underline underline-offset-4">calculadoras abertas</Link>.
         </p>
       </main>
@@ -69,7 +69,7 @@ export default function Direitos() {
   return (
     <main className="flex flex-col gap-4 px-4 pb-6">
       <CabecalhoTela titulo="Seus direitos" subtitulo="Férias, 13º e rescisão com os seus números" />
-      <p className="rounded-2xl bg-primaria-suave px-4 py-3 text-15">
+      <p className="rounded-2xl bg-primaria-suave px-4 py-3 text-apoio">
         {base.porHora ? "Salário estimado pelas suas horas (valor da hora × 220)" : "Salário do seu perfil"}: <b className="numeros">{formatarReais(base.salario)}</b>.{" "}
         {base.periodos
           ? <>Média de hora extra em {base.periodos} {base.periodos === 1 ? "período" : "períodos"}: <b className="numeros">{formatarReais(base.media)}</b> por mês.</>

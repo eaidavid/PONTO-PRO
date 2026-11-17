@@ -68,20 +68,20 @@ function Assinar() {
         <Banner tom="info" texto="As assinaturas ainda não estão disponíveis. Enquanto isso, aproveite o teste grátis." />
       ) : !nuvem.usuario ? (
         <section className="cartao flex flex-col gap-3 p-5">
-          <p className="text-17">Para assinar, entre na sua conta. Assim o plano vale em qualquer celular e seus dados ficam guardados.</p>
-          <Link href="/entrar" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria">
+          <p className="text-corpo">Para assinar, entre na sua conta. Assim o plano vale em qualquer celular e seus dados ficam guardados.</p>
+          <Link href="/entrar" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primaria px-6 text-corpo font-bold text-sobre-primaria">
             <LogIn aria-hidden className="size-5" /> Entrar ou criar conta
           </Link>
         </section>
       ) : link ? (
         <section className="cartao flex flex-col gap-3 p-5">
-          <p className="text-17">Pague com Pix ou cartão na página do Asaas.</p>
-          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primaria px-6 text-17 font-bold text-sobre-primaria">
+          <p className="text-corpo">Pague com Pix ou cartão na página do Asaas.</p>
+          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primaria px-6 text-corpo font-bold text-sobre-primaria">
             <CreditCard aria-hidden className="size-5" /> Abrir a página de pagamento
           </a>
-          <p className="text-15 text-texto-2">Assim que o pagamento for confirmado, o plano muda sozinho (com Pix, em poucos minutos).</p>
+          <p className="text-apoio text-texto-2">Assim que o pagamento for confirmado, o plano muda sozinho (com Pix, em poucos minutos).</p>
           <BotaoPrincipal icone={RefreshCw} onClick={() => sincronizarAgora()}>Já paguei, atualizar</BotaoPrincipal>
-          <Link href="/planos" className="inline-flex min-h-12 items-center justify-center text-15 font-bold text-primaria-forte underline underline-offset-4">Voltar para Planos</Link>
+          <Link href="/planos" className="inline-flex min-h-12 items-center justify-center text-apoio font-bold text-primaria-forte underline underline-offset-4">Voltar para Planos</Link>
         </section>
       ) : (
         <form
@@ -109,14 +109,14 @@ function Assinar() {
           </div>
           <CampoTexto rotulo="Nome completo (para a nota)" valor={nome} onChange={setNome} autoComplete="name" />
           <CampoTexto rotulo="CPF ou CNPJ" valor={documento} onChange={setDocumento} inputMode="numeric" ajuda="O provedor de pagamento exige para emitir a cobrança." />
-          {erro && <p role="alert" className="text-15 font-bold text-erro-texto">{erro}</p>}
+          {erro && <p role="alert" className="text-apoio font-bold text-erro-texto">{erro}</p>}
           <BotaoPrincipal tamanho="g" icone={CreditCard} type="submit" disabled={enviando || nome.trim().length < 3 || !docOk}>
             {enviando ? "Abrindo…" : `Pagar ${formatarReais(valor)} com Pix ou cartão`}
           </BotaoPrincipal>
         </form>
       )}
 
-      <p className="flex gap-2 px-1 text-13 text-texto-2">
+      <p className="flex gap-2 px-1 text-legenda text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
           O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos.

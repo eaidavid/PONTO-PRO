@@ -32,14 +32,14 @@ export function CalculadoraDecimo({ inicial }: { inicial?: { salario?: number; m
         r={r}
         rotulo="13º líquido"
         extra={
-          <dl className="grid grid-cols-2 gap-2 text-15">
+          <dl className="grid grid-cols-2 gap-2 text-apoio">
             <div className="rounded-2xl bg-superficie p-3">
               <dt className="text-texto-2">1ª parcela, até 30/11</dt>
-              <dd className="numeros text-20 font-bold">{formatarReais(r.primeiraParcela)}</dd>
+              <dd className="numeros text-destaque font-bold">{formatarReais(r.primeiraParcela)}</dd>
             </div>
             <div className="rounded-2xl bg-superficie p-3">
               <dt className="text-texto-2">2ª parcela, até 20/12</dt>
-              <dd className="numeros text-20 font-bold">{formatarReais(r.segundaParcela)}</dd>
+              <dd className="numeros text-destaque font-bold">{formatarReais(r.segundaParcela)}</dd>
             </div>
           </dl>
         }

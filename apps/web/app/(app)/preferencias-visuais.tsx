@@ -23,7 +23,7 @@ export function PreferenciasVisuais({ preferencias }: { preferencias: Preferenci
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <span className="text-15 font-bold text-texto-2">Tamanho</span>
+        <span className="text-apoio font-bold text-texto-2">Tamanho</span>
         <div role="radiogroup" aria-label="Tamanho da interface" className="grid grid-cols-3 gap-2">
           {TAMANHOS.map((t) => {
             const sel = preferencias.tamanho === t.id;
@@ -41,14 +41,14 @@ export function PreferenciasVisuais({ preferencias }: { preferencias: Preferenci
                 }
               >
                 <span aria-hidden className={`display leading-none ${t.amostra}`}>Aa</span>
-                <span className="text-13 font-bold">{t.rotulo}</span>
+                <span className="text-legenda font-bold">{t.rotulo}</span>
               </button>
             );
           })}
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-15 font-bold text-texto-2">Aparência</span>
+        <span className="text-apoio font-bold text-texto-2">Aparência</span>
         <div role="group" aria-label="Aparência" className="grid grid-cols-2 gap-2">
           {TEMAS.map((t) => (
             <Chip key={t.id} icone={t.icone} selecionado={preferencias.tema === t.id} onClick={() => salvarPreferencias({ ...preferencias, tema: t.id })}>
