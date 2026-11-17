@@ -35,6 +35,7 @@ import { seloSync, useStatusNuvem } from "../../../lib/nuvem/status";
 import { Carregando } from "../../carregando";
 import { AvisoTeste } from "../aviso-teste";
 import { ConviteCelular } from "../avisos-celular";
+import { ResumoSemana } from "../resumo-semana";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
 
@@ -174,6 +175,7 @@ export default function Hoje() {
 
         <AvisoTeste estado={estado} hoje={agora.data} />
         <ConviteCelular jaBateuPonto={registros.some((r) => !!r.marcacoes.entrada)} />
+        <ResumoSemana estado={estado} hoje={agora.data} />
 
         <section aria-label="Linha do dia" className="cartao flex flex-col gap-4 p-4">
           <EtapasDoDia marcacoes={marcacoes} etapaAtual={etapa} />

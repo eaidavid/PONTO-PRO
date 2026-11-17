@@ -1,6 +1,6 @@
 "use client";
 
-import { calcularPeriodo, formatarReais, mesesDeDecimo, periodoDaData, periodoVizinho, somarDias } from "@ponto-pro/core";
+import { calcularPeriodo, decimoTerceiro, ferias, formatarReais, mesesDeDecimo, type PerfilTrabalho, periodoDaData, periodoVizinho, somarDias } from "@ponto-pro/core";
 import { Abas, Bloqueio, CabecalhoTela } from "@ponto-pro/ui";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -13,6 +13,13 @@ import { CalculadoraRescisao } from "../../calculadoras/rescisao/calculadora";
 import { Carregando } from "../../carregando";
 
 type Aba = "ferias" | "decimo" | "rescisao";
+
+/** Salário do mês pelo perfil: o salário fixo, ou o valor da hora × 220 para quem ganha por hora. */
+function salarioDoPerfil(pg: PerfilTrabalho["pagamento"]): { salario: number; porHora: boolean } {
+  const mensal = salarioMensal(pg);
+  const valorHora = pg.forma === "hora" ? pg.valorHora : pg.forma === "misto" && pg.base === "hora" ? (pg.valorHora ?? 0) : 0;
+  return { salario: mensal?.salario ?? (valorHora ? valorHora * 220 : 0), porHora: !mensal && !!valorHora };
+}
 
 /**
  * Férias, 13º e rescisão com os números da pessoa (Pro): o salário do perfil
@@ -29,10 +36,7 @@ export default function Direitos() {
     if (!estado?.perfil || !agora || !longo) return null;
     const perfil = estado.perfil;
     const fech = perfil.ciclo.diaFechamento;
-    const pg = perfil.pagamento;
-    const mensal = salarioMensal(pg);
-    const valorHora = pg.forma === "hora" ? pg.valorHora : pg.forma === "misto" && pg.base === "hora" ? (pg.valorHora ?? 0) : 0;
-    const salario = mensal?.salario ?? (valorHora ? valorHora * 220 : 0);
+    const { salario, porHora } = salarioDoPerfil(perfil.pagamento);
     // média de hora extra: períodos fechados com algum registro, até 12
     let p = periodoVizinho(periodoDaData(agora.data, fech), -1, fech);
     const extras: number[] = [];
@@ -44,17 +48,24 @@ export default function Direitos() {
     const media = extras.length ? Math.round(extras.reduce((a, b) => a + b, 0) / extras.length) : 0;
     const primeiro = longo.registros.map((r) => r.data).sort()[0];
     const meses = mesesDeDecimo(primeiro && primeiro.slice(0, 4) === agora.data.slice(0, 4) ? primeiro : `${agora.data.slice(0, 4)}-01-01`, agora.data);
-    return { salario, media, meses, periodos: extras.length, porHora: !mensal && !!valorHora };
+    return { salario, media, meses, periodos: extras.length, porHora };
   }, [estado, agora, longo]);
 
   if (!estado?.perfil || !agora) return <Carregando />;
   if (!pode) {
+    const { salario } = salarioDoPerfil(estado.perfil.pagamento);
+    const ano = Number(agora.data.slice(0, 4));
+    const previa = salario > 0 ? { ferias: ferias({ salario, ano }).bruto, decimo: decimoTerceiro({ salario, meses: 12, ano }).bruto } : null;
     return (
       <main className="flex flex-col gap-5 px-4 pb-6">
         <CabecalhoTela titulo="Seus direitos" subtitulo="Férias, 13º e rescisão" />
         <Bloqueio
           titulo="Com os seus números"
-          texto="No Pro, o Pingou calcula férias, 13º e rescisão com o seu salário e a média das suas horas extras, tirada dos seus registros."
+          texto={
+            previa
+              ? `Com o seu salário, as férias ficam em torno de ${formatarReais(previa.ferias)} e o 13º do ano em ${formatarReais(previa.decimo)}, antes dos descontos. O Pro soma a média das suas horas extras e mostra a conta completa, com INSS, IR e a rescisão.`
+              : "No Pro, o Pingou calcula férias, 13º e rescisão com o seu salário e a média das suas horas extras, tirada dos seus registros."
+          }
           acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
         <p className="px-1 text-apoio text-texto-2">

@@ -16,7 +16,7 @@ export const FORMATO_BACKUP = "Ponto Pro";
  * quem já aceitou verá o pedido de aceite de novo.
  */
 export const LEGAL = {
-  versao: "2026-11-16",
+  versao: "2026-11-17",
   empresa: "[RAZÃO SOCIAL — a preencher]",
   cnpj: "[CNPJ — a preencher]",
   email: "[e-mail de contato — a preencher]",

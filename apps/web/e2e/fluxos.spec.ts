@@ -358,6 +358,9 @@ test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram
   await expect(page.getByRole("heading", { name: "Períodos mais antigos" })).toBeVisible();
   await page.goto("/ganhos?aba=contracheque");
   await expect(page.getByRole("link", { name: /PDF no plano Pro/ })).toBeVisible();
+  // a oferta do Pro mostra os números da própria pessoa
+  await page.goto("/direitos");
+  await expect(page.getByText(/Com o seu salário, as férias ficam em torno de R\$ 7\.333,33/)).toBeVisible();
   // conferir pagamento no Grátis: só o último período fechado, e o resto leva ao Pro
   await page.goto("/ganhos?aba=periodos");
   await expect(page.getByText(/Mais \d+ períodos guardados/)).toBeVisible();
@@ -699,4 +702,17 @@ test("ajustar horário minuto a minuto: digitar 1158 ou usar os botões de 1 min
   await expect(sheet.getByText("Horário inválido")).toBeVisible();
   await sheet.getByRole("button", { name: "Salvar dia" }).click();
   await expect(page.getByText("Dia 05/11 salvo")).toBeVisible();
+});
+
+test("resumo da semana passada na segunda-feira", async ({ page }) => {
+  await fazerOnboarding(page);
+  await semearHistorico(page);
+  await page.goto("/hoje");
+  const resumo = page.getByRole("region", { name: "Sua semana passada" });
+  await expect(resumo).toContainText("trabalhadas");
+  await expect(resumo).toContainText("Rendeu R$");
+  await resumo.getByRole("button", { name: "Fechar resumo" }).click();
+  await expect(resumo).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Sua semana passada" })).toHaveCount(0);
 });

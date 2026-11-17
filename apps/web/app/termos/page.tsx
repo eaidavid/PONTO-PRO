@@ -37,6 +37,7 @@ export default function Termos() {
         <li>O plano Grátis mostra o período atual e o anterior e permite conferir se o pagamento bateu. O plano Pro libera o histórico completo, o detalhe da conferência, PDF, metas e produção sem limite, conforme a página de planos. O plano Turma ainda não está à venda.</li>
         <li>Quem começa a usar ganha 14 dias de teste grátis do Pro. Você só é cobrado se assinar.</li>
         <li>A cobrança é recorrente, mensal ou anual, conforme a sua escolha (Pix ou cartão), processada pela Asaas. Você pode cancelar quando quiser; o acesso pago vale até o fim do período já pago.</li>
+        <li>Você pode desistir da assinatura em até 7 dias depois de contratar e receber de volta o valor pago (Código de Defesa do Consumidor, art. 49).</li>
         <li>Mudanças de preço são avisadas com pelo menos 30 dias de antecedência.</li>
       </ul>
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { BottomSheet, cx } from "@ponto-pro/ui";
-import { Calculator, ChevronRight, Gem, HardHat, type LucideIcon, Scale, Smartphone, Tags, Target, User } from "lucide-react";
+import { Calculator, ChevronRight, Gem, HardHat, type LucideIcon, Scale, Share2, Smartphone, Tags, Target, User } from "lucide-react";
+import { medir } from "../../lib/medir";
+import { SITE_URL } from "../../lib/site";
 import { useRouter } from "next/navigation";
 import type { Preferencias } from "../../lib/db";
 import { instalarApp, usePodeInstalar } from "../../lib/instalar";
@@ -93,6 +95,34 @@ export function MenuMais({
             </li>
           ))}
         </ul>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const texto = "Uso o Pingou para anotar minhas horas e ver quanto vai cair no pagamento, com hora extra e tudo. É grátis:";
+            const url = `${SITE_URL}/?origem=indicacao`;
+            medir("indicar", { meio: "share" in navigator ? "compartilhar" : "whatsapp" });
+            try {
+              if ("share" in navigator) {
+                await navigator.share({ title: "Pingou", text: texto, url });
+                return;
+              }
+            } catch {
+              return; // a pessoa fechou o compartilhar
+            }
+            window.open(`https://wa.me/?text=${encodeURIComponent(`${texto} ${url}`)}`, "_blank", "noopener");
+          }}
+          className="cartao flex min-h-16 items-center gap-3 px-4 py-2 text-left active:bg-superficie-2"
+        >
+          <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primaria-suave text-primaria-forte">
+            <Share2 className="size-6" strokeWidth={2.25} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-corpo font-bold">Indicar para um colega</span>
+            <span className="block text-legenda text-texto-2">Mande o Pingou pelo WhatsApp para quem também faz hora extra</span>
+          </span>
+          <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
+        </button>
 
         <button type="button" onClick={() => ir("/conta")} className="cartao flex min-h-16 items-center gap-3 px-4 py-2 text-left active:bg-superficie-2">
           <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-superficie-2">

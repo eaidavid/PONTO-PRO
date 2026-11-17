@@ -79,6 +79,7 @@ export default function Planos() {
           <span className="display numeros text-titulo-2">{formatarReais(PRO.preco)}</span>
           <span className="text-apoio text-sobre-marca-2">por mês, ou {formatarReais(ANUAL)} por ano</span>
         </p>
+        <p className="-mt-2 text-apoio text-sobre-marca-2">Menos de {Math.ceil(PRO.preco / 30)} centavos por dia. Um único erro de pagamento achado já paga meses de Pro.</p>
         <Itens itens={PRO.resumo} sobreMarca />
         {temPro ? (
           <p className="text-apoio font-bold">Seu plano atual{a?.ciclo === "anual" ? ", cobrado por ano" : ""}.</p>
@@ -137,6 +138,10 @@ export default function Planos() {
           <div>
             <dt className="font-bold">Posso cancelar quando quiser?</dt>
             <dd className="text-texto-2">Sim. O plano vale até o fim do período já pago, e depois volta ao Grátis sem perder seus registros.</dd>
+          </div>
+          <div>
+            <dt className="font-bold">E se eu assinar e não gostar?</dt>
+            <dd className="text-texto-2">Você tem 7 dias depois da assinatura para desistir e receber o valor de volta, como manda o Código de Defesa do Consumidor. Depois disso, é só cancelar quando quiser.</dd>
           </div>
           <div>
             <dt className="font-bold">Como pago?</dt>

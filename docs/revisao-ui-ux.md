@@ -59,3 +59,17 @@ os achados ainda abertos de `docs/vendavel.md` e referências de apps de ponto e
 - Nenhum tamanho de texto, raio ou cor solto fora dos tokens nos arquivos tocados.
 - Testes de acessibilidade (WCAG AA) passam nos três temas.
 - Uma pessoa nova não vê nenhum aviso de "dia sem registro" de antes de começar.
+
+## Vendas sem pressão (17/11/2026)
+
+Feito no app:
+- Ofertas do Pro com os números da pessoa: o período antigo bloqueado mostra as horas e a hora extra guardadas nele; "Seus direitos" no Grátis mostra a prévia das férias e do 13º com o salário dela.
+- Planos: "menos de 50 centavos por dia" e a pergunta "E se eu assinar e não gostar?" com o direito de arrependimento de 7 dias (CDC, art. 49), também nos Termos e na tela de assinar.
+- Resumo da semana passada na tela Hoje, às segundas e terças, grátis: horas, hora extra e quanto rendeu.
+- "Indicar para um colega" no menu Mais, pelo compartilhar do celular ou WhatsApp (medido como `indicar`; links trazem `?origem=indicacao`).
+
+Próximos, que dependem de você:
+- Depoimentos reais autorizados na página de vendas (a seção aparece sozinha quando a lista em `apps/web/lib/depoimentos.ts` tiver itens).
+- Recompensa por indicação (1 mês de Pro): precisa do banco ligado e de desconto no Asaas.
+- Oferta de volta para quem não assinou no fim do teste (primeiro mês com desconto): precisa de cupom no Asaas.
+- Devolução dos 7 dias: o reembolso é feito pelo painel do Asaas quando alguém pedir.

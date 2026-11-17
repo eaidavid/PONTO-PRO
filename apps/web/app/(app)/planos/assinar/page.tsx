@@ -119,7 +119,7 @@ function Assinar() {
       <p className="flex gap-2 px-1 text-legenda text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
-          O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos.
+          O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos. Desistiu nos primeiros 7 dias? O valor volta para você.
         </span>
       </p>
     </main>

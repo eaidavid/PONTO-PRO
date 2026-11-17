@@ -367,7 +367,11 @@ function Historico() {
       {!liberado ? (
         <Bloqueio
           titulo="Períodos mais antigos"
-          texto="No Grátis você vê o período atual e o anterior. No Pro, todos os que já fecharam, para conferir e conversar com quem paga."
+          texto={
+            r.horas.trabalhadoMin > 0
+              ? `Este período tem ${formatarDuracao(r.horas.trabalhadoMin)} trabalhadas${r.horas.extraMin > 0 ? ` e ${formatarDuracao(r.horas.extraMin)} de hora extra` : ""}, guardadas no seu celular. No Pro você abre todos os períodos e confere com o contracheque.`
+              : "No Grátis você vê o período atual e o anterior. No Pro, todos os que já fecharam, para conferir e conversar com quem paga."
+          }
           acao={<Link href="/planos" className="inline-flex min-h-12 items-center rounded-full bg-primaria px-5 text-corpo font-bold text-sobre-primaria">Ver planos</Link>}
         />
       ) : aba === "ponto" ? (
