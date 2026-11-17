@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { supabaseServidor } from "../../../lib/cobranca/servidor";
+import { dentroDoLimite, ipDe } from "../../../lib/limite";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,8 @@ const Erro = z.object({
 
 /** Monitor de erros: o app manda o que quebrou no celular de alguém. Sem dados pessoais, só a mensagem e a tela. */
 export async function POST(req: Request) {
+  // passou do limite: descarta calado (é só registro de erro)
+  if (!dentroDoLimite(`erros:${ipDe(req)}`, 20, 10 * 60_000)) return new Response(null, { status: 204 });
   const sb = supabaseServidor();
   if (!sb) return new Response(null, { status: 204 });
   const r = Erro.safeParse(await req.json().catch(() => null));

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { supabaseServidor } from "../../../lib/cobranca/servidor";
+import { dentroDoLimite, ipDe, respostaLimite } from "../../../lib/limite";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ const erro = (status: number, mensagem: string) => Response.json({ erro: mensage
 
 /** Lista de espera de planos que ainda não estão à venda (hoje, a Turma). Repetir o mesmo WhatsApp não duplica. */
 export async function POST(req: Request) {
+  if (!dentroDoLimite(`espera:${ipDe(req)}`, 5, 10 * 60_000)) return respostaLimite();
   const sb = supabaseServidor();
   if (!sb) return erro(503, "A lista de espera ainda não está aberta. Tente de novo em alguns dias.");
   const r = Pedido.safeParse(await req.json().catch(() => null));

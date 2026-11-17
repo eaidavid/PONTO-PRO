@@ -120,3 +120,30 @@ describe("webhook", () => {
     expect((await POST(pedir({ plano: "individual", nome: "Ana", whatsapp: "11912345678" }))).status).toBe(400);
   });
 });
+
+describe("limite de pedidos", () => {
+  it("bloqueia depois do máximo na janela e libera quando a janela passa", async () => {
+    const { dentroDoLimite } = await import("../lib/limite");
+    const t0 = 1_000_000;
+    for (let i = 0; i < 3; i++) expect(dentroDoLimite("teste:1.2.3.4", 3, 60_000, t0 + i)).toBe(true);
+    expect(dentroDoLimite("teste:1.2.3.4", 3, 60_000, t0 + 10)).toBe(false);
+    expect(dentroDoLimite("teste:5.6.7.8", 3, 60_000, t0 + 10)).toBe(true);
+    expect(dentroDoLimite("teste:1.2.3.4", 3, 60_000, t0 + 61_000)).toBe(true);
+  });
+});
+
+describe("envio de notificações", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it("sem configuração responde 503; com token errado, 401", async () => {
+    const { POST } = await import("../app/api/notificacoes/enviar/route");
+    const pedir = (token?: string) => new Request("http://x/api/notificacoes/enviar", { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });
+    expect((await POST(pedir("x"))).status).toBe(503);
+    vi.stubEnv("CRON_TOKEN", "token-certo");
+    vi.stubEnv("NEXT_PUBLIC_VAPID_PUBLIC_KEY", "BOCKkZBXgZ61Dv0hmLBnSCLmo2JfCmuUBNMXpbM8WkLT-KLIonMdrmpCwwEvxQNLZKHixio8ml5bOL7wYkiCE0I");
+    vi.stubEnv("VAPID_PRIVATE_KEY", "chave");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://exemplo.supabase.co");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "servico");
+    expect((await POST(pedir("token-errado"))).status).toBe(401);
+    expect((await POST(pedir())).status).toBe(401);
+  });
+});

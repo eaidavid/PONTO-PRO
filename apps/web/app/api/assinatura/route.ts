@@ -2,6 +2,7 @@ import { agoraEmSaoPaulo, lerCpfCnpj, PLANOS, TRABALHADORES_MAX, TRABALHADORES_M
 import { z } from "zod";
 import { provedorDoServidor } from "../../../lib/cobranca/asaas";
 import { contaDoToken, supabaseServidor } from "../../../lib/cobranca/servidor";
+import { dentroDoLimite, ipDe, respostaLimite } from "../../../lib/limite";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ const erro = (status: number, mensagem: string) => Response.json({ erro: mensage
 
 /** Cria a assinatura no Asaas e devolve o link de pagamento (Pix ou cartão). */
 export async function POST(req: Request) {
+  if (!dentroDoLimite(`assinar:${ipDe(req)}`, 10, 10 * 60_000)) return respostaLimite();
   const provedor = provedorDoServidor();
   const sb = supabaseServidor();
   if (!provedor || !sb) return erro(503, "A cobrança ainda não está disponível.");
