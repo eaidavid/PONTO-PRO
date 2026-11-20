@@ -1,18 +1,21 @@
 "use client";
 
 import { type CicloCobranca, economiaAnual, formatarReais, lerCpfCnpj, PLANOS, valorDoCiclo } from "@ponto-pro/core";
-import { Banner, BotaoPrincipal, CabecalhoTela, CampoTexto, CartaoOpcao } from "@ponto-pro/ui";
+import { BotaoPrincipal, CabecalhoTela, CampoTexto, CartaoOpcao } from "@ponto-pro/ui";
 import { CalendarCheck, CalendarDays, CreditCard, LogIn, RefreshCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useEstado } from "../../../../lib/estado";
 import { sincronizarAgora, useStatusNuvem } from "../../../../lib/nuvem/status";
+import { COBRANCA_ABERTA } from "../../../../lib/cobranca/aberta";
 import { MARCA } from "../../../../lib/marca";
+import { ListaEsperaTurma } from "../../../lista-espera-turma";
 import { Carregando } from "../../../carregando";
 
 /**
- * Assinar o Pro: mensal ou anual, nome e CPF/CNPJ; o pagamento (Pix ou cartão) abre na página segura do Asaas.
+ * Assinar o Pro: mensal ou anual, nome e CPF/CNPJ; o pagamento (Pix ou cartão) abre na página segura do provedor.
+ * Antes de a cobrança abrir (COBRANCA_ABERTA), a tela vira "Quero ser avisado", com a lista de espera do Pro.
  * A Turma ainda não está à venda: quem chega aqui com ?plano=equipe volta para Planos.
  */
 function Assinar() {
@@ -64,8 +67,17 @@ function Assinar() {
     <main className="flex flex-col gap-5 px-4 pb-6">
       <CabecalhoTela titulo={`Assinar o ${p.nome}`} subtitulo={ciclo === "anual" ? `${formatarReais(valor)} por ano, ${formatarReais(porMes)} por mês` : `${formatarReais(valor)} por mês, cancele quando quiser`} />
 
-      {!nuvem.configurado ? (
-        <Banner tom="info" texto="As assinaturas ainda não estão disponíveis. Enquanto isso, aproveite o teste grátis." />
+      {!COBRANCA_ABERTA || !nuvem.configurado ? (
+        <section aria-labelledby="t-em-breve" className="flex flex-col gap-4 rounded-grande bg-primaria-suave p-5">
+          <div className="flex flex-col gap-1">
+            <h2 id="t-em-breve" className="text-destaque font-bold">As assinaturas abrem em breve</h2>
+            <p className="text-apoio text-texto-2">
+              Enquanto isso, o Pro continua liberado no seu teste grátis. Deixe seu WhatsApp: avisamos quando abrir e, se o seu teste acabar antes, liberamos mais tempo de Pro para você.
+            </p>
+          </div>
+          <ListaEsperaTurma origem="app" plano="individual" />
+          <Link href="/planos" className="inline-flex min-h-12 items-center justify-center text-apoio font-bold text-primaria-forte underline underline-offset-4">Voltar para Planos</Link>
+        </section>
       ) : !nuvem.usuario ? (
         <section className="cartao flex flex-col gap-3 p-5">
           <p className="text-corpo">Para assinar, entre na sua conta. Assim o plano vale em qualquer celular e seus dados ficam guardados.</p>
@@ -75,7 +87,7 @@ function Assinar() {
         </section>
       ) : link ? (
         <section className="cartao flex flex-col gap-3 p-5">
-          <p className="text-corpo">Pague com Pix ou cartão na página do Asaas.</p>
+          <p className="text-corpo">Pague com Pix ou cartão na página segura de pagamento.</p>
           <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primaria px-6 text-corpo font-bold text-sobre-primaria">
             <CreditCard aria-hidden className="size-5" /> Abrir a página de pagamento
           </a>
@@ -116,12 +128,12 @@ function Assinar() {
         </form>
       )}
 
-      <p className="flex gap-2 px-1 text-legenda text-texto-2">
+      {COBRANCA_ABERTA && <p className="flex gap-2 px-1 text-legenda text-texto-2">
         <ShieldCheck aria-hidden className="size-4 shrink-0" />
         <span>
-          O pagamento é feito no Asaas, instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos. Desistiu nos primeiros 7 dias? O valor volta para você.
+          O pagamento é feito por uma instituição de pagamento autorizada. O {MARCA.nome} não vê nem guarda dados do seu cartão. {ciclo === "anual" ? "Cobrança anual" : "Cobrança mensal"}; cancele quando quiser em Planos. Desistiu nos primeiros 7 dias? O valor volta para você.
         </span>
-      </p>
+      </p>}
     </main>
   );
 }

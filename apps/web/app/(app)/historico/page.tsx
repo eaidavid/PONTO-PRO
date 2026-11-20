@@ -133,11 +133,11 @@ function Historico() {
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora || !periodo || !regs) return null;
-    const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: regs, feriadosLocais: estado.feriadosLocais, agora });
     // o histórico começa no primeiro dia de uso (ou no registro mais antigo, para quem trouxe dados):
-    // antes disso o app não cobra "dia sem registro"
+    // antes disso o app não cobra "dia sem registro" nem soma feriado pago
     const primeiroRegistro = regs.reduce<string | null>((m, x) => (m === null || x.data < m ? x.data : m), null);
     const inicioUso = [estado.inicioUso ?? agora.data, primeiroRegistro ?? agora.data].sort()[0]!;
+    const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: regs, feriadosLocais: estado.feriadosLocais, agora, inicioUso });
     const desdeInicio = r.dias.filter((d) => d.data >= inicioUso);
     const ateHoje = desdeInicio.filter((d) => d.data <= agora.data);
     // quanto rendeu cada dia (bruto), como no app antigo
@@ -145,7 +145,7 @@ function Historico() {
     const valores =
       fimValores >= periodo.inicio
         ? new Map(
-            ganhosPorDia({ perfil: estado.perfil, periodo: { inicio: periodo.inicio, fim: fimValores }, registros: regs, lancamentos: lancs ?? [], itens: estado.itens, feriadosLocais: estado.feriadosLocais, agora }).map((g) => [g.data, g.total]),
+            ganhosPorDia({ perfil: estado.perfil, periodo: { inicio: periodo.inicio, fim: fimValores }, registros: regs, lancamentos: lancs ?? [], itens: estado.itens, feriadosLocais: estado.feriadosLocais, agora, inicioUso }).map((g) => [g.data, g.total]),
           )
         : new Map<string, number>();
     return {

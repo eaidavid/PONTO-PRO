@@ -244,7 +244,7 @@ function Periodos({ estado, agora }: { estado: Estado; agora: string }) {
     const res: { periodo: Periodo; r: ResultadoPeriodo }[] = [];
     let p = periodoVizinho(periodoDaData(agora, fech), -1, fech);
     for (let i = 0; i < 6; i++) {
-      const r = calcularPeriodo({ perfil, periodo: p, registros: longo.registros, lancamentos: longo.lancamentos, itens: estado.itens, feriadosLocais: estado.feriadosLocais });
+      const r = calcularPeriodo({ perfil, periodo: p, registros: longo.registros, lancamentos: longo.lancamentos, itens: estado.itens, feriadosLocais: estado.feriadosLocais, inicioUso: estado.inicioUso ?? undefined });
       res.push({ periodo: p, r });
       p = periodoVizinho(p, -1, fech);
     }
@@ -374,9 +374,10 @@ function Ganhos() {
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
     const { perfil, registros, itens, lancamentos, feriadosLocais } = estado;
+    const inicioUso = estado.inicioUso ?? undefined;
     const periodo = periodoDaData(agora.data, perfil.ciclo.diaFechamento);
-    const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, feriadosLocais, agora, hoje: agora.data });
-    const grafico = ganhosPorDia({ perfil, periodo: { inicio: periodo.inicio, fim: agora.data }, registros, itens, lancamentos, feriadosLocais, agora });
+    const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, feriadosLocais, agora, hoje: agora.data, inicioUso });
+    const grafico = ganhosPorDia({ perfil, periodo: { inicio: periodo.inicio, fim: agora.data }, registros, itens, lancamentos, feriadosLocais, agora, inicioUso });
     return { periodo, previsao, grafico };
   }, [estado, agora]);
 

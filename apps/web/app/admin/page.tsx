@@ -22,6 +22,27 @@ interface Resumo {
   cortesias: number;
   atrasadas: number;
   receita: number;
+  metas: { comecos: number; ativados: number; contas7: number; voltaram7: number } | null;
+}
+
+/** Metas iniciais do beta. Com menos de 10 casos, o número ainda não diz nada. */
+function Meta({ rotulo, feitos, total, alvo, explica }: { rotulo: string; feitos: number; total: number; alvo: number; explica: string }) {
+  const taxa = total ? feitos / total : 0;
+  const situacao = total < 10 ? "poucos" : taxa >= alvo ? "ok" : "abaixo";
+  const chip = { poucos: "bg-superficie-2 text-texto-2", ok: "bg-primaria-suave text-primaria-forte", abaixo: "bg-erro-suave text-erro-texto" }[situacao];
+  const texto = { poucos: "poucos dados", ok: "na meta", abaixo: "abaixo da meta" }[situacao];
+  return (
+    <li className="flex flex-col gap-1 py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <span className="text-corpo font-bold">{rotulo}</span>
+        <span className={`rounded-full px-2.5 py-0.5 text-legenda font-bold ${chip}`}>{texto}</span>
+      </div>
+      <p className="numeros text-apoio">
+        <b className="text-destaque">{pct(feitos, total)}</b> <span className="text-texto-2">({feitos} de {total}) · meta {Math.round(alvo * 100)}%</span>
+      </p>
+      <p className="text-legenda text-texto-2">{explica}</p>
+    </li>
+  );
 }
 
 const pct = (a: number, b: number) => (b ? `${(Math.round((a / b) * 1000) / 10).toLocaleString("pt-BR")}%` : "—");
@@ -89,6 +110,16 @@ export default function VisaoGeral() {
               </p>
             </section>
           </div>
+          {r.metas && (
+            <section aria-labelledby="t-metas" className="rounded-cartao border border-borda bg-superficie p-4">
+              <h2 id="t-metas" className="text-corpo font-bold">Metas do beta</h2>
+              <ul className="divide-y divide-borda">
+                <Meta rotulo="Bateram o 1º ponto no mesmo dia" feitos={r.metas.ativados} total={r.metas.comecos} alvo={0.6} explica="Aparelhos que terminaram o começo nos últimos 30 dias e bateram o ponto em até 24 horas." />
+                <Meta rotulo="Ainda usam no 7º dia" feitos={r.metas.voltaram7} total={r.metas.contas7} alvo={0.35} explica="Contas criadas há 7 a 37 dias que usaram o app 7 dias ou mais depois de criar." />
+                <Meta rotulo="Passaram do teste para o pago" feitos={r.testeVirouPago} total={r.testeTerminado} alvo={0.05} explica="Contas que terminaram os 14 dias de teste e assinaram." />
+              </ul>
+            </section>
+          )}
           <section aria-labelledby="t-atencao" className="rounded-cartao border border-borda bg-superficie p-4">
             <h2 id="t-atencao" className="mb-2 text-corpo font-bold">Precisa de atenção</h2>
             <ul className="flex flex-wrap gap-2 text-apoio">

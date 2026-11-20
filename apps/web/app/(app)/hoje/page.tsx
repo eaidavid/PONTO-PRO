@@ -102,7 +102,7 @@ export default function Hoje() {
   const nome = primeiroNome(pessoal);
   const usaProducao = perfil.producao.ativo || perfil.pagamento.forma === "producao" || perfil.pagamento.forma === "misto";
   const obraAtual = obrasAtivas.find((o) => o.id === (registro?.obraId ?? preferencias.obraAtual));
-  const lembretes = lembretesDoDia({ perfil, hoje: registro, ontem: registros.find((x) => x.data === somarDias(agora.data, -1)), agora, feriadoHoje: feriado });
+  const lembretes = lembretesDoDia({ perfil, hoje: registro, ontem: registros.find((x) => x.data === somarDias(agora.data, -1)), agora, feriadoHoje: feriado, primeiroDia: estado.inicioUso === agora.data });
 
   // pílula do topo: só o estado (as horas ficam na linha do dia)
   const pilula =

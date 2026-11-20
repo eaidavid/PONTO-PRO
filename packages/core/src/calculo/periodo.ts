@@ -98,6 +98,11 @@ export interface EntradaPeriodo {
   modo?: "periodo" | "dia";
   /** Salário mensal proporcional às horas previstas até esta data ("Já ganhou"). */
   proporcionalAte?: string;
+  /**
+   * Primeiro dia de uso do app. Dias antes dele sem registro ficam de fora da conta: não contam falta,
+   * feriado pago nem horas previstas, porque o app não sabe o que aconteceu neles.
+   */
+  inicioUso?: string;
 }
 
 const NOME_CATEGORIA: Record<CategoriaDia, string> = {
@@ -161,7 +166,11 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
   // 1) cada dia
   const dias: DiaResultado[] = datas.map((data) => {
     const agoraMin = e.agora && e.agora.data === data ? e.agora.minutos : undefined;
-    const a = analisarDia(perfil, data, regs.get(data), feriados.get(data), { agoraMin });
+    const reg = regs.get(data);
+    const a = analisarDia(perfil, data, reg, feriados.get(data), { agoraMin });
+    if (e.inicioUso && data < e.inicioUso && !reg) {
+      return { ...a, previstoMin: 0, deficitMin: 0, abonoMin: 0, motivoAbono: undefined, debitoBancoMin: 0, extraMin: 0, compensadoMin: 0 };
+    }
     return { ...a, extraMin: 0, compensadoMin: 0 };
   });
 

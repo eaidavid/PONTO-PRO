@@ -20,7 +20,7 @@ export default function Obras() {
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
     const periodo = periodoDaData(agora.data, estado.perfil.ciclo.diaFechamento);
-    const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: estado.registros, feriadosLocais: estado.feriadosLocais, agora });
+    const r = calcularPeriodo({ perfil: estado.perfil, periodo, registros: estado.registros, feriadosLocais: estado.feriadosLocais, agora, inicioUso: estado.inicioUso ?? undefined });
     const porObra = new Map<string, { horas: number; producao: number }>();
     const regs = new Map(estado.registros.map((x) => [x.data, x]));
     for (const d of r.dias) {

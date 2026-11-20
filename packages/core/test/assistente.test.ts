@@ -63,6 +63,14 @@ describe("lembretes de ponto esquecido", () => {
     expect(lembretesDoDia({ ...base, ontem: undefined, hoje: undefined, agora: agora("07:50") })).toEqual([]);
     expect(lembretesDoDia({ ...base, ontem: undefined, hoje: undefined, agora: agora("08:10") })[0]).toMatchObject({ id: "sem-entrada", marcacoes: { entrada: "07:00" } });
   });
+  it("primeiro dia de uso: depois do expediente não cobra a entrada; durante, ajuda a bater", () => {
+    // instalou às 22h09: o expediente (até 17h) já acabou, não esqueceu nada
+    expect(lembretesDoDia({ ...base, ontem: undefined, hoje: undefined, agora: agora("22:09"), primeiroDia: true })).toEqual([]);
+    // instalou às 10h no meio do expediente: o lembrete ajuda a registrar a entrada das 7h
+    expect(lembretesDoDia({ ...base, ontem: undefined, hoje: undefined, agora: agora("10:00"), primeiroDia: true })[0]).toMatchObject({ id: "sem-entrada" });
+    // nos outros dias continua cobrando à noite
+    expect(lembretesDoDia({ ...base, ontem: undefined, hoje: undefined, agora: agora("22:09") })[0]).toMatchObject({ id: "sem-entrada" });
+  });
   it("almoço e saída esquecidos", () => {
     const sem = lembretesDoDia({ ...base, ontem: undefined, hoje: dia("2026-11-09", "07:00"), agora: agora("14:30") });
     expect(sem.map((x) => x.id)).toEqual(["sem-almoco"]);

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { fazerOnboarding, preparar, semearHistorico } from "./ajuda";
+import { definirInicioUso, fazerOnboarding, preparar, semearHistorico } from "./ajuda";
 
 test.beforeEach(async ({ page }) => {
   await preparar(page);
@@ -278,6 +278,8 @@ test("obras: criar, escolher na Hoje e filtrar o histórico", async ({ page }) =
 
 test("feriado local muda o dia; conferir pagamento", async ({ page }) => {
   await fazerOnboarding(page);
+  // quem usa o app desde setembro e assina o Pro: o período de 21/09 a 20/10 já conta
+  await definirInicioUso(page, "2026-09-01", true);
   await page.goto("/conta");
   await page.getByRole("button", { name: /Feriados da sua cidade/ }).click();
   const painel = page.getByRole("dialog", { name: "Feriados da sua cidade" });
@@ -366,7 +368,8 @@ test("planos: teste grátis libera tudo; depois do teste, recursos pagos mostram
   await expect(page.getByText(/Mais \d+ períodos guardados/)).toBeVisible();
   await page.goto("/planos");
   await expect(page.getByText("Você está no Grátis")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Assinar por ano: R\$ 119,00/ })).toBeVisible();
+  // cobrança ainda fechada: em vez de "Assinar", o aviso de quando abrir (sem beco sem saída)
+  await expect(page.getByRole("link", { name: "Quero ser avisado quando abrir" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Turma/ })).toContainText("em breve");
   // sem servidor, a lista de espera avisa e não finge que salvou
   await page.getByLabel("Seu nome").fill("Carlos");
@@ -399,7 +402,9 @@ test("sem servidor configurado, conta e assinatura avisam e o app segue no celul
   await fazerOnboarding(page);
   await page.goto("/planos/assinar?ciclo=anual");
   await expect(page.getByRole("heading", { name: "Assinar o Pro" })).toBeVisible();
-  await expect(page.getByText("As assinaturas ainda não estão disponíveis")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "As assinaturas abrem em breve" })).toBeVisible();
+  await expect(page.getByLabel("WhatsApp com DDD")).toBeVisible();
+  await expect(page.getByLabel("Pessoas")).toHaveCount(0);
   await page.goto("/entrar");
   await expect(page.getByText("As contas ainda não estão disponíveis")).toBeVisible();
   await page.goto("/hoje");

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 
-/** Roda as migrações 0001, 0002, 0003 e 0006 num Postgres de verdade (PGlite) e confere as funções do painel. */
+/** Roda as migrações 0001, 0002, 0003, 0006 e 0007 num Postgres de verdade (PGlite) e confere as funções do painel. */
 const A = "00000000-0000-0000-0000-00000000000a";
 const B = "00000000-0000-0000-0000-00000000000b";
 let db: PGlite;
@@ -25,7 +25,7 @@ beforeAll(async () => {
     create table cron.job (jobid bigint primary key, jobname text);
     create table cron.job_run_details (jobid bigint, start_time timestamptz, status text, return_message text);
   `);
-  for (const m of ["0001_inicial.sql", "0002_planos.sql", "0003_notificacoes_erros.sql", "0006_painel.sql"]) await db.exec(migracao(m));
+  for (const m of ["0001_inicial.sql", "0002_planos.sql", "0003_notificacoes_erros.sql", "0006_painel.sql", "0007_avisos_banco.sql"]) await db.exec(migracao(m));
   await db.query("insert into auth.users (id, email, created_at, last_sign_in_at) values ($1, 'jose@gmail.com', now() - interval '20 days', now()), ($2, 'ana@hotmail.com', now() - interval '2 days', null)", [A, B]);
   await db.query("insert into settings (user_id, chave, dados, atualizado_em) values ($1, 'inicioUso', '\"2026-01-01\"', now()), ($2, 'inicioUso', to_jsonb(to_char(current_date - 2, 'YYYY-MM-DD')), now())", [A, B]);
   await db.query("insert into day_entries (user_id, chave, dados, atualizado_em) values ($1, '2026-11-09', '{}', now()), ($1, '2026-11-10', '{}', now())", [A]);
@@ -95,5 +95,41 @@ describe("funções do painel", () => {
     } finally {
       await db.exec("reset role");
     }
+  });
+});
+
+describe("migração 0007 (avisos do banco)", () => {
+  async function como<T>(papel: "authenticated" | "anon", usuario: string | null, fn: () => Promise<T>): Promise<T> {
+    await db.query("select set_config('request.jwt.claim.sub', $1, false)", [usuario ?? ""]);
+    await db.exec(`set role ${papel}`);
+    try {
+      return await fn();
+    } finally {
+      await db.exec("reset role");
+    }
+  }
+
+  it("cada pessoa continua vendo só os próprios registros", async () => {
+    const deA = await como("authenticated", A, () => db.query("select chave from day_entries"));
+    const deB = await como("authenticated", B, () => db.query("select chave from day_entries"));
+    expect(deA.rows).toHaveLength(2);
+    expect(deB.rows).toHaveLength(0);
+    await expect(como("authenticated", B, () => db.query("insert into day_entries (user_id, chave, dados, atualizado_em) values ($1, '2026-11-11', '{}', now())", [A]))).rejects.toThrow();
+  });
+
+  it("quem não entrou não chama apagar_meus_dados; funções de gatilho não são chamáveis", async () => {
+    await expect(como("anon", null, () => db.query("select public.apagar_meus_dados()"))).rejects.toThrow(/permission denied/);
+    await expect(como("authenticated", A, () => db.query("select public.manter_mais_recente()"))).rejects.toThrow();
+  });
+
+  it("metas do beta: ativação no 1º dia e uso no 7º dia", async () => {
+    await db.query("insert into app_events (evento, aparelho, em) values ('comecar_concluido', 'ap1', now() - interval '3 days'), ('primeiro_ponto', 'ap1', now() - interval '3 days' + interval '2 hours'), ('comecar_concluido', 'ap2', now() - interval '3 days'), ('comecar_concluido', 'ap3', now() - interval '2 hours')");
+    const r = await db.query<{ m: Record<string, number> }>("select public.admin_metas() as m");
+    expect(r.rows[0]!.m).toMatchObject({ comecos: 2, ativados: 1, contas7: 1, voltaram7: 1 });
+  });
+
+  it("lista de espera aceita o Pro e continua recusando plano desconhecido", async () => {
+    await db.query("insert into waitlist (plano, nome, whatsapp) values ('individual', 'Ana', '11912345678')");
+    await expect(db.query("insert into waitlist (plano, nome, whatsapp) values ('ouro', 'Ana', '11912345679')")).rejects.toThrow();
   });
 });

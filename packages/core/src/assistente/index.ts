@@ -101,6 +101,11 @@ export function lembretesDoDia(p: {
   ontem: DiaRegistro | undefined;
   agora: Agora;
   feriadoHoje?: Feriado;
+  /**
+   * Hoje é o primeiro dia de uso do app. Quem instala depois do expediente não esqueceu a entrada:
+   * nesse dia, o lembrete da entrada só aparece enquanto ainda dá tempo de estar trabalhando.
+   */
+  primeiroDia?: boolean;
 }): Lembrete[] {
   const { perfil, hoje, ontem, agora } = p;
   const res: Lembrete[] = [];
@@ -122,6 +127,7 @@ export function lembretesDoDia(p: {
   const prev = marcacoesPrevistas(esc);
 
   if (!m.entrada && prev.entrada && agora.minutos > horaParaMin(prev.entrada) + MARGEM) {
+    if (p.primeiroDia && prev.saida && agora.minutos > horaParaMin(prev.saida)) return res;
     res.push({ id: "sem-entrada", texto: `Esqueceu de bater a entrada? Ela era às ${prev.entrada}.`, acao: `Bater entrada às ${prev.entrada}`, data: agora.data, marcacoes: { entrada: prev.entrada } });
     return res;
   }
@@ -201,6 +207,7 @@ export function ganhosPorDia(e: Omit<EntradaPeriodo, "modo" | "proporcionalAte">
       itens: e.itens,
       feriadosLocais: e.feriadosLocais,
       agora: e.agora,
+      inicioUso: e.inicioUso,
       modo: "dia",
     });
     const extra = r.ganhos.filter((l) => l.tipo === "extra").reduce((t, l) => t + l.valor, 0);

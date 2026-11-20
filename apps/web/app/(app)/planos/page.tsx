@@ -5,6 +5,7 @@ import { Banner, CabecalhoTela, cx, TituloSecao } from "@ponto-pro/ui";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useEffect } from "react";
+import { COBRANCA_ABERTA } from "../../../lib/cobranca/aberta";
 import { useEstado } from "../../../lib/estado";
 import { medir } from "../../../lib/medir";
 import { situacaoAtual } from "../../../lib/plano";
@@ -84,6 +85,17 @@ export default function Planos() {
         <Itens itens={PRO.resumo} sobreMarca />
         {temPro ? (
           <p className="text-apoio font-bold">Seu plano atual{a?.ciclo === "anual" ? ", cobrado por ano" : ""}.</p>
+        ) : !COBRANCA_ABERTA ? (
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/planos/assinar"
+              onClick={() => medir("clique_assinar", { ciclo: "aviso" })}
+              className="flex min-h-14 items-center justify-center rounded-full bg-white px-6 text-center text-corpo font-bold text-[color:var(--marca)]"
+            >
+              Quero ser avisado quando abrir
+            </Link>
+            <p className="text-apoio text-sobre-marca-2">As assinaturas abrem em breve. Até lá, o Pro fica liberado no teste grátis.</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             <Link
@@ -146,7 +158,7 @@ export default function Planos() {
           </div>
           <div>
             <dt className="font-bold">Como pago?</dt>
-            <dd className="text-texto-2">Pix ou cartão, todo mês ou uma vez por ano. Quem processa é o Asaas; não guardamos dados de cartão.</dd>
+            <dd className="text-texto-2">Pix ou cartão, todo mês ou uma vez por ano. Quem processa é uma instituição de pagamento autorizada; não guardamos dados de cartão.</dd>
           </div>
           <div>
             <dt className="font-bold">O teste grátis cobra alguma coisa?</dt>

@@ -61,3 +61,23 @@ export async function semearHistorico(page: Page) {
   // o app lê o banco ao abrir: recarrega para ver o histórico
   await page.reload();
 }
+
+/** Muda o primeiro dia de uso (para simular quem usa o app há mais tempo); com `pro`, a pessoa já assina o Pro. */
+export async function definirInicioUso(page: Page, data: string, pro = false) {
+  await page.evaluate(async ({ d, pro }) => {
+    const db = await new Promise<IDBDatabase>((ok, erro) => {
+      const r = indexedDB.open("ponto-pro");
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => erro(r.error);
+    });
+    await new Promise<void>((ok, erro) => {
+      const tx = db.transaction("config", "readwrite");
+      const em = new Date().toISOString();
+      tx.objectStore("config").put({ chave: "inicioUso", valor: d, atualizadoEm: em });
+      if (pro) tx.objectStore("config").put({ chave: "assinatura", valor: { plano: "individual", status: "ativa", ciclo: "mensal", pagoAte: "2026-12-31" }, atualizadoEm: em });
+      tx.oncomplete = () => ok();
+      tx.onerror = () => erro(tx.error);
+    });
+    db.close();
+  }, { d: data, pro });
+}

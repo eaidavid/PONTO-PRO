@@ -7,7 +7,8 @@ import { useEffect } from "react";
 
 /**
  * Movimento da página de vendas (GSAP + SplitText + ScrollTrigger).
- * O único momento ensaiado é a abertura: "pingou." cai como gota e o título sobe.
+ * O único momento ensaiado é a abertura: "pingou." cai como gota e o celular de demonstração sobe.
+ * Título, texto e botão da abertura não animam: ficam legíveis desde o primeiro quadro.
  * Abaixo dela, tudo só aparece com um fade curto, para não cansar nem atrasar a leitura.
  * Ligado por atributos data-*, para a página continuar sendo HTML pronto do servidor:
  * - data-heroi / data-assinatura / data-titulo="heroi" / data-heroi-item / data-heroi-demo: a abertura
@@ -47,17 +48,6 @@ export function Animacoes() {
             },
           });
         }
-        const titulo = heroi.querySelector<HTMLElement>("[data-titulo='heroi']");
-        if (titulo) {
-          SplitText.create(titulo, {
-            type: "words",
-            autoSplit: true,
-            onSplit(self) {
-              return gsap.from(self.words, { yPercent: 60, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.05, delay: 0.2 });
-            },
-          });
-        }
-        gsap.from(heroi.querySelectorAll("[data-heroi-item]"), { y: 24, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.09, delay: 0.45 });
         gsap.from(heroi.querySelectorAll("[data-heroi-demo]"), { y: 70, opacity: 0, rotate: 3, duration: 0.95, ease: "power3.out", delay: 0.3 });
       }
 

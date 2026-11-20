@@ -9,7 +9,8 @@ import { medir } from "../lib/medir";
  * Lista de espera da Turma: nome, WhatsApp e tamanho da equipe.
  * `sobreMarca` para usar em fundo verde (página de vendas e cartão do plano).
  */
-export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site"; sobreMarca?: boolean }) {
+export function ListaEsperaTurma({ origem, sobreMarca, plano = "equipe" }: { origem: "app" | "site"; sobreMarca?: boolean; plano?: "equipe" | "individual" }) {
+  const turma = plano === "equipe";
   const id = useId();
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -28,12 +29,12 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
     }
     setErro(null);
     setEstado("enviando");
-    medir("lista_espera", { plano: "turma", origem });
+    medir("lista_espera", { plano: turma ? "turma" : "pro", origem });
     try {
       const r = await fetch("/api/lista-espera", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plano: "equipe", nome: nome.trim(), whatsapp: numeros, origem, ...(Number(pessoas) > 0 ? { pessoas: Number(pessoas) } : {}) }),
+        body: JSON.stringify({ plano, nome: nome.trim(), whatsapp: numeros, origem, ...(turma && Number(pessoas) > 0 ? { pessoas: Number(pessoas) } : {}) }),
       });
       const corpo = (await r.json().catch(() => ({}))) as { erro?: string };
       if (!r.ok) throw new Error(corpo.erro ?? "Não deu para salvar agora.");
@@ -48,7 +49,7 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
     return (
       <p role="status" className={cx("flex items-start gap-2 rounded-2xl p-4 text-corpo font-bold", sobreMarca ? "bg-white/12" : "bg-sucesso-suave")}>
         <CircleCheck aria-hidden className={cx("mt-0.5 size-5 shrink-0", sobreMarca ? "text-marca-destaque" : "text-sucesso-texto")} />
-        Pronto. Avisamos no seu WhatsApp quando a Turma abrir.
+        {turma ? "Pronto. Avisamos no seu WhatsApp quando a Turma abrir." : "Pronto. Avisamos no seu WhatsApp quando as assinaturas abrirem."}
       </p>
     );
   }
@@ -61,7 +62,7 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-3" noValidate>
-      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_8rem]">
+      <div className={cx("grid gap-3", turma ? "sm:grid-cols-[1fr_1fr_8rem]" : "sm:grid-cols-2")}>
         <label htmlFor={`${id}-nome`} className={rotulo}>
           Seu nome
           <input id={`${id}-nome`} className={campo} value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="given-name" maxLength={80} />
@@ -70,10 +71,12 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
           WhatsApp com DDD
           <input id={`${id}-zap`} className={campo} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} inputMode="tel" autoComplete="tel-national" placeholder="11 91234-5678" />
         </label>
-        <label htmlFor={`${id}-pessoas`} className={rotulo}>
-          Pessoas
-          <input id={`${id}-pessoas`} className={campo} value={pessoas} onChange={(e) => setPessoas(e.target.value.replace(/\D/g, "").slice(0, 3))} inputMode="numeric" placeholder="5" />
-        </label>
+        {turma && (
+          <label htmlFor={`${id}-pessoas`} className={rotulo}>
+            Pessoas
+            <input id={`${id}-pessoas`} className={campo} value={pessoas} onChange={(e) => setPessoas(e.target.value.replace(/\D/g, "").slice(0, 3))} inputMode="numeric" placeholder="5" />
+          </label>
+        )}
       </div>
       {erro && (
         <p role="alert" className={cx("text-apoio font-bold", sobreMarca ? "text-sobre-marca" : "text-erro-texto")}>
@@ -90,7 +93,7 @@ export function ListaEsperaTurma({ origem, sobreMarca }: { origem: "app" | "site
       >
         {estado === "enviando" ? "Enviando…" : "Quero ser avisado"}
       </button>
-      <p className={cx("text-legenda", sobreMarca ? "text-sobre-marca-2" : "text-texto-2")}>Usamos seu nome e WhatsApp só para avisar quando a Turma abrir.</p>
+      <p className={cx("text-legenda", sobreMarca ? "text-sobre-marca-2" : "text-texto-2")}>Usamos seu nome e WhatsApp só para avisar quando {turma ? "a Turma abrir" : "as assinaturas abrirem"}.</p>
     </form>
   );
 }

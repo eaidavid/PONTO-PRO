@@ -117,7 +117,7 @@ describe("webhook", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://exemplo.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "servico");
     expect((await POST(pedir({ plano: "equipe", nome: "Ana", whatsapp: "123" }))).status).toBe(400);
-    expect((await POST(pedir({ plano: "individual", nome: "Ana", whatsapp: "11912345678" }))).status).toBe(400);
+    expect((await POST(pedir({ plano: "ouro", nome: "Ana", whatsapp: "11912345678" }))).status).toBe(400);
   });
 });
 

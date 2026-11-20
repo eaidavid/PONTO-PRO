@@ -5,7 +5,7 @@ import { dentroDoLimite, ipDe, respostaLimite } from "../../../lib/limite";
 export const dynamic = "force-dynamic";
 
 const Pedido = z.object({
-  plano: z.literal("equipe"),
+  plano: z.enum(["equipe", "individual"]),
   nome: z.string().trim().min(2).max(80),
   /** Só números, com DDD; o 55 do Brasil é opcional. */
   whatsapp: z.string().transform((v) => v.replace(/\D/g, "")).pipe(z.string().regex(/^(55)?[1-9][0-9]{9,10}$/)),
@@ -15,7 +15,7 @@ const Pedido = z.object({
 
 const erro = (status: number, mensagem: string) => Response.json({ erro: mensagem }, { status });
 
-/** Lista de espera de planos que ainda não estão à venda (hoje, a Turma). Repetir o mesmo WhatsApp não duplica. */
+/** Lista de espera de planos que ainda não estão à venda (a Turma, e o Pro antes de a cobrança abrir). Repetir o mesmo WhatsApp não duplica. */
 export async function POST(req: Request) {
   if (!dentroDoLimite(`espera:${ipDe(req)}`, 5, 10 * 60_000)) return respostaLimite();
   const sb = supabaseServidor();
