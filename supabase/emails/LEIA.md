@@ -9,4 +9,4 @@ Supabase → Authentication → Emails → Templates. Em cada modelo, cole o ass
 | Change Email Address | Confirme seu novo e-mail no Pingou | `trocar-email.html` |
 
 O código (`{{ .Token }}`) é o principal: o app pede o código. O botão (`{{ .ConfirmationURL }}`) é o atalho para quem abre o e-mail no mesmo celular.
-O logo vem de `https://pingou-app.vercel.app/apple-icon.png`; se o domínio mudar, troque o endereço nos três arquivos.
+O logo é feito só com HTML (quadrado verde com a letra P), sem imagem: nenhum app de e-mail bloqueia.
