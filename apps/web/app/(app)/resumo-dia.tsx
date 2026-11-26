@@ -8,6 +8,7 @@ import {
   formatarReais,
   type PerfilTrabalho,
   rotuloUnidade,
+  valorDoLancamento,
   valorProducao,
 } from "@ponto-pro/core";
 import { BotaoPrincipal, BottomSheet, cx, ExplicacaoConta, ValorDinheiro } from "@ponto-pro/ui";
@@ -156,9 +157,11 @@ export function ResumoDia({ data, estado, onFechar, onAjustar }: ResumoDiaProps)
                         <span className="text-corpo font-bold">{item?.nome ?? "Serviço"}</span>
                         <span className="flex items-baseline justify-between gap-2">
                           <span className="numeros text-apoio whitespace-nowrap text-texto-2">
-                            {formatarQuantidade(l.quantidade)} {item ? rotuloUnidade(item.unidade) : ""} × {formatarReais(l.precoUnitario)}
+                            {l.divisao
+                              ? `${formatarReais(valorProducao(l.quantidade, l.precoUnitario))} da equipe · sua parte ${Math.round(l.divisao.parte * 100)}%`
+                              : `${formatarQuantidade(l.quantidade)} ${item ? rotuloUnidade(item.unidade) : ""} × ${formatarReais(l.precoUnitario)}`}
                           </span>
-                          <span className="numeros text-corpo font-bold whitespace-nowrap">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                          <span className="numeros text-corpo font-bold whitespace-nowrap">{formatarReais(valorDoLancamento(l))}</span>
                         </span>
                         {l.descricao ? (
                           <span className="text-apoio text-texto">{l.descricao}</span>

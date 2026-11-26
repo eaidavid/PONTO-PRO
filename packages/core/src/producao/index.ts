@@ -1,4 +1,5 @@
-import { formatarQuantidade, formatarReais, valorProducao } from "../dinheiro";
+import { formatarQuantidade, formatarReais, valorDoLancamento, valorProducao } from "../dinheiro";
+export * from "./equipe";
 import type { ItemProducao } from "../schema/producao";
 
 const ROTULOS: Record<string, string> = {
@@ -78,14 +79,14 @@ export interface TotalArea {
 /** Totais por área de serviço, maior primeiro. */
 export function totaisPorArea(
   itens: ItemProducao[],
-  lancamentos: { itemId: string; quantidade: number; precoUnitario: number }[],
+  lancamentos: { itemId: string; quantidade: number; precoUnitario: number; divisao?: { parte: number } }[],
 ): TotalArea[] {
   const porId = new Map(itens.map((i) => [i.id, i]));
   const mapa = new Map<string, TotalArea>();
   for (const l of lancamentos) {
     const area = porId.get(l.itemId)?.area ?? "Outros";
     const t = mapa.get(area) ?? { area, valor: 0, lancamentos: 0 };
-    t.valor += valorProducao(l.quantidade, l.precoUnitario);
+    t.valor += valorDoLancamento(l);
     t.lancamentos += 1;
     mapa.set(area, t);
   }

@@ -8,7 +8,7 @@ import type { ItemProducao, LancamentoProducao } from "../schema/producao";
 import type { DiaRegistro, Obra } from "../schema/registro";
 import { dataCurta, diaDaSemana, formatarDuracao, inicioDaSemana, seloDia, somarDias } from "../tempo";
 import { saldoDoDia } from "../calculo/dia";
-import { valorProducao } from "../dinheiro";
+import { valorDoLancamento } from "../dinheiro";
 
 // ---------- filtros e busca do histórico de ponto ----------
 
@@ -290,7 +290,7 @@ export function csvDoPeriodo(
         String(l.quantidade).replace(".", ","),
         rotuloUnidade(it?.unidade ?? "un"),
         (l.precoUnitario / 100).toFixed(2).replace(".", ","),
-        (valorProducao(l.quantidade, l.precoUnitario) / 100).toFixed(2).replace(".", ","),
+        (valorDoLancamento(l) / 100).toFixed(2).replace(".", ","),
       ]);
     }
   }

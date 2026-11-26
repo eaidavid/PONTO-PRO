@@ -9,7 +9,7 @@ import {
   type ItemProducao,
   type LancamentoProducao,
   rotuloUnidade,
-  valorProducao,
+  valorDoLancamento,
 } from "@ponto-pro/core";
 
 /*
@@ -139,7 +139,7 @@ export function alteracoesDaProducao(
     lista.push({
       quando: quando(criado),
       em: criado,
-      mudancas: [`Lançou ${formatarQuantidade(l.quantidade)} ${un} de ${nome} (${formatarReais(valorProducao(l.quantidade, l.precoUnitario))})`.replace(/\s+/g, " ")],
+      mudancas: [`Lançou ${formatarQuantidade(l.quantidade)} ${un} de ${nome} (${formatarReais(valorDoLancamento(l))}${l.divisao ? ", sua parte" : ""})`.replace(/\s+/g, " ")],
     });
   }
   return lista;

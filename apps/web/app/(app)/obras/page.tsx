@@ -1,6 +1,6 @@
 "use client";
 
-import { calcularPeriodo, formatarDuracao, formatarReais, type Obra, periodoDaData, rotuloPeriodo, valorProducao } from "@ponto-pro/core";
+import { calcularPeriodo, formatarDuracao, formatarReais, type Obra, periodoDaData, rotuloPeriodo, valorDoLancamento } from "@ponto-pro/core";
 import { BotaoPrincipal, BottomSheet, CabecalhoTela, CampoTexto, TituloSecao, useToast } from "@ponto-pro/ui";
 import { Archive, ArchiveRestore, ChevronRight, HardHat, Plus, Save } from "lucide-react";
 import Link from "next/link";
@@ -33,7 +33,7 @@ export default function Obras() {
     for (const l of estado.lancamentos) {
       if (!l.obraId || l.data < periodo.inicio || l.data > periodo.fim) continue;
       const t = porObra.get(l.obraId) ?? { horas: 0, producao: 0 };
-      t.producao += valorProducao(l.quantidade, l.precoUnitario);
+      t.producao += valorDoLancamento(l);
       porObra.set(l.obraId, t);
     }
     return { periodo, porObra };

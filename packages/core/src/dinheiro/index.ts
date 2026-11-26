@@ -80,3 +80,9 @@ export function aplicarPercentual(base: number, pct: number): number {
 export function valorProducao(quantidade: number, precoUnitario: number): number {
   return arredondar((Math.round(quantidade * 1000) * precoUnitario) / 1000);
 }
+
+/** O que um lançamento rende para a pessoa: o valor cheio, ou só a parte dela num serviço da equipe. */
+export function valorDoLancamento(l: { quantidade: number; precoUnitario: number; divisao?: { parte: number } }): number {
+  const cheio = valorProducao(l.quantidade, l.precoUnitario);
+  return l.divisao ? arredondar(cheio * l.divisao.parte) : cheio;
+}

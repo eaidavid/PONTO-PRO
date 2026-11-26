@@ -1,6 +1,7 @@
 import type { DiaRegistro, Etapa, Feriado, ItemProducao, LancamentoProducao, Marcacoes, Obra, PerfilTrabalho } from "@ponto-pro/core";
 import { FORMATO_BACKUP } from "./marca";
 import { type Config, type ConferenciaSalva, type Consentimento, type DadosPessoais, db, type Preferencias } from "./db";
+import type { EquipeSalva } from "./estado";
 
 export const agoraIso = () => new Date().toISOString();
 const VERSOES_NO_HISTORICO = 20;
@@ -54,6 +55,11 @@ export async function salvarPessoal(dados: DadosPessoais) {
 
 export async function salvarPreferencias(p: Preferencias) {
   await gravarConfig("preferencias", p);
+}
+
+/** Guarda a equipe do último serviço dividido, para a próxima vez já vir preenchida. */
+export async function salvarEquipe(e: EquipeSalva) {
+  await gravarConfig("equipe", e);
 }
 
 /** Marca o começo do teste grátis (só na primeira vez). */

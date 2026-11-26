@@ -6,6 +6,7 @@ import {
   type Assinatura,
   type DiaRegistro,
   type Feriado,
+  type FuncaoEquipe,
   type ItemProducao,
   type Obra,
   itensDosPacotes,
@@ -38,6 +39,14 @@ export interface Estado {
   /** Data do primeiro uso (começo do teste grátis). */
   inicioUso: string | null;
   assinatura: Assinatura | null;
+  /** Última equipe usada num serviço dividido (para já vir preenchida). */
+  equipe: EquipeSalva | null;
+}
+
+export interface EquipeSalva {
+  equipe: FuncaoEquipe[];
+  minhaFuncao: string;
+  igual?: boolean;
 }
 
 function temaDoAparelho(): Preferencias["tema"] {
@@ -103,6 +112,7 @@ export function useEstado(): Estado | undefined {
       consentimento: (cfg.consentimento as Consentimento | undefined) ?? null,
       inicioUso: (cfg.inicioUso as string | undefined) ?? null,
       assinatura: (cfg.assinatura as Assinatura | undefined) ?? null,
+      equipe: (cfg.equipe as EquipeSalva | undefined) ?? null,
     };
   }, []);
 }

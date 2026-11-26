@@ -10,7 +10,7 @@ import {
   rotuloPeriodo,
   rotuloUnidade,
   simularMeta,
-  valorProducao,
+  valorDoLancamento,
 } from "@ponto-pro/core";
 import { Banner, Bloqueio, BottomSheet, CabecalhoTela, Chip, Contador, TituloSecao } from "@ponto-pro/ui";
 import { CalendarDays, Clock, Hammer, Moon, type LucideIcon } from "lucide-react";
@@ -41,7 +41,7 @@ export default function Metas() {
     const previsao = calcularPrevisao({ perfil, periodo, registros, itens, lancamentos, feriadosLocais: estado.feriadosLocais, agora, hoje: agora.data, inicioUso: estado.inicioUso ?? undefined });
     // serviços mais lançados primeiro
     const uso = new Map<string, number>();
-    for (const l of lancamentos) uso.set(l.itemId, (uso.get(l.itemId) ?? 0) + valorProducao(l.quantidade, l.precoUnitario));
+    for (const l of lancamentos) uso.set(l.itemId, (uso.get(l.itemId) ?? 0) + valorDoLancamento(l));
     const favoritos = [...itens].sort((a, b) => (uso.get(b.id) ?? 0) - (uso.get(a.id) ?? 0)).slice(0, 6);
     return { periodo, previsto: previsao.previsto.liquido, favoritos };
   }, [estado, agora]);

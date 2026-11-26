@@ -14,6 +14,7 @@ import {
   somarDias,
   totaisPorArea,
   UNIDADES_CHIPS,
+  valorDoLancamento,
   valorProducao,
 } from "@ponto-pro/core";
 import {
@@ -27,7 +28,7 @@ import {
   TituloSecao,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronDown, ChevronLeft, HardHat, Pencil, Save, Search, Tags, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, HardHat, Pencil, Save, Search, Tags, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -35,6 +36,7 @@ import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salv
 import { useAgora, useEstado } from "../../../lib/estado";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
+import { ServicoEquipe } from "./equipe";
 
 const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]: "Anteontem" };
 const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-apoio font-bold active:bg-superficie-2";
@@ -60,13 +62,14 @@ function LancarProducao() {
   /** Preços digitados na tabela, ainda não salvos (id → texto). */
   const [unidade, setUnidade] = useState("");
   const [rascunho, setRascunho] = useState<Record<string, string>>({});
+  const [equipeAberta, setEquipeAberta] = useState(false);
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
     const periodo = periodoDaData(agora.data, estado.perfil.ciclo.diaFechamento);
     const doPeriodo = estado.lancamentos.filter((l) => l.data >= periodo.inicio && l.data <= periodo.fim);
     return {
-      total: doPeriodo.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0),
+      total: doPeriodo.reduce((t, l) => t + valorDoLancamento(l), 0),
       ordenados: ordenarPorUso(estado.itens, estado.lancamentos),
       porArea: totaisPorArea(estado.itens, doPeriodo),
     };
@@ -160,6 +163,20 @@ function LancarProducao() {
           </button>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setEquipeAberta(true)}
+        className="cartao flex min-h-16 items-center gap-3 px-4 py-3 text-left active:bg-superficie-2"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte"><Users aria-hidden className="size-5" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-corpo font-bold">Serviço da equipe</span>
+          <span className="block text-apoio text-texto-2">Valor de empreitada dividido pela função de cada um</span>
+        </span>
+        <ChevronRight aria-hidden className="size-5 text-texto-2" />
+      </button>
+      <ServicoEquipe aberto={equipeAberta} onFechar={() => setEquipeAberta(false)} data={data} obraId={obraAtual} itens={itens} salva={estado.equipe} bloqueado={noLimite} />
 
       {noLimite && (
         <Bloqueio

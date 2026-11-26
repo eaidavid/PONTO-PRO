@@ -76,6 +76,47 @@ test("lançar produção criando um serviço novo", async ({ page }) => {
   await expect(page.getByText("R$ 187,00").first()).toBeVisible();
 });
 
+test("serviço da equipe: laje dividida pela função, só a minha parte entra", async ({ page }) => {
+  await fazerOnboarding(page);
+  await page.goto("/producao");
+  await page.getByRole("button", { name: /Serviço da equipe/ }).click();
+  const painel = page.getByRole("dialog", { name: "Serviço da equipe" });
+  await painel.getByLabel(/Nome da empreitada/).fill("Laje 2º andar");
+  await painel.getByLabel("Serviço 1", { exact: true }).fill("Forma da laje");
+  await painel.getByLabel("Valor do serviço 1").fill("775");
+  await painel.getByRole("button", { name: "Outro serviço" }).click();
+  await painel.getByLabel("Serviço 2", { exact: true }).fill("Armação");
+  await painel.getByLabel("Valor do serviço 2").fill("1250");
+  await painel.getByRole("button", { name: "Outro serviço" }).click();
+  await painel.getByLabel("Serviço 3", { exact: true }).fill("Concretagem");
+  await painel.getByLabel("Valor do serviço 3").fill("250");
+  await expect(painel.getByText("R$ 2.275,00", { exact: true })).toBeVisible();
+  // equipe padrão: 1 profissional, 1 meio oficial e 2 ajudantes; ajudante fica com 20%
+  await expect(painel.getByText("R$ 2.275,00 para 1 profissional, 1 meio oficial e 2 ajudantes.")).toBeVisible();
+  await expect(painel.getByRole("row", { name: /Ajudante \(2\).*20% cada.*R\$ 455,00/ })).toBeVisible();
+  await painel.getByRole("button", { name: "Meio oficial", exact: true }).click();
+  await expect(painel.getByRole("row", { name: /Meio oficial, você.*26%.*R\$ 591,50/ })).toBeVisible();
+  await painel.getByRole("button", { name: "Lançar minha parte: R$ 591,50" }).click();
+  await expect(page.getByText("Sua parte: R$ 591,50 (3 serviços)")).toBeVisible();
+
+  await page.goto("/historico?aba=producao");
+  await expect(page.getByText("R$ 1.250,00 da equipe · sua parte 26%")).toBeVisible();
+  await expect(page.getByText("R$ 325,00", { exact: true })).toBeVisible();
+
+  // o encarregado corrigiu a armação para R$ 1.300: a parte acompanha
+  await page.getByRole("button", { name: /^Editar Armação/ }).click();
+  const ed = page.getByRole("dialog", { name: "Armação" });
+  await ed.getByLabel("Valor do serviço para a equipe").fill("1300");
+  await expect(ed.getByText("Sua parte: 26% de R$ 1.300,00 = R$ 338,00")).toBeVisible();
+  await ed.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("R$ 1.300,00 da equipe · sua parte 26%")).toBeVisible();
+
+  // da próxima vez, a equipe e a função já vêm escolhidas
+  await page.goto("/producao");
+  await page.getByRole("button", { name: /Serviço da equipe/ }).click();
+  await expect(page.getByRole("dialog", { name: "Serviço da equipe" }).getByRole("button", { name: "Meio oficial", exact: true })).toHaveAttribute("aria-pressed", "true");
+});
+
 test("editar um dia em Registros", async ({ page }) => {
   await fazerOnboarding(page);
   await semearHistorico(page);

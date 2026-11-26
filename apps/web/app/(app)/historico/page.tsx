@@ -27,6 +27,7 @@ import {
   seloDia,
   somarDias,
   totaisPorArea,
+  valorDoLancamento,
   valorProducao,
 } from "@ponto-pro/core";
 import {
@@ -151,7 +152,7 @@ function Historico() {
     return {
       r,
       valores,
-      producaoDia: (lancs ?? []).reduce((m, l) => m.set(l.data, (m.get(l.data) ?? 0) + valorProducao(l.quantidade, l.precoUnitario)), new Map<string, number>()),
+      producaoDia: (lancs ?? []).reduce((m, l) => m.set(l.data, (m.get(l.data) ?? 0) + valorDoLancamento(l)), new Map<string, number>()),
       semanas: agruparPorSemana(filtrarDias([...ateHoje].reverse(), { filtro, busca, obraId, registros: regs, obras: estado.obras })),
       pendencias: pendenciasDoPeriodo(desdeInicio, agora.data),
       completar: completarComEscala(estado.perfil, desdeInicio, agora.data),
@@ -183,7 +184,7 @@ function Historico() {
   const usaProducao = perfil.producao.ativo || perfil.pagamento.forma === "producao" || perfil.pagamento.forma === "misto" || lancs.length > 0;
   const porItem = new Map(itens.map((i) => [i.id, i]));
   const lancsFiltrados = filtrarLancamentos(lancs, { itens, busca, area, obraId });
-  const totalProducao = lancsFiltrados.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0);
+  const totalProducao = lancsFiltrados.reduce((t, l) => t + valorDoLancamento(l), 0);
   const filtrando = filtro !== "todos" || !!busca || !!obraId || !!area;
   const buscaVisivel = buscaAberta || !!texto;
 
@@ -499,7 +500,7 @@ function Historico() {
                     <h2 className="text-apoio font-bold text-texto-2">{g.rotulo}</h2>
                     <span className="numeros text-legenda text-texto-2">{g.itens.length} {g.itens.length === 1 ? "lançamento" : "lançamentos"}</span>
                   </span>
-                  <span className="numeros text-corpo font-bold">{formatarReais(g.itens.reduce((t, l) => t + valorProducao(l.quantidade, l.precoUnitario), 0))}</span>
+                  <span className="numeros text-corpo font-bold">{formatarReais(g.itens.reduce((t, l) => t + valorDoLancamento(l), 0))}</span>
                 </div>
                 <ul className="cartao divide-y divide-borda overflow-hidden">
                   {g.itens.map((l) => {
@@ -514,12 +515,14 @@ function Historico() {
                         <span className="flex min-w-0 flex-1 flex-col">
                           <span className="line-clamp-2 text-corpo font-bold leading-snug">{item?.nome ?? "Serviço"}</span>
                           <span className="numeros text-apoio text-texto-2">
-                            {formatarQuantidade(l.quantidade)} {rotuloUnidade(item?.unidade ?? "un")} × {formatarReais(l.precoUnitario)}
+                            {l.divisao
+                              ? `${formatarReais(valorProducao(l.quantidade, l.precoUnitario))} da equipe · sua parte ${Math.round(l.divisao.parte * 100)}%`
+                              : `${formatarQuantidade(l.quantidade)} ${rotuloUnidade(item?.unidade ?? "un")} × ${formatarReais(l.precoUnitario)}`}
                             {l.obraId && nomeObra.get(l.obraId) ? ` · ${nomeObra.get(l.obraId)}` : ""}
                           </span>
                           {l.descricao && <span className="text-apoio text-texto">{l.descricao}</span>}
                         </span>
-                        <span className="numeros text-corpo font-bold">{formatarReais(valorProducao(l.quantidade, l.precoUnitario))}</span>
+                        <span className="numeros text-corpo font-bold">{formatarReais(valorDoLancamento(l))}</span>
                         </button>
                         <ChevronRight aria-hidden className="size-5 shrink-0 text-texto-2" />
                       </li>

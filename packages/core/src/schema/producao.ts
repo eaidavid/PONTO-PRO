@@ -22,6 +22,29 @@ export const ItemProducao = z.object({
 });
 export type ItemProducao = z.infer<typeof ItemProducao>;
 
+/** Uma função da equipe numa empreitada dividida: quantas pessoas e o peso de cada uma na divisão. */
+export const FuncaoEquipe = z.object({
+  funcao: z.string().trim().min(1).max(30),
+  quantidade: z.number().int().min(0).max(50),
+  /** Peso na divisão (ajudante 1, meio oficial 1,3, profissional 1,7...). */
+  peso: z.number().positive().max(10),
+});
+export type FuncaoEquipe = z.infer<typeof FuncaoEquipe>;
+
+/**
+ * Serviço feito em equipe: o valor cheio fica no lançamento (quantidade × preço) e a pessoa recebe só a `parte`.
+ * Ex.: laje de R$ 2.500 dividida entre 2 ajudantes, 1 meio oficial e 1 profissional.
+ */
+export const DivisaoEquipe = z.object({
+  /** Fração da pessoa no valor cheio (0 a 1). */
+  parte: z.number().gt(0).max(1),
+  minhaFuncao: z.string().trim().min(1).max(30),
+  equipe: z.array(FuncaoEquipe).min(1).max(8),
+  /** Nome da empreitada que junta os serviços ("Laje do 2º andar"). */
+  grupo: z.string().trim().max(60).optional(),
+});
+export type DivisaoEquipe = z.infer<typeof DivisaoEquipe>;
+
 export const LancamentoProducao = z.object({
   id: z.string(),
   data: DataISO,
@@ -35,5 +58,7 @@ export const LancamentoProducao = z.object({
   precoUnitario: Centavos,
   descricao: z.string().max(200).optional(),
   obraId: z.string().optional(),
+  /** Serviço da equipe: só a parte da pessoa entra no dinheiro dela. */
+  divisao: DivisaoEquipe.optional(),
 });
 export type LancamentoProducao = z.infer<typeof LancamentoProducao>;

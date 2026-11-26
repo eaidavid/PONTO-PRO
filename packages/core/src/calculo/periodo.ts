@@ -9,6 +9,7 @@ import {
   valorAdicional,
   valorHoraDaTarifa,
   valorMinutos,
+  valorDoLancamento,
   valorProducao,
 } from "../dinheiro";
 import { calcularInss, calcularIrrf, descontoValeTransporte, dsrSobreExtras, tabelaDoAno } from "../clt";
@@ -360,14 +361,16 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
   const usaProducao = perfil.producao.ativo || base === "producao" || perfil.pagamento.forma === "misto";
   if (usaProducao && e.lancamentos?.length) {
     const itens = new Map((e.itens ?? []).map((i) => [i.id, i]));
-    const grupos = new Map<string, { item?: ItemProducao; nome: string; unidade: string; preco: number; qtd: number; valor: number }>();
+    const grupos = new Map<string, { item?: ItemProducao; nome: string; unidade: string; preco: number; qtd: number; valor: number; cheio: number; equipe: boolean }>();
     for (const l of e.lancamentos) {
       if (l.data < periodo.inicio || l.data > periodo.fim) continue;
       const item = itens.get(l.itemId);
-      const k = `${l.itemId}|${l.precoUnitario}`;
-      const g = grupos.get(k) ?? { item, nome: item?.nome ?? "Serviço", unidade: item?.unidade ?? "un", preco: l.precoUnitario, qtd: 0, valor: 0 };
+      // serviço da equipe: cada lançamento é uma linha (a parte pode mudar de um para outro)
+      const k = l.divisao ? `equipe|${l.id}` : `${l.itemId}|${l.precoUnitario}`;
+      const g = grupos.get(k) ?? { item, nome: item?.nome ?? "Serviço", unidade: item?.unidade ?? "un", preco: l.precoUnitario, qtd: 0, valor: 0, cheio: 0, equipe: !!l.divisao };
       g.qtd += l.quantidade;
-      g.valor += valorProducao(l.quantidade, l.precoUnitario);
+      g.cheio += valorProducao(l.quantidade, l.precoUnitario);
+      g.valor += valorDoLancamento(l);
       grupos.set(k, g);
     }
     let i = 0;
@@ -377,10 +380,12 @@ export function calcularPeriodo(e: EntradaPeriodo): ResultadoPeriodo {
       ganhos.push({
         codigo: String(40 + i++).padStart(3, "0"),
         descricao: g.nome,
-        referencia: qtd,
+        referencia: g.equipe ? `${Math.round((g.valor / Math.max(1, g.cheio)) * 100)}%` : qtd,
         valor: g.valor,
         tipo: "producao",
-        conta: `${g.nome} ${qtd} × ${formatarReais(g.preco)} = ${formatarReais(g.valor)}`,
+        conta: g.equipe
+          ? `${g.nome}: sua parte de ${formatarReais(g.cheio)} da equipe = ${formatarReais(g.valor)}`
+          : `${g.nome} ${qtd} × ${formatarReais(g.preco)} = ${formatarReais(g.valor)}`,
         explicacao: EXPLICA.producao,
       });
     }
