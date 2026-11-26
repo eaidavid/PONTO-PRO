@@ -19,23 +19,33 @@ export function EditarLancamento({ lancamento, item, onFechar, comDesfazer = tru
   const { mostrar } = useToast();
   const [qtd, setQtd] = useState("");
   const [obs, setObs] = useState("");
+  const [pct, setPct] = useState("");
   const equipe = lancamento?.divisao;
   useEffect(() => {
     if (!lancamento) return;
     setQtd(lancamento.divisao ? (lancamento.precoUnitario / 100).toFixed(2).replace(".", ",") : formatarQuantidade(lancamento.quantidade));
+    setPct(lancamento.divisao ? (Math.round(lancamento.divisao.parte * 1000) / 10).toLocaleString("pt-BR") : "");
     setObs(lancamento.descricao ?? "");
   }, [lancamento]);
 
   // no serviço da equipe, o campo é o valor cheio do serviço (a quantidade fica 1)
   const valorCheio = equipe ? lerReais(qtd) : null;
-  const quantidade = equipe ? (valorCheio !== null && valorCheio > 0 ? 1 : null) : lerQuantidade(qtd);
+  const pctNum = Number(pct.replace(",", "."));
+  const parteNova = equipe && pct.trim() && Number.isFinite(pctNum) && pctNum > 0 && pctNum <= 100 ? pctNum / 100 : null;
+  const quantidade = equipe ? (valorCheio !== null && valorCheio > 0 && parteNova !== null ? 1 : null) : lerQuantidade(qtd);
   const un = rotuloUnidade(item?.unidade ?? "un");
 
   async function salvar() {
     if (!lancamento || quantidade === null) return;
     const { descricao: _, ...resto } = lancamento;
     const texto = obs.trim().slice(0, 200);
-    await lancarProducao({ ...resto, quantidade, ...(equipe && valorCheio ? { precoUnitario: valorCheio } : {}), ...(texto ? { descricao: texto } : {}) });
+    await lancarProducao({
+      ...resto,
+      quantidade,
+      ...(equipe && valorCheio ? { precoUnitario: valorCheio } : {}),
+      ...(equipe && parteNova !== null ? { divisao: { ...equipe, parte: parteNova } } : {}),
+      ...(texto ? { descricao: texto } : {}),
+    });
     onFechar();
     mostrar({ texto: "Lançamento salvo", ...(comDesfazer ? { desfazer: () => lancarProducao(lancamento) } : {}) });
   }
@@ -57,7 +67,10 @@ export function EditarLancamento({ lancamento, item, onFechar, comDesfazer = tru
       {lancamento && (
         <div className="flex flex-col gap-4 pb-2">
           {equipe ? (
-            <CampoNumero rotulo="Valor do serviço para a equipe" prefixo="R$" valor={qtd} onChange={setQtd} erro={quantidade === null ? "Digite o valor que o encarregado passou." : undefined} ajuda={`Equipe: ${resumoEquipe(equipe.equipe)}.`} />
+            <>
+              <CampoNumero rotulo="Valor do serviço para a equipe" prefixo="R$" valor={qtd} onChange={setQtd} erro={valorCheio === null ? "Digite o valor que o encarregado passou." : undefined} ajuda={`Equipe: ${resumoEquipe(equipe.equipe)}.`} />
+              <CampoNumero rotulo="Sua parte" sufixo="%" valor={pct} onChange={setPct} erro={parteNova === null ? "Digite a porcentagem, de 0,1 a 100." : undefined} />
+            </>
           ) : (
             <CampoNumero rotulo="Quantidade" sufixo={un} valor={qtd} onChange={setQtd} erro={quantidade === null ? "Digite quanto você fez. Ex.: 4" : undefined} />
           )}
@@ -75,7 +88,7 @@ export function EditarLancamento({ lancamento, item, onFechar, comDesfazer = tru
             {quantidade === null
               ? "—"
               : equipe && valorCheio
-                ? `Sua parte: ${Math.round(equipe.parte * 1000) / 10}% de ${formatarReais(valorCheio)} = ${formatarReais(valorDoLancamento({ quantidade: 1, precoUnitario: valorCheio, divisao: equipe }))}`
+                ? `Sua parte: ${(Math.round((parteNova ?? equipe.parte) * 1000) / 10).toLocaleString("pt-BR")}% de ${formatarReais(valorCheio)} = ${formatarReais(valorDoLancamento({ quantidade: 1, precoUnitario: valorCheio, divisao: { parte: parteNova ?? equipe.parte } }))}`
                 : `${formatarQuantidade(quantidade)} ${un} × ${formatarReais(lancamento.precoUnitario)} = ${formatarReais(valorProducao(quantidade, lancamento.precoUnitario))}`}
           </p>
           <BotaoPrincipal

@@ -91,9 +91,10 @@ function LancarProducao() {
   const equipeSalva = estado.equipe;
   const parte = parteDaEquipe(equipeSalva);
 
-  async function lancar({ item, novo, quantidade, descricao, precoUnitario, equipe }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string; precoUnitario?: number; equipe?: boolean }) {
+  async function lancar({ item, novo, quantidade, descricao, precoUnitario, equipe, parte: parteDestaVez }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string; precoUnitario?: number; equipe?: boolean; parte?: number }) {
     if (noLimite) return;
-    if (equipe && parte <= 0) {
+    const minhaFracao = parteDestaVez ?? parte;
+    if (equipe && (minhaFracao <= 0 || minhaFracao > 1)) {
       setAjustarEquipe(true);
       return;
     }
@@ -103,7 +104,7 @@ function LancarProducao() {
     else if (precoUnitario !== undefined && precoUnitario !== item.preco) await salvarItem({ ...item, preco: precoUnitario, exemplo: false });
     const eq = equipeSalva ?? { equipe: EQUIPE_PADRAO, minhaFuncao: "Profissional" };
     const divisao = equipe
-      ? { parte, minhaFuncao: eq.minhaFuncao, equipe: eq.equipe.map((f) => ({ ...f, peso: eq.igual ? 1 : f.peso })), ...(descricao ? { grupo: descricao.slice(0, 60) } : {}) }
+      ? { parte: minhaFracao, minhaFuncao: eq.minhaFuncao, equipe: eq.equipe.map((f) => ({ ...f, peso: eq.igual ? 1 : f.peso })), ...(descricao ? { grupo: descricao.slice(0, 60) } : {}) }
       : undefined;
     const id = novoId("l");
     const lanc = { id, data, itemId: item.id, quantidade, precoUnitario: preco, ...(descricao ? { descricao } : {}), ...(obraAtual ? { obraId: obraAtual } : {}), ...(divisao ? { divisao } : {}) };

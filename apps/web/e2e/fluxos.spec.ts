@@ -105,6 +105,23 @@ test("serviço da equipe: tão prático quanto lançar sozinho, só a minha part
   await page.getByRole("button", { name: "Lançar minha parte: R$ 325,00" }).click();
   await expect(page.getByText("Serviço criado. Sua parte: R$ 325,00 de R$ 1.250,00")).toBeVisible();
 
+  // nesta vez a divisão foi diferente: ajusta a porcentagem (ou o valor) na hora de lançar
+  await page.getByRole("searchbox").fill("Concretagem");
+  await page.getByRole("button", { name: "Criar “Concretagem”" }).click();
+  await page.getByRole("button", { name: "verba", exact: true }).click();
+  await page.getByLabel("Valor do serviço para a equipe").fill("250");
+  await expect(page.getByLabel("Sua parte desta vez")).toHaveValue("65,00");
+  await expect(page.getByLabel("Porcentagem")).toHaveValue("26");
+  await page.getByLabel("Porcentagem").fill("32");
+  await expect(page.getByLabel("Sua parte desta vez")).toHaveValue("80,00");
+  await page.getByLabel("Sua parte desta vez").fill("90");
+  await expect(page.getByLabel("Porcentagem")).toHaveValue("36");
+  await page.getByRole("button", { name: /Voltar para a divisão da equipe/ }).click();
+  await expect(page.getByLabel("Sua parte desta vez")).toHaveValue("65,00");
+  await page.getByLabel("Porcentagem").fill("32");
+  await page.getByRole("button", { name: "Lançar minha parte: R$ 80,00" }).click();
+  await expect(page.getByText("Serviço criado. Sua parte: R$ 80,00 de R$ 250,00")).toBeVisible();
+
   // medição seguinte do mesmo serviço: vem com o último valor, troca e lança
   await page.getByRole("searchbox").fill("Forma da laje");
   await page.getByRole("button", { name: /^Forma da laje Meus serviços/ }).click();
@@ -116,14 +133,17 @@ test("serviço da equipe: tão prático quanto lançar sozinho, só a minha part
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("R$ 1.250,00 da equipe · sua parte 26%")).toBeVisible();
   await expect(page.getByText("R$ 325,00", { exact: true })).toBeVisible();
+  await expect(page.getByText("R$ 250,00 da equipe · sua parte 32%")).toBeVisible();
 
   // o encarregado corrigiu a armação para R$ 1.300: a parte acompanha
   await page.getByRole("button", { name: /^Editar Armação/ }).click();
   const ed = page.getByRole("dialog", { name: "Armação" });
   await ed.getByLabel("Valor do serviço para a equipe").fill("1300");
   await expect(ed.getByText("Sua parte: 26% de R$ 1.300,00 = R$ 338,00")).toBeVisible();
+  await ed.getByLabel("Sua parte").fill("30");
+  await expect(ed.getByText("Sua parte: 30% de R$ 1.300,00 = R$ 390,00")).toBeVisible();
   await ed.getByRole("button", { name: "Salvar" }).click();
-  await expect(page.getByText("R$ 1.300,00 da equipe · sua parte 26%")).toBeVisible();
+  await expect(page.getByText("R$ 1.300,00 da equipe · sua parte 30%")).toBeVisible();
 
   // sozinho de novo: desliga a chave e o lançamento volta ao valor cheio
   await page.goto("/producao");

@@ -10,7 +10,7 @@ import {
   UNIDADES_CHIPS,
 } from "@ponto-pro/core";
 import { PackagePlus, Plus, Search, Star, Users } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { BotaoPrincipal } from "./BotaoPrincipal";
 import { CampoNumero } from "./CampoNumero";
 import { Chip } from "./Chip";
@@ -27,6 +27,8 @@ export interface LancamentoNovo {
   precoUnitario?: number;
   /** Lançado como serviço da equipe: só a parte da pessoa entra. */
   equipe?: boolean;
+  /** Parte desta vez (0 a 1), quando a pessoa ajustou na hora; senão vale a da equipe. */
+  parte?: number;
 }
 
 /** Serviço da equipe dentro do lançamento normal: uma chave e a parte de quem lança. */
@@ -85,11 +87,44 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
   const qtd = fechado ? 1 : lerQuantidade(quantidade);
   const previa = qtd && precoCentavos !== null && unidadeFinal ? previaProducao(qtd, escolhido?.unidade ?? unidadeFinal, precoCentavos) : null;
   const naEquipe = !!equipe?.ligada;
-  const minhaParte = previa && naEquipe ? Math.round(previa.valor * equipe!.parte) : null;
+  const base = previa?.valor ?? 0;
+  // parte ajustada só nesta vez (a divisão pode variar de um serviço para outro)
+  const [parteManual, setParteManual] = useState<number | null>(null);
+  const [parteValorTxt, setParteValorTxt] = useState("");
+  const [partePctTxt, setPartePctTxt] = useState("");
+  const parte = parteManual ?? equipe?.parte ?? 0;
+  const parteInvalida = parteManual !== null && (parteManual <= 0 || parteManual > 1);
+  const minhaParte = previa && naEquipe ? Math.round(base * parte) : null;
+  const paraTexto = (centavos: number) => (centavos / 100).toFixed(2).replace(".", ",");
+  const pctTexto = (f: number) => (Math.round(f * 1000) / 10).toLocaleString("pt-BR");
+  // com o valor do serviço mudando, a porcentagem fica e o valor acompanha
+  useEffect(() => {
+    if (!naEquipe) return;
+    setParteValorTxt(base ? paraTexto(Math.round(base * parte)) : "");
+    if (parteManual === null) setPartePctTxt(pctTexto(equipe?.parte ?? 0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base, naEquipe, equipe?.parte, parteManual === null]);
+
+  function mudarParteValor(t: string) {
+    setParteValorTxt(t);
+    const v = lerReais(t);
+    if (v === null || !base) return;
+    setParteManual(v / base);
+    setPartePctTxt(pctTexto(v / base));
+  }
+
+  function mudarPartePct(t: string) {
+    setPartePctTxt(t);
+    const p = Number(t.replace(",", "."));
+    if (!Number.isFinite(p) || t.trim() === "") return;
+    setParteManual(p / 100);
+    if (base) setParteValorTxt(paraTexto(Math.round((base * p) / 100)));
+  }
 
   function lancar() {
     setTentou(true);
     if (!qtd || precoCentavos === null || !unidadeFinal) return;
+    if (naEquipe && parteInvalida) return;
     const item: ItemProducao =
       escolhido ?? {
         id: `novo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -104,7 +139,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
       novo: !escolhido,
       quantidade: qtd,
       ...(fechado && escolhido ? { precoUnitario: precoCentavos } : {}),
-      ...(naEquipe ? { equipe: true } : {}),
+      ...(naEquipe ? { equipe: true, ...(parteManual !== null ? { parte: parteManual } : {}) } : {}),
       ...(observacao.trim() ? { descricao: observacao.trim().slice(0, 200) } : {}),
     });
   }
@@ -199,6 +234,20 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
         {equipe && (
           <div className="flex flex-col rounded-cartao border-2 border-borda px-4">
             <Interruptor rotulo="Dividido com a equipe" descricao={equipe.resumo} valor={equipe.ligada} onChange={equipe.onLigar} />
+            {naEquipe && (
+              <div className="flex flex-col gap-3 border-t border-borda pt-3 pb-1">
+                <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
+                  <CampoNumero rotulo="Sua parte desta vez" prefixo="R$" valor={parteValorTxt} onChange={mudarParteValor} placeholder="0,00" disabled={!base} />
+                  <CampoNumero rotulo="Porcentagem" sufixo="%" valor={partePctTxt} onChange={mudarPartePct} placeholder="0" />
+                </div>
+                {parteInvalida && <p role="alert" className="text-apoio font-bold text-erro-texto">A sua parte precisa ser maior que zero e não pode passar do valor do serviço.</p>}
+                {parteManual !== null && !parteInvalida && (
+                  <button type="button" onClick={() => setParteManual(null)} className="min-h-11 self-start text-apoio font-bold text-primaria-forte underline underline-offset-4">
+                    Voltar para a divisão da equipe ({pctTexto(equipe.parte)}%)
+                  </button>
+                )}
+              </div>
+            )}
             <button type="button" onClick={equipe.onAjustar} className="-mt-1 mb-2 min-h-11 self-start text-apoio font-bold text-primaria-forte underline underline-offset-4">
               Ajustar a equipe
             </button>
