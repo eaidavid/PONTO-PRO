@@ -22,7 +22,7 @@ export function rotuloUnidade(u: string): string {
 }
 
 /** Chips de unidade na criação de serviço. */
-export const UNIDADES_CHIPS = ["m2", "m", "m3", "un", "pt", "dia", "saco"] as const;
+export const UNIDADES_CHIPS = ["m2", "m", "m3", "un", "pt", "dia", "saco", "verba"] as const;
 
 /** Minúsculas, sem acento e sem espaço repetido: "Assentar Meio-Fio" -> "assentar meio-fio". */
 export function normalizar(texto: string): string {

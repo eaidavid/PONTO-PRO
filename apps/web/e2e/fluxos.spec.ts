@@ -76,28 +76,42 @@ test("lançar produção criando um serviço novo", async ({ page }) => {
   await expect(page.getByText("R$ 187,00").first()).toBeVisible();
 });
 
-test("serviço da equipe: laje dividida pela função, só a minha parte entra", async ({ page }) => {
+test("serviço da equipe: tão prático quanto lançar sozinho, só a minha parte entra", async ({ page }) => {
   await fazerOnboarding(page);
   await page.goto("/producao");
-  await page.getByRole("button", { name: /Serviço da equipe/ }).click();
-  const painel = page.getByRole("dialog", { name: "Serviço da equipe" });
-  await painel.getByLabel(/Nome da empreitada/).fill("Laje 2º andar");
-  await painel.getByLabel("Serviço 1", { exact: true }).fill("Forma da laje");
-  await painel.getByLabel("Valor do serviço 1").fill("775");
-  await painel.getByRole("button", { name: "Outro serviço" }).click();
-  await painel.getByLabel("Serviço 2", { exact: true }).fill("Armação");
-  await painel.getByLabel("Valor do serviço 2").fill("1250");
-  await painel.getByRole("button", { name: "Outro serviço" }).click();
-  await painel.getByLabel("Serviço 3", { exact: true }).fill("Concretagem");
-  await painel.getByLabel("Valor do serviço 3").fill("250");
-  await expect(painel.getByText("R$ 2.275,00", { exact: true })).toBeVisible();
-  // equipe padrão: 1 profissional, 1 meio oficial e 2 ajudantes; ajudante fica com 20%
-  await expect(painel.getByText("R$ 2.275,00 para 1 profissional, 1 meio oficial e 2 ajudantes.")).toBeVisible();
-  await expect(painel.getByRole("row", { name: /Ajudante \(2\).*20% cada.*R\$ 455,00/ })).toBeVisible();
-  await painel.getByRole("button", { name: "Meio oficial", exact: true }).click();
-  await expect(painel.getByRole("row", { name: /Meio oficial, você.*26%.*R\$ 591,50/ })).toBeVisible();
-  await painel.getByRole("button", { name: "Lançar minha parte: R$ 591,50" }).click();
-  await expect(page.getByText("Sua parte: R$ 591,50 (3 serviços)")).toBeVisible();
+  // serviço de valor fechado (verba): digita o valor que o encarregado passou
+  await page.getByRole("searchbox").fill("Forma da laje");
+  await page.getByRole("button", { name: "Criar “Forma da laje”" }).click();
+  await page.getByRole("button", { name: "verba", exact: true }).click();
+  await page.getByLabel("Valor do serviço", { exact: true }).fill("775");
+  // primeira vez: ligar a chave abre a configuração da equipe
+  await page.getByRole("switch", { name: /Dividido com a equipe/ }).click();
+  const eq = page.getByRole("dialog", { name: "Sua equipe" });
+  await expect(eq.getByText("Dividido entre 1 profissional, 1 meio oficial e 2 ajudantes.")).toBeVisible();
+  await eq.getByRole("button", { name: "Meio oficial", exact: true }).click();
+  await expect(eq.getByRole("row", { name: /Meio oficial, você.*26%.*R\$ 260,00/ })).toBeVisible();
+  await expect(eq.getByRole("row", { name: /Ajudante \(2\).*20% cada/ })).toBeVisible();
+  await eq.getByRole("button", { name: "Salvar equipe" }).click();
+  await expect(page.getByRole("switch", { name: /Dividido com a equipe/ })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByText("R$ 775,00 da equipe → sua parte R$ 201,50")).toBeVisible();
+  await page.getByRole("button", { name: "Lançar minha parte: R$ 201,50" }).click();
+  await expect(page.getByText("Serviço criado. Sua parte: R$ 201,50 de R$ 775,00")).toBeVisible();
+
+  // o segundo serviço já sai dividido: a chave fica como a pessoa deixou
+  await page.getByRole("searchbox").fill("Armação");
+  await page.getByRole("button", { name: "Criar “Armação”" }).click();
+  await page.getByRole("button", { name: "verba", exact: true }).click();
+  await page.getByLabel("Valor do serviço para a equipe").fill("1250");
+  await page.getByRole("button", { name: "Lançar minha parte: R$ 325,00" }).click();
+  await expect(page.getByText("Serviço criado. Sua parte: R$ 325,00 de R$ 1.250,00")).toBeVisible();
+
+  // medição seguinte do mesmo serviço: vem com o último valor, troca e lança
+  await page.getByRole("searchbox").fill("Forma da laje");
+  await page.getByRole("button", { name: /^Forma da laje Meus serviços/ }).click();
+  await expect(page.getByLabel("Valor do serviço para a equipe")).toHaveValue("775,00");
+  await page.getByLabel("Valor do serviço para a equipe").fill("500");
+  await page.getByRole("button", { name: "Lançar minha parte: R$ 130,00" }).click();
+  await expect(page.getByText("Sua parte: R$ 130,00 de R$ 500,00")).toBeVisible();
 
   await page.goto("/historico?aba=producao");
   await expect(page.getByText("R$ 1.250,00 da equipe · sua parte 26%")).toBeVisible();
@@ -111,10 +125,12 @@ test("serviço da equipe: laje dividida pela função, só a minha parte entra",
   await ed.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("R$ 1.300,00 da equipe · sua parte 26%")).toBeVisible();
 
-  // da próxima vez, a equipe e a função já vêm escolhidas
+  // sozinho de novo: desliga a chave e o lançamento volta ao valor cheio
   await page.goto("/producao");
-  await page.getByRole("button", { name: /Serviço da equipe/ }).click();
-  await expect(page.getByRole("dialog", { name: "Serviço da equipe" }).getByRole("button", { name: "Meio oficial", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("searchbox").fill("Armação");
+  await page.getByRole("button", { name: /^Armação Meus serviços/ }).click();
+  await page.getByRole("switch", { name: /Dividido com a equipe/ }).click();
+  await expect(page.getByRole("button", { name: "Lançar produção" })).toBeVisible();
 });
 
 test("beta: convite inválido não trava o começo; opinião depois de 7 dias", async ({ page }) => {

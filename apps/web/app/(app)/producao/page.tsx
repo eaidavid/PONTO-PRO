@@ -2,6 +2,7 @@
 
 import {
   categoriasDe,
+  EQUIPE_PADRAO,
   dataCurta,
   formatarQuantidade,
   formatarReais,
@@ -28,15 +29,15 @@ import {
   TituloSecao,
   useToast,
 } from "@ponto-pro/ui";
-import { ChevronDown, ChevronLeft, ChevronRight, HardHat, Pencil, Save, Search, Tags, Trash2, Users } from "lucide-react";
+import { ChevronDown, ChevronLeft, HardHat, Pencil, Save, Search, Tags, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
-import { apagarLancamento, lancarProducao, novoId, removerItem, salvarItem, salvarPreferencias } from "../../../lib/acoes";
+import { apagarLancamento, lancarProducao, novoId, removerItem, salvarEquipe, salvarItem, salvarPreferencias } from "../../../lib/acoes";
 import { useAgora, useEstado } from "../../../lib/estado";
 import { situacaoAtual } from "../../../lib/plano";
 import { Carregando } from "../../carregando";
-import { ServicoEquipe } from "./equipe";
+import { AjustarEquipe, parteDaEquipe, resumoDaEquipe } from "./equipe";
 
 const ROTULO_DIA: Record<0 | -1 | -2, string> = { 0: "Hoje", [-1]: "Ontem", [-2]: "Anteontem" };
 const pilula = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-borda-forte bg-superficie px-4 text-apoio font-bold active:bg-superficie-2";
@@ -62,7 +63,7 @@ function LancarProducao() {
   /** Preços digitados na tabela, ainda não salvos (id → texto). */
   const [unidade, setUnidade] = useState("");
   const [rascunho, setRascunho] = useState<Record<string, string>>({});
-  const [equipeAberta, setEquipeAberta] = useState(false);
+  const [ajustarEquipe, setAjustarEquipe] = useState(false);
 
   const calc = useMemo(() => {
     if (!estado?.perfil || !agora) return null;
@@ -87,14 +88,31 @@ function LancarProducao() {
   const noPeriodo = lancamentos.filter((l) => l.data >= periodoAtual.inicio && l.data <= periodoAtual.fim).length;
   const noLimite = !situacaoAtual(estado).pode("producao-ilimitada") && noPeriodo >= LIMITE_PRODUCAO_GRATIS;
 
-  async function lancar({ item, novo, quantidade, descricao }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string }) {
+  const equipeSalva = estado.equipe;
+  const parte = parteDaEquipe(equipeSalva);
+
+  async function lancar({ item, novo, quantidade, descricao, precoUnitario, equipe }: { item: ItemProducao; novo: boolean; quantidade: number; descricao?: string; precoUnitario?: number; equipe?: boolean }) {
     if (noLimite) return;
+    if (equipe && parte <= 0) {
+      setAjustarEquipe(true);
+      return;
+    }
+    const preco = precoUnitario ?? item.preco;
     if (novo) await salvarItem(item);
+    // valor fechado: o serviço lembra o último valor combinado
+    else if (precoUnitario !== undefined && precoUnitario !== item.preco) await salvarItem({ ...item, preco: precoUnitario, exemplo: false });
+    const eq = equipeSalva ?? { equipe: EQUIPE_PADRAO, minhaFuncao: "Profissional" };
+    const divisao = equipe
+      ? { parte, minhaFuncao: eq.minhaFuncao, equipe: eq.equipe.map((f) => ({ ...f, peso: eq.igual ? 1 : f.peso })), ...(descricao ? { grupo: descricao.slice(0, 60) } : {}) }
+      : undefined;
     const id = novoId("l");
-    await lancarProducao({ id, data, itemId: item.id, quantidade, precoUnitario: item.preco, ...(descricao ? { descricao } : {}), ...(obraAtual ? { obraId: obraAtual } : {}) });
+    const lanc = { id, data, itemId: item.id, quantidade, precoUnitario: preco, ...(descricao ? { descricao } : {}), ...(obraAtual ? { obraId: obraAtual } : {}), ...(divisao ? { divisao } : {}) };
+    await lancarProducao(lanc);
     setChave((k) => k + 1);
     mostrar({
-      texto: `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, item.preco))}`,
+      texto: divisao
+        ? `${novo ? "Serviço criado. " : ""}Sua parte: ${formatarReais(valorDoLancamento(lanc))} de ${formatarReais(valorProducao(quantidade, preco))}`
+        : `${novo ? "Serviço criado. " : ""}${formatarQuantidade(quantidade)} ${rotuloUnidade(item.unidade)} · ${formatarReais(valorProducao(quantidade, preco))}`,
       desfazer: () => apagarLancamento(id),
     });
   }
@@ -156,6 +174,11 @@ function LancarProducao() {
         <button type="button" onClick={() => setEscolherDia(true)} className={pilula}>
           {diaFixo && diaFixo <= agora.data ? dataCurta(diaFixo) : ROTULO_DIA[quando]} <ChevronDown aria-hidden className="size-4" />
         </button>
+        {equipeSalva?.ligada && (
+          <button type="button" onClick={() => setAjustarEquipe(true)} className={pilula}>
+            <Users aria-hidden className="size-4" /> Equipe: {resumoDaEquipe(equipeSalva).split(",")[1]?.split("·")[0]?.trim()}
+          </button>
+        )}
         {obrasAtivas.length > 0 && (
           <button type="button" onClick={() => setEscolherObra(true)} className={pilula}>
             <HardHat aria-hidden className="size-4" />
@@ -164,19 +187,7 @@ function LancarProducao() {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => setEquipeAberta(true)}
-        className="cartao flex min-h-16 items-center gap-3 px-4 py-3 text-left active:bg-superficie-2"
-      >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primaria-suave text-primaria-forte"><Users aria-hidden className="size-5" /></span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-corpo font-bold">Serviço da equipe</span>
-          <span className="block text-apoio text-texto-2">Valor de empreitada dividido pela função de cada um</span>
-        </span>
-        <ChevronRight aria-hidden className="size-5 text-texto-2" />
-      </button>
-      <ServicoEquipe aberto={equipeAberta} onFechar={() => setEquipeAberta(false)} data={data} obraId={obraAtual} itens={itens} salva={estado.equipe} bloqueado={noLimite} />
+      <AjustarEquipe aberto={ajustarEquipe} onFechar={() => setAjustarEquipe(false)} salva={equipeSalva} />
 
       {noLimite && (
         <Bloqueio
@@ -193,6 +204,17 @@ function LancarProducao() {
           onLancar={lancar}
           onFavoritar={favoritar}
           sugestoes={6}
+          equipe={{
+            ligada: !!equipeSalva?.ligada,
+            parte,
+            resumo: resumoDaEquipe(equipeSalva),
+            onLigar: async (ligada) => {
+              // primeira vez: confirma a equipe antes de usar
+              if (ligada && !equipeSalva) setAjustarEquipe(true);
+              else if (equipeSalva) await salvarEquipe({ ...equipeSalva, ligada });
+            },
+            onAjustar: () => setAjustarEquipe(true),
+          }}
           entreBuscaELista={
             <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Categorias">
               {[null, ...categoriasDe(itens)].map((c) => (

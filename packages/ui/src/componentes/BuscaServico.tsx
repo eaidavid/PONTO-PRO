@@ -9,11 +9,12 @@ import {
   rotuloUnidade,
   UNIDADES_CHIPS,
 } from "@ponto-pro/core";
-import { PackagePlus, Plus, Search, Star } from "lucide-react";
+import { PackagePlus, Plus, Search, Star, Users } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { BotaoPrincipal } from "./BotaoPrincipal";
 import { CampoNumero } from "./CampoNumero";
 import { Chip } from "./Chip";
+import { Interruptor } from "./Interruptor";
 
 export interface LancamentoNovo {
   item: ItemProducao;
@@ -22,6 +23,21 @@ export interface LancamentoNovo {
   quantidade: number;
   /** Observação do lançamento (ex.: "lado da portaria", "2º andar"). */
   descricao?: string;
+  /** Valor combinado nesta vez (serviço de valor fechado, em verba). */
+  precoUnitario?: number;
+  /** Lançado como serviço da equipe: só a parte da pessoa entra. */
+  equipe?: boolean;
+}
+
+/** Serviço da equipe dentro do lançamento normal: uma chave e a parte de quem lança. */
+export interface EquipeBusca {
+  ligada: boolean;
+  /** Parte da pessoa, de 0 a 1. */
+  parte: number;
+  /** "Você: meio oficial, 26% · 4 pessoas" */
+  resumo: string;
+  onLigar: (ligada: boolean) => void;
+  onAjustar: () => void;
 }
 
 export interface BuscaServicoProps {
@@ -38,6 +54,8 @@ export interface BuscaServicoProps {
   entreBuscaELista?: ReactNode;
   /** Quantas sugestões mostrar sem busca (padrão 4). */
   sugestoes?: number;
+  /** Mostra a chave "Dividido com a equipe" no lançamento. */
+  equipe?: EquipeBusca;
 }
 
 function lerQuantidade(v: string): number | null {
@@ -46,7 +64,7 @@ function lerQuantidade(v: string): number | null {
 }
 
 /** Busca no catálogo sem ligar para acentos, com "+ Criar" quando não existe. */
-export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null, onFavoritar, entreBuscaELista, sugestoes = 4 }: BuscaServicoProps) {
+export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeInicial = "", itemInicial = null, onFavoritar, entreBuscaELista, sugestoes = 4, equipe }: BuscaServicoProps) {
   const [texto, setTexto] = useState(textoInicial);
   const [escolhido, setEscolhido] = useState<ItemProducao | null>(itemInicial);
   const [criando, setCriando] = useState<string | null>(null);
@@ -56,26 +74,44 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
   const [quantidade, setQuantidade] = useState(quantidadeInicial);
   const [observacao, setObservacao] = useState("");
   const [tentou, setTentou] = useState(false);
+  /** Valor desta vez num serviço de valor fechado (verba). */
+  const [valorFechado, setValorFechado] = useState(itemInicial?.unidade === "verba" ? (itemInicial.preco / 100).toFixed(2).replace(".", ",") : "");
 
   const resultado = useMemo(() => buscarItens(itens, texto, texto.trim() ? 8 : sugestoes), [itens, texto, sugestoes]);
   const unidadeFinal = unidade === "outra" ? outra.trim() : unidade;
-  const precoCentavos = escolhido ? escolhido.preco : lerReais(preco);
-  const qtd = lerQuantidade(quantidade);
+  // valor fechado (verba): digita o valor combinado desta vez, sem quantidade
+  const fechado = (escolhido?.unidade ?? unidadeFinal) === "verba";
+  const precoCentavos = fechado ? lerReais(escolhido ? valorFechado : preco) : escolhido ? escolhido.preco : lerReais(preco);
+  const qtd = fechado ? 1 : lerQuantidade(quantidade);
   const previa = qtd && precoCentavos !== null && unidadeFinal ? previaProducao(qtd, escolhido?.unidade ?? unidadeFinal, precoCentavos) : null;
+  const naEquipe = !!equipe?.ligada;
+  const minhaParte = previa && naEquipe ? Math.round(previa.valor * equipe!.parte) : null;
 
   function lancar() {
     setTentou(true);
     if (!qtd || precoCentavos === null || !unidadeFinal) return;
     const item: ItemProducao =
       escolhido ?? {
-        id: `novo-${Date.now()}`,
+        id: `novo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
         nome: criando!.trim(),
         area: "Meus serviços",
         unidade: unidadeFinal,
         preco: precoCentavos,
         exemplo: false,
       };
-    onLancar({ item, novo: !escolhido, quantidade: qtd, ...(observacao.trim() ? { descricao: observacao.trim().slice(0, 200) } : {}) });
+    onLancar({
+      item,
+      novo: !escolhido,
+      quantidade: qtd,
+      ...(fechado && escolhido ? { precoUnitario: precoCentavos } : {}),
+      ...(naEquipe ? { equipe: true } : {}),
+      ...(observacao.trim() ? { descricao: observacao.trim().slice(0, 200) } : {}),
+    });
+  }
+
+  function escolher(i: ItemProducao) {
+    setEscolhido(i);
+    if (i.unidade === "verba") setValorFechado((i.preco / 100).toFixed(2).replace(".", ","));
   }
 
   function recomecar() {
@@ -127,24 +163,47 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
               )}
             </div>
             <CampoNumero
-              rotulo={`Preço por ${un}`}
+              rotulo={fechado ? (naEquipe ? "Valor do serviço para a equipe" : "Valor do serviço") : `Preço por ${un}`}
               prefixo="R$"
               valor={preco}
               onChange={setPreco}
               placeholder="0,00"
-              erro={tentou && precoCentavos === null ? "Digite o preço. Ex.: 12,00" : undefined}
+              erro={tentou && precoCentavos === null ? (fechado ? "Digite o valor combinado. Ex.: 775,00" : "Digite o preço. Ex.: 12,00") : undefined}
             />
           </>
         )}
 
-        <CampoNumero
-          rotulo="Quantidade"
-          sufixo={un}
-          valor={quantidade}
-          onChange={setQuantidade}
-          placeholder="0"
-          erro={tentou && !qtd ? "Digite quanto você fez. Ex.: 50" : undefined}
-        />
+        {fechado && escolhido ? (
+          <CampoNumero
+            rotulo={naEquipe ? "Valor do serviço para a equipe" : "Valor do serviço"}
+            prefixo="R$"
+            valor={valorFechado}
+            onChange={setValorFechado}
+            placeholder="0,00"
+            ajuda="O valor que o encarregado passou desta vez."
+            erro={tentou && precoCentavos === null ? "Digite o valor combinado. Ex.: 775,00" : undefined}
+          />
+        ) : (
+          !fechado && (
+            <CampoNumero
+              rotulo="Quantidade"
+              sufixo={un}
+              valor={quantidade}
+              onChange={setQuantidade}
+              placeholder="0"
+              erro={tentou && !qtd ? "Digite quanto você fez. Ex.: 50" : undefined}
+            />
+          )
+        )}
+
+        {equipe && (
+          <div className="flex flex-col rounded-cartao border-2 border-borda px-4">
+            <Interruptor rotulo="Dividido com a equipe" descricao={equipe.resumo} valor={equipe.ligada} onChange={equipe.onLigar} />
+            <button type="button" onClick={equipe.onAjustar} className="-mt-1 mb-2 min-h-11 self-start text-apoio font-bold text-primaria-forte underline underline-offset-4">
+              Ajustar a equipe
+            </button>
+          </div>
+        )}
 
         <label className="flex flex-col gap-1.5">
           <span className="text-corpo font-bold">Observação <span className="font-normal text-texto-2">(opcional)</span></span>
@@ -157,11 +216,19 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
         </label>
 
         <p aria-live="polite" className="numeros rounded-cartao bg-superficie-2 p-4 text-center text-destaque font-bold">
-          {previa ? previa.texto : `0 ${un} × ${precoCentavos !== null ? formatarReais(precoCentavos) : "R$ 0,00"} = R$ 0,00`}
+          {previa
+            ? minhaParte !== null
+              ? `${fechado ? formatarReais(previa.valor) : previa.texto} da equipe → sua parte ${formatarReais(minhaParte)}`
+              : fechado
+                ? formatarReais(previa.valor)
+                : previa.texto
+            : fechado
+              ? "R$ 0,00"
+              : `0 ${un} × ${precoCentavos !== null ? formatarReais(precoCentavos) : "R$ 0,00"} = R$ 0,00`}
         </p>
 
-        <BotaoPrincipal tamanho="g" icone={PackagePlus} onClick={lancar}>
-          Lançar produção
+        <BotaoPrincipal tamanho="g" icone={naEquipe ? Users : PackagePlus} onClick={lancar}>
+          {naEquipe ? (minhaParte !== null ? `Lançar minha parte: ${formatarReais(minhaParte)}` : "Lançar minha parte") : "Lançar produção"}
         </BotaoPrincipal>
       </div>
     );
@@ -197,7 +264,7 @@ export function BuscaServico({ itens, onLancar, textoInicial = "", quantidadeIni
                 <Star aria-hidden className={i.favorito ? "size-5 fill-[color:var(--extra)] text-extra" : "size-5"} />
               </button>
             )}
-            <button type="button" onClick={() => setEscolhido(i)} className={`flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pr-4 text-left active:bg-superficie-2 ${onFavoritar ? "pl-1" : "pl-4"}`}>
+            <button type="button" onClick={() => escolher(i)} className={`flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pr-4 text-left active:bg-superficie-2 ${onFavoritar ? "pl-1" : "pl-4"}`}>
               <span className="min-w-0 flex-1">
                 <span className="block text-corpo font-bold">{i.nome}</span>
                 <span className="block text-apoio text-texto-2">{i.area}</span>

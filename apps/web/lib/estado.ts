@@ -47,6 +47,8 @@ export interface EquipeSalva {
   equipe: FuncaoEquipe[];
   minhaFuncao: string;
   igual?: boolean;
+  /** Chave "Dividido com a equipe" ligada nos lançamentos (fica como a pessoa deixou). */
+  ligada?: boolean;
 }
 
 function temaDoAparelho(): Preferencias["tema"] {
