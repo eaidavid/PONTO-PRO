@@ -10,14 +10,14 @@ type Dados = Record<string, string | number>;
 let fila: { evento: string; dados: Dados }[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-function lerLocal(chave: string): string | null {
+export function lerLocal(chave: string): string | null {
   try {
     return localStorage.getItem(chave);
   } catch {
     return null;
   }
 }
-function gravarLocal(chave: string, valor: string) {
+export function gravarLocal(chave: string, valor: string) {
   try {
     localStorage.setItem(chave, valor);
   } catch {

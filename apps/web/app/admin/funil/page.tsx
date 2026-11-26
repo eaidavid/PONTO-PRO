@@ -20,6 +20,7 @@ const ORIGENS = [
   { id: "site", rotulo: "Página inicial" },
   { id: "calculadora", rotulo: "Calculadoras" },
   { id: "indicacao", rotulo: "Indicação" },
+  { id: "beta", rotulo: "Convite do beta" },
 ];
 const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "—");
 

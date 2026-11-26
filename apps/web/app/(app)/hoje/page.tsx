@@ -37,6 +37,7 @@ import { AvisoTeste } from "../aviso-teste";
 import { ConviteCelular } from "../avisos-celular";
 import { medirUmaVez } from "../../../lib/medir";
 import { ResumoSemana } from "../resumo-semana";
+import { PedirOpiniao } from "../opiniao";
 
 const NOME: Record<Etapa, string> = { entrada: "Entrada", almoco: "Almoço", volta: "Volta do almoço", saida: "Saída" };
 
@@ -306,6 +307,9 @@ export default function Hoje() {
           ))}
         </div>
       </BottomSheet>
+      <div className="px-4 pb-4">
+        <PedirOpiniao estado={estado} hoje={agora.data} />
+      </div>
     </main>
   );
 }

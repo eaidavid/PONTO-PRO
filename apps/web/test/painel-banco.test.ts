@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 
-/** Roda as migrações 0001, 0002, 0003, 0006 e 0007 num Postgres de verdade (PGlite) e confere as funções do painel. */
+/** Roda as migrações 0001, 0002, 0003, 0006, 0007 e 0008 num Postgres de verdade (PGlite) e confere as funções do painel. */
 const A = "00000000-0000-0000-0000-00000000000a";
 const B = "00000000-0000-0000-0000-00000000000b";
 let db: PGlite;
@@ -25,7 +25,7 @@ beforeAll(async () => {
     create table cron.job (jobid bigint primary key, jobname text);
     create table cron.job_run_details (jobid bigint, start_time timestamptz, status text, return_message text);
   `);
-  for (const m of ["0001_inicial.sql", "0002_planos.sql", "0003_notificacoes_erros.sql", "0006_painel.sql", "0007_avisos_banco.sql"]) await db.exec(migracao(m));
+  for (const m of ["0001_inicial.sql", "0002_planos.sql", "0003_notificacoes_erros.sql", "0006_painel.sql", "0007_avisos_banco.sql", "0008_beta.sql"]) await db.exec(migracao(m));
   await db.query("insert into auth.users (id, email, created_at, last_sign_in_at) values ($1, 'jose@gmail.com', now() - interval '20 days', now()), ($2, 'ana@hotmail.com', now() - interval '2 days', null)", [A, B]);
   await db.query("insert into settings (user_id, chave, dados, atualizado_em) values ($1, 'inicioUso', '\"2026-01-01\"', now()), ($2, 'inicioUso', to_jsonb(to_char(current_date - 2, 'YYYY-MM-DD')), now())", [A, B]);
   await db.query("insert into day_entries (user_id, chave, dados, atualizado_em) values ($1, '2026-11-09', '{}', now()), ($1, '2026-11-10', '{}', now())", [A]);
@@ -131,5 +131,44 @@ describe("migração 0007 (avisos do banco)", () => {
   it("lista de espera aceita o Pro e continua recusando plano desconhecido", async () => {
     await db.query("insert into waitlist (plano, nome, whatsapp) values ('individual', 'Ana', '11912345678')");
     await expect(db.query("insert into waitlist (plano, nome, whatsapp) values ('ouro', 'Ana', '11912345679')")).rejects.toThrow();
+  });
+});
+
+describe("beta: convites e opiniões (0008)", () => {
+  it("convite dá Pro de cortesia uma vez por pessoa e respeita o limite", async () => {
+    await db.query("insert into beta_invites (codigo, nome, dias, limite) values ('OBRA-SP', 'Obra SP', 90, 1)");
+    const r1 = await db.query<{ r: Record<string, unknown> }>("select public.resgatar_convite($1, 'obra-sp') as r", [B]);
+    expect(r1.rows[0]!.r).toMatchObject({ ok: true, dias: 90 });
+    const sub = await db.query<{ provedor: string; dias: number }>("select s.provedor, s.pago_ate - current_date as dias from subscriptions s join members m on m.account_id = s.account_id where m.user_id = $1", [B]);
+    expect(sub.rows[0]).toMatchObject({ provedor: "cortesia", dias: 90 });
+    const r2 = await db.query<{ r: Record<string, unknown> }>("select public.resgatar_convite($1, 'OBRA-SP') as r", [B]);
+    expect(r2.rows[0]!.r).toMatchObject({ ok: false, motivo: "ja-usou" });
+    // A já assina (asaas, ativa): não troca a assinatura paga por cortesia
+    await db.query("insert into beta_invites (codigo, nome) values ('GERAL', 'Geral')");
+    const r3 = await db.query<{ r: Record<string, unknown> }>("select public.resgatar_convite($1, 'GERAL') as r", [A]);
+    expect(r3.rows[0]!.r).toMatchObject({ ok: false, motivo: "ja-assina" });
+    const r4 = await db.query<{ r: Record<string, unknown> }>("select public.resgatar_convite($1, 'NAOEXISTE') as r", [A]);
+    expect(r4.rows[0]!.r).toMatchObject({ ok: false, motivo: "invalido" });
+    const usados = await db.query<{ usados: number }>("select usados from beta_invites where codigo = 'OBRA-SP'");
+    expect(usados.rows[0]!.usados).toBe(1);
+  });
+
+  it("depoimento só pode ser aprovado com autorização, nome e texto", async () => {
+    await db.query("insert into feedback (user_id, nota, comentario, autoriza, nome) values ($1, 9, 'Bom demais', false, 'Ana')", [B]);
+    await expect(db.query("update feedback set status = 'aprovado' where user_id = $1", [B])).rejects.toThrow();
+    await db.query("update feedback set autoriza = true where user_id = $1", [B]);
+    await db.query("update feedback set status = 'aprovado' where user_id = $1", [B]);
+    await expect(db.query("insert into feedback (user_id, nota) values ($1, 5)", [B])).rejects.toThrow();
+  });
+
+  it("usuário do app não resgata convite direto nem lê opiniões", async () => {
+    await db.query("select set_config('request.jwt.claim.sub', $1, false)", [A]);
+    await db.exec("set role authenticated");
+    try {
+      await expect(db.query("select public.resgatar_convite($1, 'GERAL')", [A])).rejects.toThrow(/permission denied/);
+      await expect(db.query("select * from feedback")).rejects.toThrow(/permission denied/);
+    } finally {
+      await db.exec("reset role");
+    }
   });
 });

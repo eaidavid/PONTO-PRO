@@ -122,3 +122,23 @@ describe("receita do mês", () => {
     expect(v).toBe(1490 + Math.round(11900 / 12));
   });
 });
+
+describe("beta e opinião sem banco", () => {
+  it("convite sem banco não vale e resgatar responde 503", async () => {
+    const { GET } = await import("../app/api/beta/route");
+    expect(await (await GET(new Request("http://x/api/beta?codigo=OBRA-SP"))).json()).toEqual({ valido: false });
+    const { POST } = await import("../app/api/beta/resgatar/route");
+    expect((await POST(new Request("http://x/api/beta/resgatar", { method: "POST", body: "{}" }))).status).toBe(503);
+  });
+
+  it("opinião sem banco responde 503", async () => {
+    const { POST } = await import("../app/api/opiniao/route");
+    expect((await POST(new Request("http://x/api/opiniao", { method: "POST", body: JSON.stringify({ nota: 9 }) }))).status).toBe(503);
+  });
+
+  it("código do convite sai do nome, sem acento e em maiúsculas", async () => {
+    const { codigoDoNome } = await import("../lib/beta");
+    expect(codigoDoNome("Obra da Vila Mariana – São Paulo")).toBe("OBRA-DA-VILA-MARIANA-SAO-PAULO");
+    expect(codigoDoNome("  ação!  ")).toBe("ACAO");
+  });
+});

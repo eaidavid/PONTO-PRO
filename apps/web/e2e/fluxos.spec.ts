@@ -117,6 +117,33 @@ test("serviço da equipe: laje dividida pela função, só a minha parte entra",
   await expect(page.getByRole("dialog", { name: "Serviço da equipe" }).getByRole("button", { name: "Meio oficial", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
 
+test("beta: convite inválido não trava o começo; opinião depois de 7 dias", async ({ page }) => {
+  // sem servidor, o convite não confere: a pessoa ainda começa a usar normalmente
+  await page.goto("/beta/OBRA-TESTE");
+  await expect(page.getByRole("heading", { name: "Esse convite não vale mais." })).toBeVisible();
+  await page.getByRole("button", { name: "Começar agora" }).click();
+  await expect(page).toHaveURL(/\/comecar$/);
+
+  await fazerOnboarding(page);
+  // ainda no primeiro dia: não pede opinião
+  await expect(page.getByText(/Você já usa o Pingou há uma semana/)).toHaveCount(0);
+  await definirInicioUso(page, "2026-10-30");
+  await page.goto("/hoje");
+  const op = page.getByRole("region", { name: "Você já usa o Pingou há uma semana. Como está sendo?" });
+  await expect(op).toBeVisible();
+  await op.getByRole("radio", { name: "9" }).click();
+  await op.getByLabel("O que você mais gosta?").fill("Vejo na hora quanto vou receber.");
+  await op.getByRole("checkbox", { name: /Pode publicar/ }).check();
+  await expect(op.getByLabel("Primeiro nome", { exact: true })).toHaveValue("José");
+  await op.getByRole("button", { name: "Mandar opinião" }).click();
+  await expect(op.getByText("Não deu para mandar agora.")).toBeVisible();
+  // "Agora não" esconde e só pergunta de novo em 7 dias
+  await op.getByRole("button", { name: "Agora não" }).click();
+  await expect(page.getByText(/Você já usa o Pingou há uma semana/)).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText(/Você já usa o Pingou há uma semana/)).toHaveCount(0);
+});
+
 test("editar um dia em Registros", async ({ page }) => {
   await fazerOnboarding(page);
   await semearHistorico(page);

@@ -4,7 +4,7 @@ import { Calculator, Check, ChevronDown, type LucideIcon, Pointer, Sun, WifiOff,
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { DEPOIMENTOS } from "../lib/depoimentos";
+import { depoimentosPublicados } from "../lib/depoimentos";
 import { MARCA } from "../lib/marca";
 import { CALCULADORAS } from "../lib/site";
 import { Animacoes } from "./_vendas/animacoes";
@@ -180,7 +180,11 @@ const LARGURA = "mx-auto w-full max-w-[1120px] px-5 sm:px-8";
 const SECAO = "py-12 md:py-20";
 const TITULO_SECAO = "display text-[clamp(1.65rem,7.2vw,2.35rem)] leading-[1.06] text-balance";
 
-export default function Vendas() {
+/** Depoimentos aprovados no painel entram sem publicar de novo: a página se refaz de hora em hora. */
+export const revalidate = 3600;
+
+export default async function Vendas() {
+  const depoimentos = await depoimentosPublicados();
   return (
     <>
       <Animacoes />
@@ -416,13 +420,13 @@ export default function Vendas() {
           <BotaoComecar secao="passos" className="self-start">Bater meu primeiro ponto</BotaoComecar>
         </section>
 
-        {DEPOIMENTOS.length > 0 && (
+        {depoimentos.length > 0 && (
           <section aria-labelledby="t-depoimentos" className={cx(LARGURA, "flex flex-col gap-7 pb-12 md:gap-10 md:pb-20")}>
             <h2 id="t-depoimentos" data-titulo="secao" className={TITULO_SECAO}>
               Quem já usa conta como é.
             </h2>
             <ul data-revelar-grupo className="grid gap-x-10 gap-y-6 md:grid-cols-3">
-              {DEPOIMENTOS.map((d) => (
+              {depoimentos.map((d) => (
                 <li key={d.nome + d.texto}>
                   <figure className="flex flex-col gap-3 border-t border-borda-forte pt-4">
                     <blockquote className="text-corpo">“{d.texto}”</blockquote>

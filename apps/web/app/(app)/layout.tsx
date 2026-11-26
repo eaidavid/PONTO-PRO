@@ -13,6 +13,7 @@ import { marcarInicioUso } from "../../lib/acoes";
 import { LEGAL } from "../../lib/marca";
 import { AceiteTermos } from "../aceite-termos";
 import { Carregando } from "../carregando";
+import { ConviteBetaPendente } from "./convite-beta";
 import dynamic from "next/dynamic";
 
 // Menus carregados só no primeiro toque: a tela abre mais rápido.
@@ -74,6 +75,7 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
             <ChevronLeft aria-hidden className="size-5" /> Mais
           </button>
         )}
+        <ConviteBetaPendente naHoje={tela === "hoje"} />
         {children}
       </div>
       <BarraNavegacao

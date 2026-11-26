@@ -1,7 +1,7 @@
 "use client";
 
 import { cx } from "@ponto-pro/ui";
-import { Activity, ClipboardList, Filter, Gauge, LifeBuoy, LogOut, Receipt, Users } from "lucide-react";
+import { Activity, ClipboardList, Filter, Gauge, LifeBuoy, LogOut, MessageCircleHeart, Receipt, Ticket, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
@@ -14,6 +14,8 @@ const MENU = [
   { href: "/admin/funil", rotulo: "Funil", icone: Filter },
   { href: "/admin/pessoas", rotulo: "Pessoas", icone: Users },
   { href: "/admin/assinaturas", rotulo: "Assinaturas", icone: Receipt },
+  { href: "/admin/convites", rotulo: "Convites do beta", icone: Ticket },
+  { href: "/admin/opinioes", rotulo: "Opiniões", icone: MessageCircleHeart },
   { href: "/admin/suporte", rotulo: "Suporte", icone: LifeBuoy },
   { href: "/admin/lista-espera", rotulo: "Lista de espera", icone: ClipboardList },
   { href: "/admin/saude", rotulo: "Saúde", icone: Activity },
